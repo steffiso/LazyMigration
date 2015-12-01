@@ -96,9 +96,9 @@ public class TestIRIS
 		{
 			super( "IRIS - new" );
 			TestEDB newTestEDB= new TestEDB();
-			String edbFacts=newTestEDB.getEDBFacts();
+			String rules=newTestEDB.deleteAttribute("name");
 
-			setup(edbFacts);
+			setup(rules);
 		}
 
 		/**
@@ -107,7 +107,6 @@ public class TestIRIS
 		private void setup(String edbRules)
 		{
 			setLayout( new BorderLayout() );
-			
 			
 			mProgram.setText(
 							edbRules

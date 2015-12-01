@@ -1,5 +1,4 @@
-{"id":1,"name":"Lisa","timestamp":1}
-{"id":1,"name":"Lisa.S","timestamp":2}
-{"id":2,"name":"Bart","timestamp":1}
-{"id":3,"name":"Homer","timestamp":1}
-{"id":2,"name":"Bart","score":20,"timestamp":2}
+{"id":1,"name":"Lisa","ts":1}
+{"id":1,"name":"Lisa.S","ts":2}
+{"id":2,"name":"Bart","ts":1}
+{"id":3,"name":"Homer","ts":1}
