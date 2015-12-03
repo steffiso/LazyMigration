@@ -55,48 +55,42 @@ import org.deri.iris.rules.safety.AugmentingRuleSafetyProcessor;
 /**
  * A GUI version of the Demo application.
  */
-public class TestIRIS
-{
+public class TestIRIS {
 	public static final int FONT_SIZE = 12;
-	public static final String NEW_LINE = System.getProperty( "line.separator" );
+	public static final String NEW_LINE = System.getProperty("line.separator");
 
 	/**
 	 * Application entry point.
+	 * 
 	 * @param args
 	 */
-	public static void main( String[] args )
-	{
+	public static void main(String[] args) {
 		// Set up the native look and feel
-		try
-		{
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 		}
 
 		// Create the main window and show it.
 		MainFrame mainFrame = new MainFrame();
-		mainFrame.setSize( 800, 600 );
-		mainFrame.setVisible( true );
+		mainFrame.setSize(800, 600);
+		mainFrame.setVisible(true);
 	}
-	
+
 	/**
 	 * The main application window
 	 */
-	public static class MainFrame extends JFrame implements ActionListener
-	{
+	public static class MainFrame extends JFrame implements ActionListener {
 		/** The serialisation ID. */
-        private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 1L;
 
-        /**
-         * Constructor
-         */
-		public MainFrame()
-		{
-			super( "IRIS - new" );
-			TestEDB newTestEDB= new TestEDB();
-			String rules=newTestEDB.deleteAttribute("Player","name");
+		/**
+		 * Constructor
+		 */
+		public MainFrame() {
+			super("IRIS - new");
+			TestEDB newTestEDB = new TestEDB();
+			String rules = newTestEDB.getEDBFacts();
 
 			setup(rules);
 		}
@@ -104,191 +98,245 @@ public class TestIRIS
 		/**
 		 * Create all the widgets, lay them out and create listeners.
 		 */
-		private void setup(String edbRules)
-		{
-			setLayout( new BorderLayout() );
-			
-			mProgram.setText(
-							edbRules
-			);
-							
-			mRun.addActionListener( this );
+		private void setup(String edbRules) {
+			setLayout(new BorderLayout());
 
-			mAbort.addActionListener( this );
-			mAbort.setEnabled( false );
+			mProgram.setText(edbRules);
 
-			JScrollPane programScroller = new JScrollPane( mProgram );
-			JScrollPane outputScroller = new JScrollPane( mOutput );
-			
-			Font f = new Font( "courier", Font.PLAIN, FONT_SIZE );
-			mProgram.setFont( f );
-			mOutput.setFont( f );
+			mRun.addActionListener(this);
 
-			JSplitPane mainSplitter = new JSplitPane( JSplitPane.VERTICAL_SPLIT, false, programScroller, outputScroller );
+			mAbort.addActionListener(this);
+			mAbort.setEnabled(false);
 
-			getContentPane().add( mainSplitter, BorderLayout.CENTER );
-			
+			JScrollPane programScroller = new JScrollPane(mProgram);
+			JScrollPane outputScroller = new JScrollPane(mOutput);
+
+			Font f = new Font("courier", Font.PLAIN, FONT_SIZE);
+			mProgram.setFont(f);
+			mOutput.setFont(f);
+
+			JSplitPane mainSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+					false, programScroller, outputScroller);
+
+			getContentPane().add(mainSplitter, BorderLayout.CENTER);
+			String[] functionStrings = { "Get", "Add", "Delete", "Copy",
+					"Move", "Put" };
+
+			// Create the combo box, select item at index 4.
+			// Indices start at 0, so 4 specifies the pig.
+			final JComboBox<String> functionList = new JComboBox<String>(
+					functionStrings);
+			functionList.setSelectedIndex(4);
+			functionList.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					// TODO Auto-generated method stub
+					String function = (String) functionList.getSelectedItem();
+					mProgram.setText(getRule(function));
+				}
+			});
+			;
 			JPanel panel = new JPanel();
-			panel.add( mStrategy );
-			panel.add( mUnsafeRules );
-			panel.add( mOptimise );
-			panel.add( mRun );
-			panel.add( mAbort );
+			panel.add(functionList);
+			panel.add(mStrategy);
+			panel.add(mUnsafeRules);
+			panel.add(mOptimise);
+			panel.add(mRun);
+			panel.add(mAbort);
 
-			getContentPane().add( panel, BorderLayout.SOUTH );
+			getContentPane().add(panel, BorderLayout.SOUTH);
 
 			// Can't seem to make this happen before showinG, even with:
-//			 mainSplitter.putClientProperty( JSplitPane.RESIZE_WEIGHT_PROPERTY, "0.5" );
-//			mainSplitter.setDividerLocation( 0.5 );
-			
-			addWindowListener(
-							new WindowAdapter()
-							{
-								public void windowClosing( WindowEvent e )
-								{
-									System.exit( 0 );
-								}
-							}
-						);
-			
+			// mainSplitter.putClientProperty(
+			// JSplitPane.RESIZE_WEIGHT_PROPERTY, "0.5" );
+			// mainSplitter.setDividerLocation( 0.5 );
+
+			addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					System.exit(0);
+				}
+			});
+
 		}
+
+		private String getRule(String function) {
+			TestEDB newTestEDB = new TestEDB();
+			String rules = null;
+			switch (function) {
+			case "Add":
+				rules = "/*Add Player.points = 200*/\n";
+				rules = rules
+						+ newTestEDB.addAttribute("Player", "points", "200");
+				rules = rules + "\n?-Player2(?id, ?name,?score,?points,?ts).";
+				break;
+			case "Delete":
+				rules = "/*Delete Player.score*/\n";
+				rules = rules + newTestEDB.deleteAttribute("Player", "score");
+				rules = rules + "\n?-Player2(?id, ?name,?ts).";
+				break;
+			case "Get":
+				rules = "/*get Player with ID 1*/\n"
+						+ newTestEDB.get("Player", 1);
+				break;
+			case "Move":
+				rules = "/*move Mission.title to Player where Mission.pid=Player.id*/\n";
+				rules = rules
+						+ newTestEDB.moveAttribute("Mission", "Player",
+								"title", "pid", "id");
+				rules = rules + "\n?-Player2(?id1,?name,?score,?title,?ts).";
+				rules = rules + "\n?-Mission2(?id1,?pid,?ts).";
+				break;
+			case "Copy":
+				rules = "/*copy Player.score to Mission where Player.id=Mission.pid*/\n";
+				rules = rules
+						+ newTestEDB.copyAttribute("Player", "Mission",
+								"score", "id", "pid");
+				rules = rules + "\n?-Mission2(?id1, ?title,?pid,?score,?ts).";
+				break;
+			case "Put":
+				rules = "/*Put Player with attributes [1,Lisa.S,550]*/\n"
+						+ newTestEDB.putKind("Player", "1,'Lisa.S',550")+".";
+				break;
+			}
+			return rules;
+		};
 
 		private final JTextArea mProgram = new JTextArea();
 		private final JTextArea mOutput = new JTextArea();
-		
-//		private final JComboBox mEvaluator = new JComboBox( new String[] { "Naive", "Semi-naive" } );
-		private final JComboBox mStrategy = new JComboBox( new String[] { "Stratified (Semi-naive)", "Stratified (Naive)", "Well-founded" } );
-		private final JCheckBox mUnsafeRules = new JCheckBox( "Unsafe-rules", false );
-		private final JComboBox mOptimise = new JComboBox( new String[] { "none", "Magic Sets" } );
-		
-		private final JButton mRun = new JButton( "Evaluate" );
-		private final JButton mAbort = new JButton( "Abort" );
-		
+
+		// private final JComboBox mEvaluator = new JComboBox( new String[] {
+		// "Naive", "Semi-naive" } );
+		private final JComboBox mStrategy = new JComboBox(
+				new String[] { "Stratified (Semi-naive)", "Stratified (Naive)",
+						"Well-founded" });
+		private final JCheckBox mUnsafeRules = new JCheckBox("Unsafe-rules",
+				false);
+		private final JComboBox mOptimise = new JComboBox(new String[] {
+				"none", "Magic Sets" });
+
+		private final JButton mRun = new JButton("Evaluate");
+		private final JButton mAbort = new JButton("Abort");
+
 		Thread mExecutionThread;
-		
-		public void actionPerformed( ActionEvent e )
-        {
-	        if( e.getSource() == mRun )
-	        {
-	        	run();
-	        }
-	        else if( e.getSource() == mAbort )
-	        {
-	        	abort();
-	        }
-        }
+
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == mRun) {
+				run();
+			} else if (e.getSource() == mAbort) {
+				abort();
+			}
+		}
 
 		/**
 		 * Called when evaluation has finished.
-		 * @param output The evaluation output 
+		 * 
+		 * @param output
+		 *            The evaluation output
 		 */
-		synchronized void setOutput( String output )
-		{
-			mRun.setEnabled( true );
-			mAbort.setEnabled( false );
+		synchronized void setOutput(String output) {
+			mRun.setEnabled(true);
+			mAbort.setEnabled(false);
 
-			mOutput.setText( output );
+			mOutput.setText(output);
 		}
-		
+
 		/**
-		 * Notifier class that 'hops' the output from the evaluation thread to the UI thread.
+		 * Notifier class that 'hops' the output from the evaluation thread to
+		 * the UI thread.
 		 */
-		class NotifyOutput implements Runnable
-		{
-			NotifyOutput( String output )
-			{
+		class NotifyOutput implements Runnable {
+			NotifyOutput(String output) {
 				mOutput = output;
 			}
-			
-			public void run()
-            {
-	            setOutput( mOutput );
-            }
-			
+
+			public void run() {
+				setOutput(mOutput);
+			}
+
 			final String mOutput;
 		}
-		
+
 		/**
 		 * Starts the evaluation.
 		 */
-		synchronized void run()
-		{
-			mOutput.setText( "" );
+		synchronized void run() {
+			mOutput.setText("");
 
-			mRun.setEnabled( false );
-			mAbort.setEnabled( true );
-			
+			mRun.setEnabled(false);
+			mAbort.setEnabled(true);
+
 			String program = mProgram.getText();
-			
-			Configuration config = KnowledgeBaseFactory.getDefaultConfiguration();
-			
-			if( mUnsafeRules.isSelected() )
+
+			Configuration config = KnowledgeBaseFactory
+					.getDefaultConfiguration();
+
+			if (mUnsafeRules.isSelected())
 				config.ruleSafetyProcessor = new AugmentingRuleSafetyProcessor();
-			
-			switch( mStrategy.getSelectedIndex() )
-			{
+
+			switch (mStrategy.getSelectedIndex()) {
 			default:
 			case 0:
-				config.evaluationStrategyFactory = new StratifiedBottomUpEvaluationStrategyFactory( new SemiNaiveEvaluatorFactory() );
+				config.evaluationStrategyFactory = new StratifiedBottomUpEvaluationStrategyFactory(
+						new SemiNaiveEvaluatorFactory());
 				break;
-				
+
 			case 1:
-				config.evaluationStrategyFactory = new StratifiedBottomUpEvaluationStrategyFactory( new NaiveEvaluatorFactory() );
+				config.evaluationStrategyFactory = new StratifiedBottomUpEvaluationStrategyFactory(
+						new NaiveEvaluatorFactory());
 				break;
-				
+
 			case 2:
 				config.evaluationStrategyFactory = new WellFoundedEvaluationStrategyFactory();
 				config.stratifiers.clear();
 				break;
 			}
-			
-			switch( mOptimise.getSelectedIndex() )
-			{
+
+			switch (mOptimise.getSelectedIndex()) {
 			case 0:
 				break;
-				
+
 			case 1:
-				config.programOptmimisers.add( new RuleFilter() );
-				config.programOptmimisers.add( new MagicSets() );
+				config.programOptmimisers.add(new RuleFilter());
+				config.programOptmimisers.add(new MagicSets());
 				break;
 			}
 
-			mExecutionThread = new Thread( new ExecutionTask( program, config ), "Evaluation task" );
+			mExecutionThread = new Thread(new ExecutionTask(program, config),
+					"Evaluation task");
 
-			mExecutionThread.setPriority( Thread.MIN_PRIORITY );
+			mExecutionThread.setPriority(Thread.MIN_PRIORITY);
 			mExecutionThread.start();
 		}
-		
+
 		/**
 		 * Aborts the evaluation.
 		 */
-		synchronized void abort()
-		{
-			mRun.setEnabled( true );
-			mAbort.setEnabled( false );
+		synchronized void abort() {
+			mRun.setEnabled(true);
+			mAbort.setEnabled(false);
 
 			// Not very nice, but hey, that's life.
 			mExecutionThread.stop();
 		}
-		
+
 		/**
 		 * Runnable task for performing the evaluation.
 		 */
-		class ExecutionTask implements Runnable
-		{
-			ExecutionTask( String program, Configuration configuration )
-			{
+		class ExecutionTask implements Runnable {
+			ExecutionTask(String program, Configuration configuration) {
 				this.program = program;
 				this.configuration = configuration;
 			}
-			
-//			@Override
-	        public void run()
-	        {
-	        	ProgramExecutor executor = new ProgramExecutor( program, configuration );
-				SwingUtilities.invokeLater( new NotifyOutput( executor.getOutput() ) );
-	        }
-			
+
+			// @Override
+			public void run() {
+				ProgramExecutor executor = new ProgramExecutor(program,
+						configuration);
+				SwingUtilities.invokeLater(new NotifyOutput(executor
+						.getOutput()));
+			}
+
 			private final String program;
 			private final Configuration configuration;
 		}
