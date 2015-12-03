@@ -1,4 +1,4 @@
-{"id":1,"name":"Lisa","score":20,"ts":1}
-{"id":1,"name":"Lisa.S","score":20,"ts":2}
-{"id":2,"name":"Bart","score":20,"ts":1}
-{"id":3,"name":"Homer","score":20,"ts":1}
+{"id":1,"name":"Lisa","score":20,"ts":"2015-11-22 18:29:50.589"}
+{"id":2,"name":"Bart","score":20,"ts":"2015-12-01 18:29:50.589"}
+{"id":3,"name":"Homer","score":20,"ts":"2015-12-02 18:29:50.589"}
+{"id":1,"name":"Lisa.S","score":20,"ts":"2015-12-03 18:29:50.589"}

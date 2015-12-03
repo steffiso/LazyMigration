@@ -13,43 +13,10 @@ import parserGet.ParserForGet;
 import parserGet.ParserForGetPlayer;
 
 public class TestEDB {
-
-	public String deleteAttribute(String kind, String attribute) {
-
-		String rules = getEDBFacts();
-//		try {
-//			rules = rules
-//					+ new ParserForGet(new StringReader("get"))
-//							.getAll(kind);
-//		} catch (parserGet.ParseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
-		try {
-			rules = rules
-					+ new ParserForFunctions(new StringReader(
-							"delete \"" + kind + "\"."+"\""+attribute+"\"")).getFunctionRule();
-		} catch (parserFunctionParser.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return rules;
-
-	}
 	
 	public String addAttribute(String kind, String attribute, String value) {
 
 		String rules = getEDBFacts();
-//		try {
-//			rules = rules
-//					+ new ParserForGet(new StringReader("get"))
-//							.getAll("Player");
-//		} catch (parserGet.ParseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 
 		try {
 			rules = rules
@@ -63,7 +30,62 @@ public class TestEDB {
 		return rules;
 
 	}
+	
+	public String deleteAttribute(String kind, String attribute) {
 
+		String rules = getEDBFacts();
+		
+		try {
+			rules = rules
+					+ new ParserForFunctions(new StringReader(
+							"delete \"" + kind + "\"."+"\""+attribute+"\"")).getFunctionRule();
+		} catch (parserFunctionParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return rules;
+
+	}
+
+	public String copyAttribute(String kindFrom, String kindTo, String attribute, String conditionAttributeFrom, String conditionAttributeTo ) {
+
+		String rules = getEDBFacts();
+		
+		try {
+			String temp = "copy \"" + kindFrom + "\"."+"\""+attribute+"\" to \"" + kindTo 
+					+ "\" where \""  + kindFrom + "\"."+"\""+conditionAttributeFrom+ "\"=\""+ kindTo + "\"."+"\""+ conditionAttributeTo + "\"";
+			rules = rules
+					+ new ParserForFunctions(new StringReader(
+							temp)).getFunctionRule();
+		} catch (parserFunctionParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return rules;
+
+	}
+
+	public String moveAttribute(String kindFrom, String kindTo, String attribute, String conditionAttributeFrom, String conditionAttributeTo ) {
+
+		String rules = getEDBFacts();
+		
+		try {
+			String temp = "move \"" + kindFrom + "\"."+"\""+attribute+"\" to \"" + kindTo 
+					+ "\" where \""  + kindFrom + "\"."+"\""+conditionAttributeFrom+ "\"=\""+ kindTo + "\"."+"\""+ conditionAttributeTo + "\"";
+			rules = rules
+					+ new ParserForFunctions(new StringReader(
+							temp)).getFunctionRule();
+		} catch (parserFunctionParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return rules;
+
+	}
+	
 	public String get(String kind,int id) {
 
 		String rules = getEDBFacts();
