@@ -3,24 +3,24 @@
  */options{  static = false;}PARSER_BEGIN(ParserForFunctions)package parserFunctionParser;import java.io.BufferedReader;import java.io.File;import java.io.FileReader;import java.io.IOException;import java.util.ArrayList;
 import java.sql.Timestamp;
 import java.util.Date;public class ParserForFunctions{
-private static String getCurrentSchema(String kind){
-  String schema = null;
-    final File filename = new File("data/" + kind + "Schema");
-    BufferedReader br = null;
-      try      {        br = new BufferedReader(new FileReader(filename));
-        schema = br.readLine();      }      catch (IOException e)      {        e.printStackTrace();      }      finally      {        try        {          if (br != null) br.close();        }        catch (IOException ex)        {          ex.printStackTrace();        }      }
-      return schema;
-}  private static String getSchemaWithoutAttribute(String kind, String value)  {
-    String currentSchema = getCurrentSchema(kind);    String newSchema = kind + "2(?id,";
+	private static String getCurrentSchema(String kind)	{
+	  String schema = null;
+	    final File filename = new File("data/" + kind + "Schema");
+	    BufferedReader br = null;
+	      try	      {	        br = new BufferedReader(new FileReader(filename));
+	        schema = br.readLine();	      }	      catch (IOException e)	      {	        e.printStackTrace();	      }	      finally	      {	        try	        {	          if (br != null) br.close();	        }	        catch (IOException ex)	        {	          ex.printStackTrace();	        }	      }
+	      return schema;	
+	}  private static String getSchemaWithoutAttribute(String kind, String value)  {
+    String currentSchema = getCurrentSchema(kind);
+    String newSchema = "";
     String[] attributes = currentSchema.split(",");
-    for (String attribute: attributes)    {		if (!attribute.equals(value)) newSchema = newSchema + attribute + ",";
+    for (String attribute: attributes)    {		if (!attribute.equals("?" + value)) newSchema = newSchema + attribute + ",";
     }
     String lastChar = newSchema.substring(newSchema.length() - 1);
-    if (lastChar.equals(","))    {      
-    newSchema = newSchema + "'" + getTimestamp() + "')";
-    }
-    else newSchema = newSchema + ",'" + getTimestamp() + "')";    return newSchema;  }  private static String getSchemaWithNewAttribute(String kind, String value)  {    String currentSchema = getCurrentSchema(kind);
-    String newSchema = kind + "2(?id, " + currentSchema + "," + value + ",'" + getTimestamp() + "')";
+    if (lastChar.equals(","))    {
+      newSchema = newSchema.substring(0,newSchema.length()-1);   
+    }    return newSchema;  }  private static String getSchemaWithNewAttribute(String kind, String value)  {    String currentSchema = getCurrentSchema(kind);
+    String newSchema = currentSchema + "," + value;
     return newSchema;  }
 
   private static String getResidualRules(String kind)
@@ -44,12 +44,12 @@ private static String getCurrentSchema(String kind){
   | value = copy()
   | value = move()  )   {    return value;  }}String add() :{  Token kindToken = null;  Token propertyToken = null;  Token valueToken = null;}{  < add > kindToken = < string > "." propertyToken = < string > "=" valueToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String propertyValue = valueToken.toString();    propertyValue = propertyValue.substring(1, propertyValue.length() - 1);    String kind = kindToken.toString();    kind = kind.substring(1, kind.length() - 1);
     String schema = getCurrentSchema(kind);    String rules = getResidualRules(kind);
-    rules = rules + getSchemaWithNewAttribute(kind, propertyValue) + ":- " + kind + "(?id," + schema + ",?ts), latest" + kind + "(?id, ?ts).";    return rules;  }}String delete() :{
+    rules = rules + kind + "2(?id," + getSchemaWithNewAttribute(kind, propertyValue) +",'" + getTimestamp() + "'):- " + kind + "(?id," + schema + ",?ts), latest" + kind + "(?id, ?ts).";    return rules;  }}String delete() :{
   Token kindToken = null;  Token propertyToken = null;}{  < delete > kindToken = < string > "." propertyToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);
     String kind = kindToken.toString();
     kind = kind.substring(1,kind.length()-1);
     String schema = getCurrentSchema(kind);
-    String rules = getResidualRules(kind);    rules = rules + getSchemaWithoutAttribute(kind, "?" + propertyName) + " :- " + kind + "(?id," + schema + ", ?ts), latest" + kind + "(?id, ?ts).";    return rules;  }}String copy() :{
+    String rules = getResidualRules(kind);    rules = rules + kind + "2(?id," + getSchemaWithoutAttribute(kind, propertyName) +",'" + getTimestamp() + "'):- " + kind + "(?id," + schema + ", ?ts), latest" + kind + "(?id, ?ts).";    return rules;  }}String copy() :{
   Token kindFromToken = null;
   Token kindToToken = null;
   Token propertyToken = null;
@@ -71,16 +71,19 @@ private static String getCurrentSchema(String kind){
 
 	String schemaFrom = getCurrentSchema(kindFrom);
 	String schemaTo = getCurrentSchema(kindTo);
-	//funktioniert nur für conditionFrom = ID
-    rules = rules + kindTo + "2(?id1, "+schemaTo + ",?" + attribute + ",'" + getTimestamp() + "')" + ":- "
+	if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
+	if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
+	String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
+	
+    rules = rules + kindTo + "2(?id1, "+ getSchemaWithNewAttribute(kindTo, "?" + attribute) + ",'" + getTimestamp() + "')" + ":- "
     		+ kindTo + "(?id1, " + schemaTo + ",?ts1),latest"+ kindTo + "(?id1, ?ts1),"
-    		+ kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2), ?"
-    		+ conditionFrom +"2 = ?" + conditionTo + ".\n";
+    		+ kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2),"
+    		+ condition + ".\n";
     		
-    rules = rules + kindTo + "2(?id1, "+schemaTo + ",'','" + getTimestamp() + "')" + ":- "
+    rules = rules + kindTo + "2(?id1, "+ getSchemaWithNewAttribute(kindTo, "''") + ",'" + getTimestamp() + "')" + ":- "
     		+ kindTo + "(?id1, " + schemaTo + ",?ts1),latest"+ kindTo + "(?id1, ?ts1),"
-    		+ " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2), ?"
-    		+ conditionFrom + "2 = ?" + conditionTo + ".\n";
+    		+ " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2),"
+    		+ condition + ".\n";
     return rules;  }}String move() :{
   Token kindFromToken = null;
   Token kindToToken = null;
@@ -104,18 +107,21 @@ private static String getCurrentSchema(String kind){
 
 	String schemaFrom = getCurrentSchema(kindFrom);
 	String schemaTo = getCurrentSchema(kindTo);
-	//funktioniert nur für conditionFrom = ID
-	//copy
-    rules = rules + kindTo + "2(?id1, "+schemaTo + ",?" + attribute + ",'" + getTimestamp() + "')" + ":- "
+	if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
+	if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
+	String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
+	
+    rules = rules + kindTo + "2(?id1, "+ getSchemaWithNewAttribute(kindTo, "?" + attribute) + ",'" + getTimestamp() + "')" + ":- "
     		+ kindTo + "(?id1, " + schemaTo + ",?ts1),latest"+ kindTo + "(?id1, ?ts1),"
-    		+ kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2), ?"
-    		+ conditionFrom +"2 = ?" + conditionTo + ".\n";
+    		+ kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2),"
+    		+ condition + ".\n";
     		
-    rules = rules + kindTo + "2(?id1, "+schemaTo + ",'','" + getTimestamp() + "')" + ":- "
+    rules = rules + kindTo + "2(?id1, "+ getSchemaWithNewAttribute(kindTo, "''") + ",'" + getTimestamp() + "')" + ":- "
     		+ kindTo + "(?id1, " + schemaTo + ",?ts1),latest"+ kindTo + "(?id1, ?ts1),"
-    		+ " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2), ?"
-    		+ conditionFrom + "2 = ?" + conditionTo + ".\n";
+    		+ " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2),"
+    		+ condition + ".\n";
+
 
 	//delete
-    rules = rules + getSchemaWithoutAttribute(kindFrom, "?" + attribute) + " :- " + kindFrom + "(?id," + schemaFrom + ", ?ts), latest" + kindFrom + "(?id, ?ts).";
+    rules = rules + kindFrom +"2(?id," + getSchemaWithoutAttribute(kindFrom, attribute) + ",'" + getTimestamp() + "') :- " + kindFrom + "(?id," + schemaFrom + ", ?ts), latest" + kindFrom + "(?id, ?ts).";
     	    return rules;  }}
