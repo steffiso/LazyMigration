@@ -1,3 +1,39 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */options{  static = false;}PARSER_BEGIN(ParserForFunctions)package parserFunctionParser;import java.io.BufferedReader;import java.io.File;import java.io.FileReader;import java.io.IOException;import java.util.ArrayList;public class ParserForFunctions{  private static String schema = null;  private static ArrayList < String > getAttributeList()  {    final File filename = new File("data/schema");    ArrayList < String > attributelist = new ArrayList < String > ();    if (filename.exists())    {      BufferedReader br = null;      try      {        String sCurrentLine;        br = new BufferedReader(new FileReader(filename));        while ((sCurrentLine = br.readLine()) != null)        {          attributelist.add(sCurrentLine);        }      }      catch (IOException e)      {        e.printStackTrace();      }      finally      {        try        {          if (br != null) br.close();        }        catch (IOException ex)        {          ex.printStackTrace();        }      }    }    return attributelist;  }  private static void setSchema()  {    ArrayList < String > attributelist = getAttributeList();    schema = "Player(";    for (String attribute : attributelist) schema = schema + attribute + ",";    schema = schema.substring(0, schema.length() - 1) + ")";  }  private static String getSchemaWithoutAttribute(String value)  {    ArrayList < String > attributelist = getAttributeList();    String schema = "Player2(";    for (String attribute : attributelist) if (!attribute.equals(value)) schema = schema + attribute + ",";    schema = schema.substring(0, schema.length() - 1) + ")";    return schema;  }}PARSER_END(ParserForFunctions)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < add : "add" >| < delete : "delete" >| < copy : "copy" >| < move : "move" >| < string : "\"" (~[ "\"" ])* "\"" >}String getFunctionRule() :{  String value = null;}{  value = start() < EOF >  {    return value;  }}String start() :{  setSchema();  String value = null;}{  value = delete()//add()|move()|copy()  {    return value;  }}String add() :{ //to be done}{  {    return null;  }}String delete() :{  Token propertyToken = null;}{  < delete > "Player." propertyToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String value = getSchemaWithoutAttribute("?"+propertyName) + " :- " + schema + ", latestPlayer(?id, ?ts).";    return value;  }}String copy() :{}{  {    return null;  }}String move() :{}{  {    return null;  }}
+ */options{  static = false;}PARSER_BEGIN(ParserForFunctions)package parserFunctionParser;import java.io.BufferedReader;import java.io.File;import java.io.FileReader;import java.io.IOException;import java.util.ArrayList;import java.util.Iterator;import com.fasterxml.jackson.core.JsonGenerationException;import com.fasterxml.jackson.core.JsonProcessingException;import com.fasterxml.jackson.databind.JsonMappingException;import com.fasterxml.jackson.databind.JsonNode;import com.fasterxml.jackson.databind.ObjectMapper;import com.fasterxml.jackson.databind.node.ArrayNode;import com.fasterxml.jackson.databind.node.ObjectNode;public class ParserForFunctions{
+private static String getCurrentSchema(String kind){
+  String schema = null;
+    final File filename = new File("data/" + kind + "Schema");
+    BufferedReader br = null;
+      try      {        br = new BufferedReader(new FileReader(filename));
+        schema = br.readLine();      }      catch (IOException e)      {        e.printStackTrace();      }      finally      {        try        {          if (br != null) br.close();        }        catch (IOException ex)        {          ex.printStackTrace();        }      }
+      return schema;
+}  private static String getSchemaWithoutAttribute(String kind, String value)  {
+    String currentSchema = getCurrentSchema(kind);    String newSchema = kind + "2(?id,";
+    String[] attributes = currentSchema.split(",");
+    for (String attribute: attributes)    {		if (!attribute.equals(value)) newSchema = newSchema + attribute + ",";
+    }
+    String lastChar = newSchema.substring(newSchema.length() - 1);
+    if (lastChar.equals(","))    {      
+    newSchema = newSchema + "?ts)";
+    }
+    else newSchema = newSchema + ",?ts)";    return newSchema;  }  private static String getSchemaWithNewAttribute(String kind, String value)  {    String currentSchema = getCurrentSchema(kind);
+    String newSchema = kind + "2(?id, " + currentSchema + "," + value + ",?ts)";
+    return newSchema;  }
+
+  private static String getAddDeleteRule(String kind)
+  {
+      String value=null;
+      String schema = getCurrentSchema(kind);
+      value = "legacy" + kind + "(?id,?ts) :- " +kind + "(?id, " + schema + ", ?ts),"+ kind + "(?id, " + schema.replaceAll("title", "title2").replaceAll("name","name2") + ",?nts), ?ts < ?nts.\n" + "latest" + kind + "(?id,?ts) :- " + kind + "(?id, " + schema + ",?ts), not legacy" + kind + "(?id,?ts).\n";
+
+    return value;
+  }}PARSER_END(ParserForFunctions)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < add : "add" >| < delete : "delete" >| < copy : "copy" >| < move : "move" >| < string : "\"" (~[ "\"" ])* "\"" >}String getFunctionRule() :{  String value = null;}{  value = start() < EOF >  {    return value;  }}String start() :{  String value = null;}{  (    value = add()  | value = delete()
+  | value = move()  ) //|move()|copy()  {    return value;  }}String add() :{  Token kindToken = null;  Token propertyToken = null;  Token valueToken = null;}{  < add > kindToken = < string > "." propertyToken = < string > "=" valueToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String propertyValue = valueToken.toString();    propertyValue = propertyValue.substring(1, propertyValue.length() - 1);    String kind = kindToken.toString();    kind = kind.substring(1, kind.length() - 1);
+    String schema = getCurrentSchema(kind);    String value = getAddDeleteRule(kind);
+    value = value + getSchemaWithNewAttribute(kind, propertyValue) + ":- " + kind + "(?id," + schema + ",?ts), latest" + kind + "(?id, ?ts).";    return value;  }}String delete() :{
+  Token kindToken = null;  Token propertyToken = null;}{  < delete > kindToken = < string > "." propertyToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);
+    String kind = kindToken.toString();
+    kind = kind.substring(1,kind.length()-1);
+    String schema = getCurrentSchema(kind);
+    String value = getAddDeleteRule(kind);    value = value + getSchemaWithoutAttribute(kind, "?" + propertyName) + " :- " + kind + "(?id," + schema + ", ?ts), latest" + kind + "(?id, ?ts).";    return value;  }}String copy() :{}{  {    return null;  }}String move() :{}{  {    return null;  }}

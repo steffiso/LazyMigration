@@ -9,26 +9,52 @@ import java.io.StringReader;
 import parserEDBFacts.JSONtoDatalogParser;
 import parserEDBFacts.ParseException;
 import parserFunctionParser.ParserForFunctions;
-import parserGetPlayer.ParserForGetPlayer;
+import parserGet.ParserForGet;
+import parserGet.ParserForGetPlayer;
 
 public class TestEDB {
 
-	public String deleteAttribute(String attribute) {
+	public String deleteAttribute(String kind, String attribute) {
 
 		String rules = getEDBFacts();
-		try {
-			rules = rules
-					+ new ParserForGetPlayer(new StringReader("get"))
-							.getAllPlayer();
-		} catch (parserGetPlayer.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			rules = rules
+//					+ new ParserForGet(new StringReader("get"))
+//							.getAll(kind);
+//		} catch (parserGet.ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 
 		try {
 			rules = rules
 					+ new ParserForFunctions(new StringReader(
-							"delete Player."+"\""+attribute+"\"")).getFunctionRule();
+							"delete \"" + kind + "\"."+"\""+attribute+"\"")).getFunctionRule();
+		} catch (parserFunctionParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return rules;
+
+	}
+	
+	public String addAttribute(String kind, String attribute, String value) {
+
+		String rules = getEDBFacts();
+//		try {
+//			rules = rules
+//					+ new ParserForGet(new StringReader("get"))
+//							.getAll("Player");
+//		} catch (parserGet.ParseException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
+		try {
+			rules = rules
+					+ new ParserForFunctions(new StringReader(
+							"add \"" + kind + "\"."+"\""+attribute+"\"=\""+value+"\"")).getFunctionRule();
 		} catch (parserFunctionParser.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -38,14 +64,14 @@ public class TestEDB {
 
 	}
 
-	public String getPlayer(int id) {
+	public String get(String kind,int id) {
 
 		String rules = getEDBFacts();
 		try {
 			rules = rules
-					+ new ParserForGetPlayer(new StringReader("get"))
-							.getPlayer(1);
-		} catch (parserGetPlayer.ParseException e) {
+					+ new ParserForGet(new StringReader("get"))
+							.get(kind, id);
+		} catch (parserGet.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -53,13 +79,14 @@ public class TestEDB {
 
 	}
 
-	public String getAllPlayer() {
+	public String getAll(String kind) {
 
-		String rules = null;
+		String rules = getEDBFacts();
 		try {
-			rules = new ParserForGetPlayer(new StringReader("get"))
-					.getAllPlayer();
-		} catch (parserGetPlayer.ParseException e) {
+			rules = rules + 
+					new ParserForGet(new StringReader("get"))
+					.getAll(kind);
+		} catch (parserGet.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -69,13 +96,15 @@ public class TestEDB {
 
 	public String getEDBFacts() {
 
-		final File filename = new File("data/Players.json");
-		String edbFacts = listJSONObjects(filename);
+		final File filename = new File("data/Player");
+		String edbFacts = listJSONObjects(filename,"Player");
+		final File filename2 = new File("data/Mission");
+	    edbFacts = edbFacts+ listJSONObjects(filename2,"Mission");
 		return edbFacts;
 
 	}
 
-	public String listJSONObjects(final File filename) {
+	public String listJSONObjects(final File filename,String kind) {
 
 		String edbFacts = "";
 		if (filename.exists()) {
@@ -92,7 +121,7 @@ public class TestEDB {
 					String oneEdbFact = null;
 					try {
 						oneEdbFact = new JSONtoDatalogParser(new StringReader(
-								sCurrentLine)).getEDBFacts("Player");
+								sCurrentLine)).getEDBFacts(kind);
 					} catch (ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

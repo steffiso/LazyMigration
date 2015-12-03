@@ -96,7 +96,7 @@ public class TestIRIS
 		{
 			super( "IRIS - new" );
 			TestEDB newTestEDB= new TestEDB();
-			String rules=newTestEDB.deleteAttribute("name");
+			String rules=newTestEDB.deleteAttribute("Player","name");
 
 			setup(rules);
 		}
