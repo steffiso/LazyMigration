@@ -122,11 +122,8 @@ public class TestIRIS {
 			String[] functionStrings = { "Get", "Add", "Delete", "Copy",
 					"Move", "Put" };
 
-			// Create the combo box, select item at index 4.
-			// Indices start at 0, so 4 specifies the pig.
 			final JComboBox<String> functionList = new JComboBox<String>(
 					functionStrings);
-			functionList.setSelectedIndex(4);
 			functionList.addActionListener(new ActionListener() {
 
 				@Override
