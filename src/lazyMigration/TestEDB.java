@@ -1,9 +1,12 @@
 package lazyMigration;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -12,6 +15,8 @@ import parserEDBFacts.JSONtoDatalogParser;
 import parserEDBFacts.ParseException;
 import parserFunctionParser.ParserForFunctions;
 import parserGet.ParserForGet;
+import putParser.LengthException;
+import putParser.ParserForPut;
 
 public class TestEDB {
 
@@ -135,6 +140,25 @@ public class TestEDB {
 
 	}
 
+	public void putDatalogToJSON(String kind,String datalog) {
+		String json=null;
+		try {
+			json=
+			new ParserForPut(new StringReader(datalog)).start();
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("data/"+kind, true)));
+		    out.append(String.format("%n")+json);
+		    out.close();
+		} catch  ( LengthException | putParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+	}
+	
 	public String getEDBFacts() {
 
 		final File filename = new File("data/Player");
