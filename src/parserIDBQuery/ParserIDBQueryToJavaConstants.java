@@ -21,13 +21,17 @@ public interface ParserIDBQueryToJavaConstants {
   /** RegularExpression Id. */
   int string = 9;
   /** RegularExpression Id. */
-  int number = 10;
+  int operators = 10;
   /** RegularExpression Id. */
-  int digit = 11;
+  int number = 11;
   /** RegularExpression Id. */
-  int kindValue = 12;
+  int digit = 12;
   /** RegularExpression Id. */
-  int nameValue = 13;
+  int not = 13;
+  /** RegularExpression Id. */
+  int kindValue = 14;
+  /** RegularExpression Id. */
+  int nameValue = 15;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -44,8 +48,10 @@ public interface ParserIDBQueryToJavaConstants {
     "\"}\"",
     "\":\"",
     "<string>",
+    "<operators>",
     "<number>",
     "<digit>",
+    "\"not\"",
     "<kindValue>",
     "<nameValue>",
     "\":-\"",

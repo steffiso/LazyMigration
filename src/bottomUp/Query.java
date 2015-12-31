@@ -6,6 +6,7 @@ public class Query {
 
 	private Relation idbRelation;
 	private ArrayList<Relation> relations;
+	private ArrayList<Condition> conditions;
 
 	public Query(Relation idbRelation, ArrayList<Relation> relations) {
 		super();
@@ -27,6 +28,14 @@ public class Query {
 
 	public void setRelations(ArrayList<Relation> relations) {
 		this.relations = relations;
+	}
+
+	public ArrayList<Condition> getConditions() {
+		return conditions;
+	}
+
+	public void setConditions(ArrayList<Condition> conditions) {
+		this.conditions = conditions;
 	}
 
 }

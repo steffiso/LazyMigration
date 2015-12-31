@@ -8,8 +8,8 @@ public class Relation {
 	private String kind;  // --> A
 	private int anz; // --> 2
 	private ArrayList<String> werte; // --> (?x,?y)
-	
-	
+	private boolean isNot=false;
+	private int stratum=1;
 	
 	public Relation(String kind, int anz, ArrayList<String> werte) {
 		super();
@@ -34,5 +34,17 @@ public class Relation {
 	}
 	public void setWerte(ArrayList<String> werte) {
 		this.werte = werte;
+	}
+	public boolean isNot() {
+		return isNot;
+	}
+	public void setNot(boolean isNot) {
+		this.isNot = isNot;
+	}
+	public int getStratum() {
+		return stratum;
+	}
+	public void setStratum(int stratum) {
+		this.stratum = stratum;
 	}
 }
