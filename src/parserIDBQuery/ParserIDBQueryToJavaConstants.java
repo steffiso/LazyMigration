@@ -11,27 +11,21 @@ public interface ParserIDBQueryToJavaConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int marks = 5;
+  int variable = 5;
   /** RegularExpression Id. */
-  int open = 6;
+  int string = 6;
   /** RegularExpression Id. */
-  int end = 7;
+  int operators = 7;
   /** RegularExpression Id. */
-  int punkt = 8;
+  int number = 8;
   /** RegularExpression Id. */
-  int string = 9;
+  int digit = 9;
   /** RegularExpression Id. */
-  int operators = 10;
+  int not = 10;
   /** RegularExpression Id. */
-  int number = 11;
+  int kindValue = 11;
   /** RegularExpression Id. */
-  int digit = 12;
-  /** RegularExpression Id. */
-  int not = 13;
-  /** RegularExpression Id. */
-  int kindValue = 14;
-  /** RegularExpression Id. */
-  int nameValue = 15;
+  int nameValue = 12;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -43,10 +37,7 @@ public interface ParserIDBQueryToJavaConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
-    "\"\\\"\"",
-    "\"{\"",
-    "\"}\"",
-    "\":\"",
+    "<variable>",
     "<string>",
     "<operators>",
     "<number>",

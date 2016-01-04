@@ -9,7 +9,7 @@ public class Relation {
 	private int anz; // --> 2
 	private ArrayList<String> werte; // --> (?x,?y)
 	private boolean isNot=false;
-	private int stratum=1;
+	private int stratum=0;
 	
 	public Relation(String kind, int anz, ArrayList<String> werte) {
 		super();

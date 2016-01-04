@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import lazyMigration.TestEDB;
 import parserDatalogToJava.ParseException;
 import parserDatalogToJava.ParserforDatalogToJava;
 import parserIDBQuery.ParserIDBQueryToJava;
@@ -44,7 +45,8 @@ public class TestGui {
 		JScrollPane scroll3 = new JScrollPane(answerTextArea);
 		JPanel panel = new JPanel();
 		ArrayList<Fact> facts = null;
-		ArrayList<Query> querys = null;
+		ArrayList<Query> queries = null;
+		TestEDB newTestEDB = new TestEDB();
 
 		public MainFrame() {
 			initComponents();
@@ -53,22 +55,15 @@ public class TestGui {
 		private void initComponents() {
 			setTitle("TestGui");
 			setLayout(new GridLayout(3, 1));
-			/*
-			 * TestEDB newTestEDB = new TestEDB(); String rules =
-			 * newTestEDB.getEDBFacts();
-			 */
-			String rules = "Player(1,'Lisa',20).\n" + "Player(2,'Bart',20).\n"
-					+ "Player(3,'Homer',20).\n"
-					+ "Mission(2,'find the ring2',1).\n"
-					+ "Mission(3,'say hello',3).\n"
-					+ "Mission(4,'Collect money',2).\n"
-					+ "Mission(5,'Collect money2',2).\n"
-					+ "New('Hallo Lisa',1).\n" + "New('Hallo Bart', 2).\n"
-					+ "New('Hallo Homer',3).\n";
+
+			String rules = newTestEDB.getEDBFacts();
+
 			edbTextArea.setText(rules);
 
 			queryTextArea
-					.setText("get(?id,?name,?title,?text):-Player(?id,?name,?score),Mission(?id2,?title,?id),New(?text,?id).\n"+"get2(?name,?text):-get(?id,?name,?title,?text).");
+					.setText("legacyPlayer(?id,?ts) :- Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts.\n"
+							+ "latestPlayer(?id,?ts) :- Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts).\n"
+							+ "getPlayer(?id,?name,?score,?ts) :- Player(?id, ?name,?score, ?ts), latestPlayer(?id,?ts).");
 
 			queryJButton.addActionListener(new ActionListener() {
 
@@ -106,7 +101,7 @@ public class TestGui {
 				}
 			}
 			try {
-				querys = new ParserIDBQueryToJava(new StringReader(
+				queries = new ParserIDBQueryToJava(new StringReader(
 						queryTextArea.getText())).start();
 			} catch (parserIDBQuery.ParseException e) {
 				// TODO Auto-generated catch block
@@ -114,9 +109,11 @@ public class TestGui {
 			}
 			BottomUpExecution bottomup = new BottomUpExecution(facts);
 			String answerString = "";
-			for (Query query : querys) {
-				ArrayList<ArrayList<String>> answers = bottomup
-						.getAnswer(query);
+			bottomup.generateQueries(queries);
+			for (Query query : queries) {
+				ArrayList<ArrayList<String>> answers = bottomup.getFact(query
+						.getIdbRelation().getKind(), query.getIdbRelation()
+						.getAnz());
 				answerString = answerString + "Results for IDB Fact '"
 						+ query.getIdbRelation().getKind() + "'\n";
 				for (ArrayList<String> answer : answers)

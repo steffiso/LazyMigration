@@ -1,6 +1,8 @@
 package bottomUp;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +25,28 @@ public class BottomUpExecution {
 		this.values = values;
 	}
 
-	// Generiere alle Ergebnisse einer IDB Query und speichere sie in einer
-	// Liste ab
-	public ArrayList<ArrayList<String>> getAnswer(Query query) {
+	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
+		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
+		
+		for (Fact value : values) {
+			if (value.getKind().equals(kind)
+					&& value.getListOfValues().size() == anz) {
+				answer.add(value.getListOfValues());
+			}
+		}
+		return answer;
+	}
+
+	public void generateQueries(ArrayList<Query> queries) {
+		orderStratum(queries);
+		for (Query query : queries) {
+			getAnswer(query);
+		}
+	}
+
+	// Generiere alle Ergebnisse einer IDB Query und speichere sie in den Fakten
+	// ab
+	public void getAnswer(Query query) {
 		ArrayList<Map<String, String>> mapList = null;
 		String kind = query.getIdbRelation().getKind();
 		ArrayList<String> werte = query.getIdbRelation().getWerte();
@@ -55,38 +76,86 @@ public class BottomUpExecution {
 							temp = temp1;
 						}
 						mapList = temp;
-					} else
-						mapList = new ArrayList<Map<String, String>>();
-				} else
-					mapList = new ArrayList<Map<String, String>>();
+					}
+				}
 			} else
 				mapList = getMap(relations.get(0));
-
 		}
-		for (Map<String, String> oneMap : mapList) {
-			ArrayList<String> oneAnswer = new ArrayList<String>();
-			for (String wert : werte)
-				oneAnswer.add(oneMap.get(wert));
-			Fact factnew = new Fact(kind, oneAnswer);
-			boolean alreadyExist = false;
-			for (ArrayList<String> iterateAnswer : answer)
-				if (oneAnswer.containsAll(iterateAnswer)
-						&& iterateAnswer.containsAll(oneAnswer))
-					alreadyExist = true;
-			if (!alreadyExist) {
-				values.add(factnew);
-				answer.add(oneAnswer);
+		if (mapList != null) {
+			if (query.getConditions() != null) {
+				ArrayList<Condition> conds = query.getConditions();
+				for (Condition cond : conds) {
+					mapList = getTempCondResult(mapList, cond);
+				}
+			}
+
+			for (Map<String, String> oneMap : mapList) {
+				ArrayList<String> oneAnswer = new ArrayList<String>();
+				for (String wert : werte)
+					if (wert.startsWith("?"))
+						oneAnswer.add(oneMap.get(wert));
+					else
+						oneAnswer.add(wert);
+				boolean alreadyExist = false;
+				for (ArrayList<String> iterateAnswer : answer)
+					if (oneAnswer.containsAll(iterateAnswer)
+							&& iterateAnswer.containsAll(oneAnswer))
+						alreadyExist = true;
+				if (!alreadyExist) {
+					Fact factnew = new Fact(kind, oneAnswer);
+					values.add(factnew);
+					answer.add(oneAnswer);
+				}
 			}
 		}
 
-		return answer;
+	}
+
+	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
+	// A(?x,?y),B(?x,?z),?y=?z.
+	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
+	private ArrayList<Map<String, String>> getTempCondResult(
+			ArrayList<Map<String, String>> mapList, Condition cond) {
+		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
+		String rightOperand = cond.getRightOperand();
+		String leftOperand = cond.getLeftOperand();
+		String operator = cond.getOperator();
+		for (Map<String, String> mapOfMapList : mapList) {
+			boolean condPredicate = false;
+			switch (operator) {
+			case "=":
+				if (mapOfMapList.get(leftOperand).equals(
+						mapOfMapList.get(rightOperand)))
+					condPredicate = true;
+				break;
+			case "!":
+				if (!mapOfMapList.get(leftOperand).equals(
+						mapOfMapList.get(rightOperand)))
+					condPredicate = true;
+				break;
+			case "<":
+				if (mapOfMapList.get(leftOperand).compareTo(
+						mapOfMapList.get(rightOperand)) < 0)
+					condPredicate = true;
+				break;
+			case ">":
+				if (mapOfMapList.get(leftOperand).compareTo(
+						mapOfMapList.get(rightOperand)) > 0)
+					condPredicate = true;
+				break;
+			}
+			if (condPredicate == true) {
+				facts.add(mapOfMapList);
+			}
+		}
+		return facts;
 
 	}
 
 	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
 	// Joine die Werte von A und B nach ?x
-	public ArrayList<Map<String, String>> getTempJoinResult(
+	private ArrayList<Map<String, String>> getTempJoinResult(
 			ArrayList<Map<String, String>> fact1, Relation relation2) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 
@@ -119,17 +188,17 @@ public class BottomUpExecution {
 	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
 	// not B(?x,?z).
 	// Alle ?x Werte von A die nicht in ?x Werte von B sind
-	public ArrayList<Map<String, String>> getTempNotResult(
+	private ArrayList<Map<String, String>> getTempNotResult(
 			ArrayList<Map<String, String>> fact1, Relation relation2) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 
 		ArrayList<Map<String, String>> fact2 = getMap(relation2);
 		ArrayList<String> equalList = getEqualList(fact1.get(0).keySet()
 				.toArray(new String[fact1.get(0).size()]), relation2.getWerte());
-		int i = -1;
+		int pos = 0;
 		ArrayList<Integer> positionen = new ArrayList<Integer>();
 		for (Map<String, String> mapOfFact1 : fact1) {
-			i++;
+
 			for (Map<String, String> mapOfFact2 : fact2) {
 				boolean joinPredicate = true;
 				for (String wert : equalList) {
@@ -137,14 +206,15 @@ public class BottomUpExecution {
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
-					positionen.add(i);
+					positionen.add(pos);
 				}
 			}
+			pos++;
 		}
 
-		for (int i1 = 0; i1 < fact1.size(); i1++) {
-			if (!positionen.contains(i1))
-				facts.add(fact1.get(i1));
+		for (int i = 0; i < fact1.size(); i++) {
+			if (!positionen.contains(i))
+				facts.add(fact1.get(i));
 		}
 		return facts;
 
@@ -164,8 +234,7 @@ public class BottomUpExecution {
 
 	// generiere eine Map zu einer Relation, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
-	// neue Map für A: "?x" : 1
-	// "?y" : 2
+	// neue Map für A: "?x" : 1, "?y" : 2
 	private ArrayList<Map<String, String>> getMap(Relation relation) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 		String kind = relation.getKind();
@@ -186,16 +255,54 @@ public class BottomUpExecution {
 
 	}
 
+	// Stratifizierung der IDB Queries
 	public void orderStratum(ArrayList<Query> queries) {
-		for (Query query : queries)
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		for (Query query : queries) {
+			map.put(query.getIdbRelation().getKind(), 0);
 			for (Relation relation : query.getRelations())
-				if (relation.isNot())
-					query.getIdbRelation().setStratum(
-							Math.max(query.getIdbRelation().getStratum(),
-									relation.getStratum() + 1));
-				else
-					query.getIdbRelation().setStratum(
-							Math.max(query.getIdbRelation().getStratum(),
-									relation.getStratum()));
+				map.put(relation.getKind(), 0);
+		}
+		boolean changed;
+		do {
+			changed = false;
+			for (Query query : queries)
+				for (Relation relation : query.getRelations())
+					if (relation.isNot()) {
+						String left = query.getIdbRelation().getKind();
+						int oldVal = map.get(left);
+						int newVal = Math.max(map.get(left),
+								map.get(relation.getKind()) + 1);
+						if (oldVal < newVal) {
+							map.put(left, newVal);
+							changed = true;
+							query.getIdbRelation().setStratum(newVal);
+						}
+					} else {
+						String left = query.getIdbRelation().getKind();
+						int oldVal = map.get(left);
+						int newVal = Math.max(map.get(left),
+								map.get(relation.getKind()));
+						if (oldVal < newVal) {
+							map.put(left, newVal);
+							changed = true;
+							query.getIdbRelation().setStratum(newVal);
+						}
+					}
+		} while (changed);
+
+		Collections.sort(queries, new Comparator<Query>() {
+			@Override
+			public int compare(Query z1, Query z2) {
+				if (z1.getIdbRelation().getStratum() > z2.getIdbRelation()
+						.getStratum())
+					return 1;
+				if (z1.getIdbRelation().getStratum() < z2.getIdbRelation()
+						.getStratum())
+					return -1;
+				return 0;
+			}
+		});
 	}
+
 }

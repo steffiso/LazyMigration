@@ -17,12 +17,12 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     case not:
     case kindValue:
       leftRelation = getRelation();
-      jj_consume_token(16);
+      jj_consume_token(13);
       p = getRelationList();
       q = new Query(leftRelation, p.relations);
       if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
       querys.add(q);
-      jj_consume_token(17);
+      jj_consume_token(14);
       label_1:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -35,12 +35,12 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
           break label_1;
         }
         leftRelation = getRelation();
-        jj_consume_token(16);
+        jj_consume_token(13);
         p = getRelationList();
           q = new Query(leftRelation, p.relations);
           if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
           querys.add(q);
-        jj_consume_token(17);
+        jj_consume_token(14);
       }
       break;
     default:
@@ -58,7 +58,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
   Relation relation = null;
   Condition condition = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case string:
+    case variable:
     case not:
     case kindValue:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -67,7 +67,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
         relation = getRelation();
           values.add(relation);
         break;
-      case string:
+      case variable:
         condition = getCondition();
           conditions.add(condition);
         break;
@@ -79,21 +79,21 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
       label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 18:
+        case 15:
           ;
           break;
         default:
           jj_la1[3] = jj_gen;
           break label_2;
         }
-        jj_consume_token(18);
+        jj_consume_token(15);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case not:
         case kindValue:
           relation = getRelation();
             values.add(relation);
           break;
-        case string:
+        case variable:
           condition = getCondition();
             conditions.add(condition);
           break;
@@ -128,22 +128,24 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
       ;
     }
     kind = jj_consume_token(kindValue);
-    jj_consume_token(19);
+    jj_consume_token(16);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case variable:
     case string:
+    case number:
       value = getValue();
       values.add(value);
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 18:
+        case 15:
           ;
           break;
         default:
           jj_la1[7] = jj_gen;
           break label_3;
         }
-        jj_consume_token(18);
+        jj_consume_token(15);
         value = getValue();
           values.add(value);
       }
@@ -152,7 +154,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
       jj_la1[8] = jj_gen;
       ;
     }
-    jj_consume_token(20);
+    jj_consume_token(17);
     relation = new Relation(kind.toString(), values.size(), values);
     if (isNot) relation.setNot(true);
     {if (true) return relation;}
@@ -163,9 +165,9 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
   Token right = null;
   Token left = null;
   Token operator = null;
-    left = jj_consume_token(string);
+    left = jj_consume_token(variable);
     operator = jj_consume_token(operators);
-    right = jj_consume_token(string);
+    right = jj_consume_token(variable);
     Condition con = new Condition(left.toString(), right.toString(), operator.toString());
     {if (true) return con;}
     throw new Error("Missing return statement in function");
@@ -173,7 +175,21 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
 
   final public String getValue() throws ParseException {
   Token valueOfToken = null;
-    valueOfToken = jj_consume_token(string);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case variable:
+      valueOfToken = jj_consume_token(variable);
+      break;
+    case number:
+      valueOfToken = jj_consume_token(number);
+      break;
+    case string:
+      valueOfToken = jj_consume_token(string);
+      break;
+    default:
+      jj_la1[9] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     {if (true) return valueOfToken.toString();}
     throw new Error("Missing return statement in function");
   }
@@ -187,13 +203,13 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[9];
+  final private int[] jj_la1 = new int[10];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x6000,0x6000,0x6200,0x40000,0x6200,0x6200,0x2000,0x40000,0x200,};
+      jj_la1_0 = new int[] {0xc00,0xc00,0xc20,0x8000,0xc20,0xc20,0x400,0x8000,0x160,0x160,};
    }
 
   /** Constructor with InputStream. */
@@ -207,7 +223,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -221,7 +237,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -231,7 +247,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -241,7 +257,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -250,7 +266,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -259,7 +275,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 9; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -310,12 +326,12 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[21];
+    boolean[] la1tokens = new boolean[18];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 10; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -324,7 +340,7 @@ public class ParserIDBQueryToJava implements ParserIDBQueryToJavaConstants {
         }
       }
     }
-    for (int i = 0; i < 21; i++) {
+    for (int i = 0; i < 18; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

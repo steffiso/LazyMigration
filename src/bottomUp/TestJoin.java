@@ -2,6 +2,9 @@ package bottomUp;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import parserDatalogToJava.ParseException;
 import parserDatalogToJava.ParserforDatalogToJava;
 import parserIDBQuery.ParserIDBQueryToJava;
@@ -48,36 +51,27 @@ public class TestJoin {
 		 * + " " + r.getStratum()); }
 		 */
 
-		Fact ff1 = new ParserforDatalogToJava(new StringReader("a(1)."))
-				.start();
-		Fact ff2 = new ParserforDatalogToJava(new StringReader("b(1)."))
-				.start();
-		Fact ff3 = new ParserforDatalogToJava(new StringReader("a(1)."))
-				.start();
+		Fact ff1 = new ParserforDatalogToJava(new StringReader(
+				"Player(1,'Lisa',20).")).start();
+		Fact ff2 = new ParserforDatalogToJava(new StringReader(
+				"Player(3,'Homer',20).")).start();
+		Fact ff3 = new ParserforDatalogToJava(new StringReader(
+				"New('Hallo Lisa',1).")).start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
 		ff.add(ff2);
 		ff.add(ff3);
-		ArrayList<Query> qq = new ParserIDBQueryToJava(new StringReader(
-				"m(?x):-a(?x),not b(?x),?x=?y,?x!?y.")).start();
+		ArrayList<Query> qq = new ParserIDBQueryToJava(
+				new StringReader(
+						"get2(?id,?name,?score,2):-Player(?id,?name,?score),not get1(?id)."
+								+ "get1(?id):-New(?text,?id)."))
+				.start();
 		BottomUpExecution mmm = new BottomUpExecution(ff);
+		mmm.generateQueries(qq);
+		System.out.println(mmm.getFact("get2", 4));
 		for (Query qqq : qq) {
-			System.out.println(mmm.getAnswer(qqq).toString());
-			if (qqq.getConditions() != null)
-				for (Condition c : qqq.getConditions())
-					System.out.println(c.getLeftOperand() + " "
-							+ c.getOperator() + " " + c.getRightOperand());
-			;
-		}
-
-		mmm.orderStratum(qq);
-		for (Query qqq1 : qq) {
-			System.out.println(qqq1.getIdbRelation().getKind() + " "
-					+ qqq1.getIdbRelation().isNot() + " "
-					+ qqq1.getIdbRelation().getStratum());
-			for (Relation r : qqq1.getRelations())
-				System.out.println(r.getKind() + " " + r.isNot() + " "
-						+ r.getStratum());
+			System.out.println(qqq.getIdbRelation().getKind() + " "
+					+ qqq.getIdbRelation().getStratum());
 		}
 
 	}
