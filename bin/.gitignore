@@ -1,4 +1,6 @@
-/bottomUp
-/parserIDBQuery
-/putParser
-/parserDatalogToJava
+/bottomUp/
+/lazyMigration/
+/parserEDBFactToJava/
+/parserFunctionsToDatalog/
+/parserGetToDatalog/
+/parserPutToDatalog/

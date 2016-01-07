@@ -89,7 +89,7 @@ public class TestIRIS {
 		 */
 		public MainFrame() {
 			super("IRIS - new");
-			TestEDB newTestEDB = new TestEDB();
+			DatalogRulesGenerator newTestEDB = new DatalogRulesGenerator();
 			String rules = newTestEDB.getEDBFacts();
 
 			setup(rules);
@@ -158,26 +158,26 @@ public class TestIRIS {
 		}
 
 		private String getRule(String function) {
-			TestEDB newTestEDB = new TestEDB();
-			String rules = null;
+			DatalogRulesGenerator newTestEDB = new DatalogRulesGenerator();
+			String rules = newTestEDB.getEDBFacts();
 			switch (function) {
 			case "Add":
-				rules = "/*Add Player.points = 200*/\n";
+				rules = rules + "/*Add Player.points = 200*/\n";
 				rules = rules
 						+ newTestEDB.addAttribute("Player", "points", "200");
 				rules = rules + "\n?-Player2(?id, ?name,?score,?points,?ts).";
 				break;
 			case "Delete":
-				rules = "/*Delete Player.score*/\n";
+				rules = rules + "/*Delete Player.score*/\n";
 				rules = rules + newTestEDB.deleteAttribute("Player", "score");
 				rules = rules + "\n?-Player2(?id, ?name,?ts).";
 				break;
 			case "Get":
-				rules = "/*get Player with ID 1*/\n"
+				rules = rules + "/*get Player with ID 1*/\n"
 						+ newTestEDB.get("Player", 1);
 				break;
 			case "Move":
-				rules = "/*move Mission.title to Player where Mission.pid=Player.id*/\n";
+				rules = rules + "/*move Mission.title to Player where Mission.pid=Player.id*/\n";
 				rules = rules
 						+ newTestEDB.moveAttribute("Mission", "Player",
 								"title", "pid", "id");
@@ -185,14 +185,14 @@ public class TestIRIS {
 				rules = rules + "\n?-Mission2(?id1,?pid,?ts).";
 				break;
 			case "Copy":
-				rules = "/*copy Player.score to Mission where Player.id=Mission.pid*/\n";
+				rules = rules + "/*copy Player.score to Mission where Player.id=Mission.pid*/\n";
 				rules = rules
 						+ newTestEDB.copyAttribute("Player", "Mission",
 								"score", "id", "pid");
 				rules = rules + "\n?-Mission2(?id1, ?title,?pid,?score,?ts).";
 				break;
 			case "Put":
-				rules = "/*Put Player with attributes [1,Lisa.S,550]*/\n"
+				rules = rules + "/*Put Player with attributes [1,Lisa.S,550]*/\n"
 						+ newTestEDB.putKind("Player", "1,'Lisa.S',550")+".";
 				break;
 			}

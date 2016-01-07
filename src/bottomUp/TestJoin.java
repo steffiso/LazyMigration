@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import parserDatalogToJava.ParseException;
-import parserDatalogToJava.ParserforDatalogToJava;
-import parserIDBQuery.ParserIDBQueryToJava;
+import parserEDBFactToJava.ParseException;
+import parserEDBFactToJava.ParserforDatalogToJava;
+import parserIDBQueryToJava.ParserIDBQueryToJava;
 
 public class TestJoin {
 	public static void main(String[] args) throws ParseException,
-			parserIDBQuery.ParseException {
+			parserIDBQueryToJava.ParseException {
 		/*
 		 * Fact f1 = new ParserforDatalogToJava(new StringReader(
 		 * "Player(1,'Lisa',40).")).start(); Fact fr1 = new
@@ -54,7 +54,7 @@ public class TestJoin {
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
 				"Player(1,'Lisa',20).")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player(3,'Homer',20).")).start();
+				"Player(1,'Lisa',30).")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
 				"New('Hallo Lisa',1).")).start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
@@ -63,15 +63,14 @@ public class TestJoin {
 		ff.add(ff3);
 		ArrayList<Query> qq = new ParserIDBQueryToJava(
 				new StringReader(
-						"get2(?id,?name,?score,2):-Player(?id,?name,?score),not get1(?id)."
-								+ "get1(?id):-New(?text,?id)."))
+						"Player2(?id,?name,?score,?ts):-Player(?id,?name,?score,?ts),?id=1."))
 				.start();
 		BottomUpExecution mmm = new BottomUpExecution(ff);
 		mmm.generateQueries(qq);
-		System.out.println(mmm.getFact("get2", 4));
+		System.out.println(mmm.getFact("get2", 3));
 		for (Query qqq : qq) {
-			System.out.println(qqq.getIdbRelation().getKind() + " "
-					+ qqq.getIdbRelation().getStratum());
+			for(Condition c: qqq.getConditions())
+				System.out.println(c.getLeftOperand() + " " + c.getOperator() + " " + c.getRightOperand());
 		}
 
 	}

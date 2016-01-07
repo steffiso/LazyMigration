@@ -121,26 +121,33 @@ public class BottomUpExecution {
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
 		for (Map<String, String> mapOfMapList : mapList) {
+			String left=""; String right="";
+			if (leftOperand.startsWith("?")) 
+			left=mapOfMapList.get(leftOperand);
+			else left=leftOperand;
+			if (rightOperand.startsWith("?")) 
+			right=mapOfMapList.get(rightOperand);
+			else right=rightOperand;
 			boolean condPredicate = false;
 			switch (operator) {
 			case "=":
-				if (mapOfMapList.get(leftOperand).equals(
-						mapOfMapList.get(rightOperand)))
+				if (left.equals(
+						right))
 					condPredicate = true;
 				break;
 			case "!":
-				if (!mapOfMapList.get(leftOperand).equals(
-						mapOfMapList.get(rightOperand)))
+				if (!left.equals(
+						right))
 					condPredicate = true;
 				break;
 			case "<":
-				if (mapOfMapList.get(leftOperand).compareTo(
-						mapOfMapList.get(rightOperand)) < 0)
+				if (left.compareTo(
+						right) < 0)
 					condPredicate = true;
 				break;
 			case ">":
-				if (mapOfMapList.get(leftOperand).compareTo(
-						mapOfMapList.get(rightOperand)) > 0)
+				if (left.compareTo(
+						right) > 0)
 					condPredicate = true;
 				break;
 			}
