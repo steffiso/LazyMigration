@@ -38,18 +38,18 @@ public class BottomUpExecution {
 	}
 
 	public void generateQueries(ArrayList<Rule> rules) {
-		try {
-			orderStratum(rules);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			orderStratum(rules);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		for (Rule rule : rules) {
 			getAnswer(rule);
 		}
 	}
 
-	// Generiere alle Ergebnisse einer IDB Query und speichere sie in den Fakten
+	// Generiere alle Ergebnisse einer IDB Regel und speichere sie in den Fakten
 	// ab
 	public void getAnswer(Rule rule) {
 		ArrayList<Map<String, String>> mapList = null;
@@ -244,7 +244,7 @@ public class BottomUpExecution {
 		return list;
 	}
 
-	// generiere eine Map zu einer Relation, Bsp. A(?x,?y) und dem EDB-Fakt
+	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
 	// neue Map für A: "?x" : 1, "?y" : 2
 	private ArrayList<Map<String, String>> getMap(Predicate predicate) {
@@ -267,7 +267,7 @@ public class BottomUpExecution {
 
 	}
 
-	// Stratifizierung der IDB Queries
+	// Stratifizierung der IDB Regeln
 	public void orderStratum(ArrayList<Rule> rules) throws Exception {
 		int size=rules.size()-1;
 		Map<String, Integer> map = new HashMap<String, Integer>();
