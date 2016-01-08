@@ -38,7 +38,7 @@ public class BottomUpExecution {
 	}
 
 	public void generateQueries(ArrayList<Query> queries) {
-		orderStratum(queries);
+		//orderStratum(queries);
 		for (Query query : queries) {
 			getAnswer(query);
 		}
@@ -263,7 +263,8 @@ public class BottomUpExecution {
 	}
 
 	// Stratifizierung der IDB Queries
-	public void orderStratum(ArrayList<Query> queries) {
+	public void orderStratum(ArrayList<Query> queries) throws Exception {
+		int size=queries.size()-1;
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		for (Query query : queries) {
 			map.put(query.getIdbRelation().getKind(), 0);
@@ -274,12 +275,16 @@ public class BottomUpExecution {
 		do {
 			changed = false;
 			for (Query query : queries)
-				for (Relation relation : query.getRelations())
+				for (Relation relation : query.getRelations()){
+					System.out.println(query.getIdbRelation().getKind()+" "+query.getIdbRelation().getStratum());
+					System.out.println(relation.getKind()+" "+relation.getStratum());
 					if (relation.isNot()) {
 						String left = query.getIdbRelation().getKind();
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
 								map.get(relation.getKind()) + 1);
+						System.out.println("new: "+newVal);
+						if (newVal>size) throw new Exception("no stratification possible");
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
@@ -290,13 +295,14 @@ public class BottomUpExecution {
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
 								map.get(relation.getKind()));
+						System.out.println("new: "+newVal);
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
 							query.getIdbRelation().setStratum(newVal);
 						}
 					}
-		} while (changed);
+				}} while (changed);
 
 		Collections.sort(queries, new Comparator<Query>() {
 			@Override

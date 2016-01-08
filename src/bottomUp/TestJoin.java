@@ -52,25 +52,41 @@ public class TestJoin {
 		 */
 
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
-				"Player(1,'Lisa',20).")).start();
+				"Player(1,'Lisa',20,'2015-11-22 18:29:50.589').")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player(1,'Lisa',30).")).start();
+				"Player(3,'Homer',20,'2015-12-02 18:29:50.589').")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
-				"New('Hallo Lisa',1).")).start();
+				"Mission(1,'find the ring',1,'2015-11-26 18:29:50.589')."))
+				.start();
+		Fact ff4 = new ParserforDatalogToJava(new StringReader(
+				"Mission(2,'find the ring2',2,'2015-12-01 18:29:50.589')."))
+				.start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
 		ff.add(ff2);
 		ff.add(ff3);
+		ff.add(ff4);
 		ArrayList<Query> qq = new ParserIDBQueryToJava(
 				new StringReader(
-						"Player2(?id,?name,?score,?ts):-Player(?id,?name,?score,?ts),?id=1."))
+						"legacyPlayer(?id,?ts):-Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts."
+								+ "latestPlayer(?id,?ts):-Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts)."
+								+ "legacyMission(?id,?ts):-Mission(?id, ?title,?pid, ?ts),Mission(?id, ?title2,?pid2,?nts), ?ts < ?nts."
+								+ "latestMission(?id,?ts):-Mission(?id, ?title,?pid,?ts), not legacyMission(?id,?ts)."
+								+ "Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1),Player(?id2, ?name,?score,?ts2), latestPlayer(?id2, ?ts2),?id2 = ?pid."
+								+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1), not Player(?pid, ?name,?score,?ts2)."))
 				.start();
 		BottomUpExecution mmm = new BottomUpExecution(ff);
-		mmm.generateQueries(qq);
-		System.out.println(mmm.getFact("get2", 3));
+		try {
+			mmm.orderStratum(qq);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			mmm.generateQueries(qq);
+		
+		System.out.println(mmm.getFact("Mission2", 5));
 		for (Query qqq : qq) {
-			for(Condition c: qqq.getConditions())
-				System.out.println(c.getLeftOperand() + " " + c.getOperator() + " " + c.getRightOperand());
+		System.out.println(qqq.getIdbRelation().getKind()+"  "+qqq.getIdbRelation().getStratum()+ " "+ qqq.getIdbRelation().getWerte());
 		}
 
 	}
