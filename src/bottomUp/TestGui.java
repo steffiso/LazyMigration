@@ -43,19 +43,19 @@ public class TestGui {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		JButton queryJButton = new JButton("Ausführen");
-		JButton queryJButton2 = new JButton("Datalogregeln");
+		JButton startBottomUp = new JButton("BottomUp Ausführung");
+		JButton generateDatalog = new JButton("Generate IDB");
 		JTextArea edbTextArea = new JTextArea();
-		JTextArea uiTextArea = new JTextArea();
 		JTextArea queryTextArea = new JTextArea();
+		JTextArea idbTextArea = new JTextArea();
 		JTextArea answerTextArea = new JTextArea();
 		JScrollPane scroll = new JScrollPane(edbTextArea);
-		JScrollPane scroll2 = new JScrollPane(queryTextArea);
-		JScrollPane scroll3 = new JScrollPane(uiTextArea);
+		JScrollPane scroll2 = new JScrollPane(idbTextArea);
+		JScrollPane scroll3 = new JScrollPane(queryTextArea);
 		JScrollPane scroll4 = new JScrollPane(answerTextArea);
 		JPanel panel = new JPanel();
 		ArrayList<Fact> facts = null;
-		ArrayList<Query> queries = null;
+		ArrayList<Rule> rules = null;
 		DatalogRulesGenerator datalogGenerator = new DatalogRulesGenerator();
 
 		public MainFrame() {
@@ -74,25 +74,27 @@ public class TestGui {
 			add(scroll2);		
 			panel.setLayout(new GridLayout(1,2));
 			panel.add(scroll3);
-			panel.add(queryJButton2);
+			panel.add(generateDatalog);
 			add(panel);
 			add(scroll4);	
-			add(queryJButton);
+			add(startBottomUp);
 
 			pack();
 			setSize(700, 600);
 			setVisible(true);
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
 			
-			queryJButton.addActionListener(new ActionListener() {
+			startBottomUp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-
-					executeQuery();
+					
+					if (!edbTextArea.getText().equals("") && !idbTextArea.getText().equals(""))
+						executeQuery();
+					else answerTextArea.setText("No EDB or IDB found!");
 				}
 			});
 			
-			queryJButton2.addActionListener(new ActionListener(){
+			generateDatalog.addActionListener(new ActionListener(){
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -100,32 +102,36 @@ public class TestGui {
 					
 					String uiInput = "";
 					String rules = "";
-					uiInput = uiTextArea.getText();
+					uiInput = queryTextArea.getText();
 					DatalogRulesGenerator drg = new DatalogRulesGenerator();
 					
 					if (uiInput.startsWith("get")){
 						rules = drg.get(uiInput);
-						queryTextArea.setText(rules);
-					};
-					
-					if (uiInput.startsWith("add")){
+						idbTextArea.setText(rules);
+					}					
+					else if (uiInput.startsWith("add")){
 						rules = drg.addAttribute(uiInput);
-						queryTextArea.setText(rules);
-					};
-					
-					if (uiInput.startsWith("delete")){
+						idbTextArea.setText(rules);
+					}					
+					else if (uiInput.startsWith("delete")){
 						rules = drg.deleteAttribute(uiInput);
-						queryTextArea.setText(rules);
-					};
-					if (uiInput.startsWith("move")){
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("move")){
 						rules = drg.moveAttribute(uiInput);
-						queryTextArea.setText(rules);
-					};
-					if (uiInput.startsWith("copy")){
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("copy")){
 						rules = drg.copyAttribute(uiInput);
-						queryTextArea.setText(rules);
-					};
-					if (uiInput.startsWith("put"));
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("put")){
+						
+					}
+					else {
+						answerTextArea.setText("No valid query");
+					}
+						
 				}
 				
 			});
@@ -134,42 +140,41 @@ public class TestGui {
 
 
 		private void executeQuery() {
-			if (!queryTextArea.getText().equals("")) {
-				// TODO Auto-generated method stub
-				edbTextArea.setText(datalogGenerator.getEDBFacts());
-				String[] edbFacts = edbTextArea.getText().split("\n");
-				facts = new ArrayList<Fact>();
-				for (String factString : edbFacts) {
-					try {
-						facts.add(new ParserforDatalogToJava(new StringReader(
-								factString)).start());
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+			//set edb-facts in gui
+			edbTextArea.setText(datalogGenerator.getEDBFacts());
+			String[] edbFacts = edbTextArea.getText().split("\n");
+			String answerString = "";
+					
+			facts = new ArrayList<Fact>();
+			for (String factString : edbFacts) {
+				try {
+					facts.add(new ParserforDatalogToJava(new StringReader(
+							factString)).start());
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			}
+			}			
 			try {
-				queries = new ParserIDBQueryToJava(new StringReader(
-						queryTextArea.getText())).start();
+				rules = new ParserIDBQueryToJava(new StringReader(
+						idbTextArea.getText())).start();
 			} catch (parserIDBQueryToJava.ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}			
 			
 			BottomUpExecution bottomup = new BottomUpExecution(facts);
-			String answerString = "";
-			bottomup.generateQueries(queries);
-			for (Query query : queries) {
-				ArrayList<ArrayList<String>> answers = bottomup.getFact(query
-						.getIdbRelation().getKind(), query.getIdbRelation()
+			bottomup.generateQueries(rules);
+			for (Rule rule : rules) {
+				ArrayList<ArrayList<String>> answers = bottomup.getFact(rule
+						.getHead().getKind(), rule.getHead()
 						.getAnz());				
 				answerString = answerString + "Results for IDB Fact '"
-						+ query.getIdbRelation().getKind() + "'\n";
+						+ rule.getHead().getKind() + "'\n";
 			
 				for (ArrayList<String> answer : answers)	{				
 					//bei add: neu generierte Fakten per put in json schreiben
-					if (!query.getIdbRelation().getKind().startsWith("latest") && !query.getIdbRelation().getKind().startsWith("legacy") && !uiTextArea.getText().startsWith("get")){					
+					if (!rule.getHead().getKind().startsWith("latest") && !rule.getHead().getKind().startsWith("legacy") && !queryTextArea.getText().startsWith("get")){					
 						String values = "";
 						for (String s : answer)
 						{
@@ -177,7 +182,7 @@ public class TestGui {
 						}
 						
 						values = values.substring(0, values.length()-2);
-						String tempKind = query.getIdbRelation().getKind();
+						String tempKind = rule.getHead().getKind();
 						//entferne die Zahl von kind
 						tempKind = tempKind.substring(0, tempKind.length() - 1);
 						String datalogFact = datalogGenerator.putKind(tempKind, values);
@@ -187,6 +192,7 @@ public class TestGui {
 					answerString = answerString + answer.toString() + "\n";
 				}
 			}
+
 			answerTextArea.setText(answerString);
 		}
 		

@@ -2,7 +2,7 @@ package bottomUp;
 
 import java.util.ArrayList;
 
-public class Relation {
+public class Predicate {
 
 	// eine Relation innerhalb einer Query, Bsp. A(?x,?y)
 	private String kind;  // --> A
@@ -11,7 +11,7 @@ public class Relation {
 	private boolean isNot=false;
 	private int stratum=0;
 	
-	public Relation(String kind, int anz, ArrayList<String> werte) {
+	public Predicate(String kind, int anz, ArrayList<String> werte) {
 		super();
 		this.kind = kind;
 		this.anz = anz;

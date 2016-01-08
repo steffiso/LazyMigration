@@ -37,53 +37,58 @@ public class BottomUpExecution {
 		return answer;
 	}
 
-	public void generateQueries(ArrayList<Query> queries) {
-		//orderStratum(queries);
-		for (Query query : queries) {
-			getAnswer(query);
+	public void generateQueries(ArrayList<Rule> rules) {
+		try {
+			orderStratum(rules);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (Rule rule : rules) {
+			getAnswer(rule);
 		}
 	}
 
 	// Generiere alle Ergebnisse einer IDB Query und speichere sie in den Fakten
 	// ab
-	public void getAnswer(Query query) {
+	public void getAnswer(Rule rule) {
 		ArrayList<Map<String, String>> mapList = null;
-		String kind = query.getIdbRelation().getKind();
-		ArrayList<String> werte = query.getIdbRelation().getWerte();
-		ArrayList<Relation> relations = query.getRelations();
+		String kind = rule.getHead().getKind();
+		ArrayList<String> werte = rule.getHead().getWerte();
+		ArrayList<Predicate> predicates = rule.getPredicates();
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
-		if (!relations.isEmpty()) {
-			if (relations.size() > 1) {
+		if (!predicates.isEmpty()) {
+			if (predicates.size() > 1) {
 				ArrayList<Map<String, String>> temp = null;
-				ArrayList<Map<String, String>> map = getMap(relations.get(0));
+				ArrayList<Map<String, String>> map = getMap(predicates.get(0));
 				if (!map.isEmpty())
-					if (relations.get(1).isNot())
-						temp = getTempNotResult(map, relations.get(1));
+					if (predicates.get(1).isNot())
+						temp = getTempNotResult(map, predicates.get(1));
 					else
-						temp = getTempJoinResult(map, relations.get(1));
+						temp = getTempJoinResult(map, predicates.get(1));
 				if (temp != null) {
 					if (!temp.isEmpty()) {
-						int iAnz = relations.size();
+						int iAnz = predicates.size();
 						for (int i = 2; i < iAnz; i++) {
 							if (temp.isEmpty())
 								break;
 							ArrayList<Map<String, String>> temp1 = null;
-							if (relations.get(i).isNot())
-								temp1 = getTempNotResult(temp, relations.get(i));
+							if (predicates.get(i).isNot())
+								temp1 = getTempNotResult(temp, predicates.get(i));
 							else
 								temp1 = getTempJoinResult(temp,
-										relations.get(i));
+										predicates.get(i));
 							temp = temp1;
 						}
 						mapList = temp;
 					}
 				}
 			} else
-				mapList = getMap(relations.get(0));
+				mapList = getMap(predicates.get(0));
 		}
 		if (mapList != null) {
-			if (query.getConditions() != null) {
-				ArrayList<Condition> conds = query.getConditions();
+			if (rule.getConditions() != null) {
+				ArrayList<Condition> conds = rule.getConditions();
 				for (Condition cond : conds) {
 					mapList = getTempCondResult(mapList, cond);
 				}
@@ -163,7 +168,7 @@ public class BottomUpExecution {
 	// A(?x,?y),B(?x,?z).
 	// Joine die Werte von A und B nach ?x
 	private ArrayList<Map<String, String>> getTempJoinResult(
-			ArrayList<Map<String, String>> fact1, Relation relation2) {
+			ArrayList<Map<String, String>> fact1, Predicate relation2) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 
 		ArrayList<Map<String, String>> fact2 = getMap(relation2);
@@ -196,7 +201,7 @@ public class BottomUpExecution {
 	// not B(?x,?z).
 	// Alle ?x Werte von A die nicht in ?x Werte von B sind
 	private ArrayList<Map<String, String>> getTempNotResult(
-			ArrayList<Map<String, String>> fact1, Relation relation2) {
+			ArrayList<Map<String, String>> fact1, Predicate relation2) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 
 		ArrayList<Map<String, String>> fact2 = getMap(relation2);
@@ -242,16 +247,16 @@ public class BottomUpExecution {
 	// generiere eine Map zu einer Relation, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
 	// neue Map für A: "?x" : 1, "?y" : 2
-	private ArrayList<Map<String, String>> getMap(Relation relation) {
+	private ArrayList<Map<String, String>> getMap(Predicate predicate) {
 		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
-		String kind = relation.getKind();
-		int anz = relation.getAnz();
+		String kind = predicate.getKind();
+		int anz = predicate.getAnz();
 		for (Fact value : values) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
 				Map<String, String> m = new HashMap<String, String>();
 				int i = 0;
-				for (String wert : relation.getWerte()) {
+				for (String wert : predicate.getWerte()) {
 					m.put(wert, value.getListOfValues().get(i));
 					i++;
 				}
@@ -263,54 +268,54 @@ public class BottomUpExecution {
 	}
 
 	// Stratifizierung der IDB Queries
-	public void orderStratum(ArrayList<Query> queries) throws Exception {
-		int size=queries.size()-1;
+	public void orderStratum(ArrayList<Rule> rules) throws Exception {
+		int size=rules.size()-1;
 		Map<String, Integer> map = new HashMap<String, Integer>();
-		for (Query query : queries) {
-			map.put(query.getIdbRelation().getKind(), 0);
-			for (Relation relation : query.getRelations())
-				map.put(relation.getKind(), 0);
+		for (Rule rule : rules) {
+			map.put(rule.getHead().getKind(), 0);
+			for (Predicate predicate : rule.getPredicates())
+				map.put(predicate.getKind(), 0);
 		}
 		boolean changed;
 		do {
 			changed = false;
-			for (Query query : queries)
-				for (Relation relation : query.getRelations()){
-					System.out.println(query.getIdbRelation().getKind()+" "+query.getIdbRelation().getStratum());
-					System.out.println(relation.getKind()+" "+relation.getStratum());
-					if (relation.isNot()) {
-						String left = query.getIdbRelation().getKind();
+			for (Rule rule : rules)
+				for (Predicate predicate : rule.getPredicates()){
+					System.out.println(rule.getHead().getKind()+" "+rule.getHead().getStratum());
+					System.out.println(predicate.getKind()+" "+predicate.getStratum());
+					if (predicate.isNot()) {
+						String left = rule.getHead().getKind();
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
-								map.get(relation.getKind()) + 1);
+								map.get(predicate.getKind()) + 1);
 						System.out.println("new: "+newVal);
 						if (newVal>size) throw new Exception("no stratification possible");
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
-							query.getIdbRelation().setStratum(newVal);
+							rule.getHead().setStratum(newVal);
 						}
 					} else {
-						String left = query.getIdbRelation().getKind();
+						String left = rule.getHead().getKind();
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
-								map.get(relation.getKind()));
+								map.get(predicate.getKind()));
 						System.out.println("new: "+newVal);
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
-							query.getIdbRelation().setStratum(newVal);
+							rule.getHead().setStratum(newVal);
 						}
 					}
 				}} while (changed);
 
-		Collections.sort(queries, new Comparator<Query>() {
+		Collections.sort(rules, new Comparator<Rule>() {
 			@Override
-			public int compare(Query z1, Query z2) {
-				if (z1.getIdbRelation().getStratum() > z2.getIdbRelation()
+			public int compare(Rule z1, Rule z2) {
+				if (z1.getHead().getStratum() > z2.getHead()
 						.getStratum())
 					return 1;
-				if (z1.getIdbRelation().getStratum() < z2.getIdbRelation()
+				if (z1.getHead().getStratum() < z2.getHead()
 						.getStratum())
 					return -1;
 				return 0;
