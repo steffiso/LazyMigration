@@ -1,8 +1,8 @@
-/bottomUp/
-/lazyMigration/
-/parserEDBFactToJava/
-/parserFunctionsToDatalog/
-/parserGetToDatalog/
-/parserIDBQueryToJava/
-/parserJSONToEDBFacts/
-/parserPutToDatalog/
+/bottomUp
+/parserEDBFactToJava
+/parserFunctionsToDatalog
+/parserGetToDatalog
+/parserIDBQueryToJava
+/parserJSONToEDBFacts
+/parserPutToDatalog
+/parserRuletoJava

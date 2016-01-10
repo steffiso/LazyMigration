@@ -1,29 +1,22 @@
 package bottomUp;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.StringReader;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 import lazyMigration.DatalogRulesGenerator;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
-import parserFunctionsToDatalog.ParserForFunctions;
-import parserGetToDatalog.ParserForGet;
-import parserIDBQueryToJava.ParserIDBQueryToJava;
+import parserRuletoJava.ParserRuleToJava;
 
 public class TestGui {
 	public static void main(String[] args) {
@@ -155,13 +148,15 @@ public class TestGui {
 					e.printStackTrace();
 				}
 			}			
-			try {
-				rules = new ParserIDBQueryToJava(new StringReader(
-						idbTextArea.getText())).start();
-			} catch (parserIDBQueryToJava.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
+	
+				try {
+					rules = new ParserRuleToJava(new StringReader(
+							idbTextArea.getText())).start();
+				} catch (parserRuletoJava.ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+					
 			
 			BottomUpExecution bottomup = new BottomUpExecution(facts);
 			bottomup.generateQueries(rules);

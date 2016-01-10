@@ -1,6 +1,7 @@
 package bottomUp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class BottomUpExecution {
 
 	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
-		
+
 		for (Fact value : values) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
@@ -38,12 +39,12 @@ public class BottomUpExecution {
 	}
 
 	public void generateQueries(ArrayList<Rule> rules) {
-//		try {
-//			orderStratum(rules);
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		// try {
+		// orderStratum(rules);
+		// } catch (Exception e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 		for (Rule rule : rules) {
 			getAnswer(rule);
 		}
@@ -59,6 +60,8 @@ public class BottomUpExecution {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		if (!predicates.isEmpty()) {
 			if (predicates.size() > 1) {
+				rulesBodyUnificationandReorder(rule);
+				werte = rule.getHead().getWerte();
 				ArrayList<Map<String, String>> temp = null;
 				ArrayList<Map<String, String>> map = getMap(predicates.get(0));
 				if (!map.isEmpty())
@@ -74,7 +77,8 @@ public class BottomUpExecution {
 								break;
 							ArrayList<Map<String, String>> temp1 = null;
 							if (predicates.get(i).isNot())
-								temp1 = getTempNotResult(temp, predicates.get(i));
+								temp1 = getTempNotResult(temp,
+										predicates.get(i));
 							else
 								temp1 = getTempJoinResult(temp,
 										predicates.get(i));
@@ -116,6 +120,35 @@ public class BottomUpExecution {
 
 	}
 
+	public void rulesBodyUnificationandReorder(Rule rule) {
+		if (rule.getConditions() != null)
+			for (Condition cond : rule.getConditions())
+				if (cond.getOperator().equals("=")) {
+					String left = cond.getLeftOperand();
+					String right = cond.getRightOperand();
+					cond.setRightOperand(left);
+					renameAllRuleVariables(rule, left, right);
+				}
+		// toDo: reordering of Predicates
+	}
+
+	private void renameAllRuleVariables(Rule rule, String left, String right) {
+		renameVariablesOfPredicate(rule.getHead(), left, right);
+		for (Predicate pred : rule.getPredicates())
+			renameVariablesOfPredicate(pred, left, right);
+	}
+
+	private void renameVariablesOfPredicate(Predicate predicate, String left,
+			String right) {
+		String[] variables = predicate.getWerte().toArray(
+				new String[predicate.getWerte().size()]);
+		for (int i = 0; i < variables.length; i++) {
+			if (variables[i].equals(right))
+				variables[i] = left;
+		}
+		predicate.setWerte(new ArrayList<String>(Arrays.asList(variables)));
+	}
+
 	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z),?y=?z.
 	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
@@ -126,33 +159,32 @@ public class BottomUpExecution {
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
 		for (Map<String, String> mapOfMapList : mapList) {
-			String left=""; String right="";
-			if (leftOperand.startsWith("?")) 
-			left=mapOfMapList.get(leftOperand);
-			else left=leftOperand;
-			if (rightOperand.startsWith("?")) 
-			right=mapOfMapList.get(rightOperand);
-			else right=rightOperand;
+			String left = "";
+			String right = "";
+			if (leftOperand.startsWith("?"))
+				left = mapOfMapList.get(leftOperand);
+			else
+				left = leftOperand;
+			if (rightOperand.startsWith("?"))
+				right = mapOfMapList.get(rightOperand);
+			else
+				right = rightOperand;
 			boolean condPredicate = false;
 			switch (operator) {
 			case "=":
-				if (left.equals(
-						right))
+				if (left.equals(right))
 					condPredicate = true;
 				break;
 			case "!":
-				if (!left.equals(
-						right))
+				if (!left.equals(right))
 					condPredicate = true;
 				break;
 			case "<":
-				if (left.compareTo(
-						right) < 0)
+				if (left.compareTo(right) < 0)
 					condPredicate = true;
 				break;
 			case ">":
-				if (left.compareTo(
-						right) > 0)
+				if (left.compareTo(right) > 0)
 					condPredicate = true;
 				break;
 			}
@@ -269,7 +301,7 @@ public class BottomUpExecution {
 
 	// Stratifizierung der IDB Regeln
 	public void orderStratum(ArrayList<Rule> rules) throws Exception {
-		int size=rules.size()-1;
+		int size = rules.size() - 1;
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		for (Rule rule : rules) {
 			map.put(rule.getHead().getKind(), 0);
@@ -280,16 +312,19 @@ public class BottomUpExecution {
 		do {
 			changed = false;
 			for (Rule rule : rules)
-				for (Predicate predicate : rule.getPredicates()){
-					System.out.println(rule.getHead().getKind()+" "+rule.getHead().getStratum());
-					System.out.println(predicate.getKind()+" "+predicate.getStratum());
+				for (Predicate predicate : rule.getPredicates()) {
+					System.out.println(rule.getHead().getKind() + " "
+							+ rule.getHead().getStratum());
+					System.out.println(predicate.getKind() + " "
+							+ predicate.getStratum());
 					if (predicate.isNot()) {
 						String left = rule.getHead().getKind();
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
 								map.get(predicate.getKind()) + 1);
-						System.out.println("new: "+newVal);
-						if (newVal>size) throw new Exception("no stratification possible");
+						System.out.println("new: " + newVal);
+						if (newVal > size)
+							throw new Exception("no stratification possible");
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
@@ -300,23 +335,22 @@ public class BottomUpExecution {
 						int oldVal = map.get(left);
 						int newVal = Math.max(map.get(left),
 								map.get(predicate.getKind()));
-						System.out.println("new: "+newVal);
+						System.out.println("new: " + newVal);
 						if (oldVal < newVal) {
 							map.put(left, newVal);
 							changed = true;
 							rule.getHead().setStratum(newVal);
 						}
 					}
-				}} while (changed);
+				}
+		} while (changed);
 
 		Collections.sort(rules, new Comparator<Rule>() {
 			@Override
 			public int compare(Rule z1, Rule z2) {
-				if (z1.getHead().getStratum() > z2.getHead()
-						.getStratum())
+				if (z1.getHead().getStratum() > z2.getHead().getStratum())
 					return 1;
-				if (z1.getHead().getStratum() < z2.getHead()
-						.getStratum())
+				if (z1.getHead().getStratum() < z2.getHead().getStratum())
 					return -1;
 				return 0;
 			}
