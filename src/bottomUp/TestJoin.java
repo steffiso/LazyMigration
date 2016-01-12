@@ -54,7 +54,7 @@ public class TestJoin {
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
 				"Player(1,'Lisa',20,'2015-11-22 18:29:50.589').")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player(3,'Homer',20,'2015-12-02 18:29:50.589').")).start();
+				"Player(1,'Homer',20,'2015-12-02 18:29:50.589').")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
 				"Mission(1,'find the ring',1,'2015-11-26 18:29:50.589')."))
 				.start();
@@ -75,10 +75,14 @@ public class TestJoin {
 								+ "Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1),Player(?id2, ?name,?score,?ts2), latestPlayer(?id2, ?ts2),?id2 = ?pid."
 								+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1), not Player(?id2, ?name,?score,?ts2),?id2 = ?pid."))
 				.start();
+		/*ArrayList<Rule> qq = new ParserRuleToJava(
+				new StringReader(
+						"ll(?id,?name):-Player(?id, ?name,?score, ?ts),not Mission(?aa, ?ss,?pid,?nts),?id=?pid."))
+				.start();*/
 		BottomUpExecution mmm = new BottomUpExecution(ff);
-		mmm.generateQueries(qq);
+		mmm.generateAllRules(qq);
 		
-		System.out.println(mmm.getFact("Mission2", 5));
+		System.out.println(mmm.getFact("latestPlayer", 2));
 		for (Rule qqq : qq) {
 		System.out.print(qqq.getHead().getWerte()+":-");
 		for(Predicate p:qqq.getPredicates())

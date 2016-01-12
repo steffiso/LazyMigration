@@ -1,10 +1,11 @@
 package bottomUp;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class BottomUpExecution {
@@ -38,7 +39,7 @@ public class BottomUpExecution {
 		return answer;
 	}
 
-	public void generateQueries(ArrayList<Rule> rules) {
+	public void generateAllRules(ArrayList<Rule> rules) {
 		// try {
 		// orderStratum(rules);
 		// } catch (Exception e) {
@@ -53,51 +54,22 @@ public class BottomUpExecution {
 	// Generiere alle Ergebnisse einer IDB Regel und speichere sie in den Fakten
 	// ab
 	public void getAnswer(Rule rule) {
-		ArrayList<Map<String, String>> mapList = null;
+		List<Map<String, String>> mapList = null;
 		String kind = rule.getHead().getKind();
-		ArrayList<String> werte = rule.getHead().getWerte();
 		ArrayList<Predicate> predicates = rule.getPredicates();
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		if (!predicates.isEmpty()) {
 			if (predicates.size() > 1) {
 				rulesBodyUnificationandReorder(rule);
-				werte = rule.getHead().getWerte();
-				ArrayList<Map<String, String>> temp = null;
-				ArrayList<Map<String, String>> map = getMap(predicates.get(0));
-				if (!map.isEmpty())
-					if (predicates.get(1).isNot())
-						temp = getTempNotResult(map, predicates.get(1));
-					else
-						temp = getTempJoinResult(map, predicates.get(1));
-				if (temp != null) {
-					if (!temp.isEmpty()) {
-						int iAnz = predicates.size();
-						for (int i = 2; i < iAnz; i++) {
-							if (temp.isEmpty())
-								break;
-							ArrayList<Map<String, String>> temp1 = null;
-							if (predicates.get(i).isNot())
-								temp1 = getTempNotResult(temp,
-										predicates.get(i));
-							else
-								temp1 = getTempJoinResult(temp,
-										predicates.get(i));
-							temp = temp1;
-						}
-						mapList = temp;
-					}
-				}
-			} else
-				mapList = getMap(predicates.get(0));
+				mapList = generateRule(rule.getPredicates());
+
+			}
 		}
 		if (mapList != null) {
 			if (rule.getConditions() != null) {
-				ArrayList<Condition> conds = rule.getConditions();
-				for (Condition cond : conds) {
-					mapList = getTempCondResult(mapList, cond);
-				}
+				mapList=generateConditions(mapList, rule.getConditions());
 			}
-
+			ArrayList<String> werte = rule.getHead().getWerte();
 			for (Map<String, String> oneMap : mapList) {
 				ArrayList<String> oneAnswer = new ArrayList<String>();
 				for (String wert : werte)
@@ -122,17 +94,22 @@ public class BottomUpExecution {
 
 	public void rulesBodyUnificationandReorder(Rule rule) {
 		if (rule.getConditions() != null)
-			for (Condition cond : rule.getConditions())
+			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
+					.hasNext();) {
+				Condition cond = iterator.next();
 				if (cond.getOperator().equals("=")) {
 					String left = cond.getLeftOperand();
 					String right = cond.getRightOperand();
-					cond.setRightOperand(left);
-					renameAllRuleVariables(rule, left, right);
+					renameVariablesOfAllPredicates(rule, left, right);
+					iterator.remove();
 				}
+			}
+
 		// toDo: reordering of Predicates
 	}
 
-	private void renameAllRuleVariables(Rule rule, String left, String right) {
+	private void renameVariablesOfAllPredicates(Rule rule, String left,
+			String right) {
 		renameVariablesOfPredicate(rule.getHead(), left, right);
 		for (Predicate pred : rule.getPredicates())
 			renameVariablesOfPredicate(pred, left, right);
@@ -140,21 +117,58 @@ public class BottomUpExecution {
 
 	private void renameVariablesOfPredicate(Predicate predicate, String left,
 			String right) {
-		String[] variables = predicate.getWerte().toArray(
-				new String[predicate.getWerte().size()]);
-		for (int i = 0; i < variables.length; i++) {
-			if (variables[i].equals(right))
-				variables[i] = left;
+		for (int i = 0; i < predicate.getWerte().size(); i++) {
+			if (predicate.getWerte().get(i).equals(right))
+				predicate.getWerte().set(i, left);
 		}
-		predicate.setWerte(new ArrayList<String>(Arrays.asList(variables)));
+	}
+
+	private List<Map<String, String>> generateRule(
+			ArrayList<Predicate> predicates) {
+		ArrayList<Map<String, String>> temp = null;
+		ArrayList<Map<String, String>> map = getMap(predicates.get(0));
+		if (!map.isEmpty())
+			if (predicates.get(1).isNot())
+				temp = getTempNotResult(map, predicates.get(1));
+			else
+				temp = getTempJoinResult(map, predicates.get(1));
+		ArrayList<Map<String, String>> mapList = null;
+		if (temp != null) {
+			if (!temp.isEmpty()) {
+				int iAnz = predicates.size();
+				for (int i = 2; i < iAnz; i++) {
+					if (temp.isEmpty())
+						break;
+					ArrayList<Map<String, String>> newTemp = null;
+					if (predicates.get(i).isNot())
+						newTemp = getTempNotResult(temp, predicates.get(i));
+					else
+						newTemp = getTempJoinResult(temp, predicates.get(i));
+					temp = newTemp;
+				}
+				mapList = temp;
+			}
+
+		} else
+			mapList = getMap(predicates.get(0));
+
+		return mapList;
+	}
+
+	private List<Map<String, String>> generateConditions(List<Map<String, String>> mapList,
+			ArrayList<Condition> conditions) {
+		for (Condition cond : conditions) {
+			mapList = getTempCondResult(mapList, cond);
+		}
+		return mapList;
 	}
 
 	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z),?y=?z.
 	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
-	private ArrayList<Map<String, String>> getTempCondResult(
-			ArrayList<Map<String, String>> mapList, Condition cond) {
-		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
+	private List<Map<String, String>> getTempCondResult(
+			List<Map<String, String>> mapList, Condition cond) {
+		List<Map<String, String>> facts = new ArrayList<Map<String, String>>();
 		String rightOperand = cond.getRightOperand();
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
@@ -242,7 +256,6 @@ public class BottomUpExecution {
 		int pos = 0;
 		ArrayList<Integer> positionen = new ArrayList<Integer>();
 		for (Map<String, String> mapOfFact1 : fact1) {
-
 			for (Map<String, String> mapOfFact2 : fact2) {
 				boolean joinPredicate = true;
 				for (String wert : equalList) {

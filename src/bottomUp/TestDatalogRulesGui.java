@@ -116,7 +116,7 @@ public class TestDatalogRulesGui {
 			}
 
 			BottomUpExecution bottomup = new BottomUpExecution(facts);
-			bottomup.generateQueries(rules);
+			bottomup.generateAllRules(rules);
 			for (Rule rule : rules) {
 				ArrayList<ArrayList<String>> answers = bottomup.getFact(rule
 						.getHead().getKind(), rule.getHead().getAnz());
