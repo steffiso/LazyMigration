@@ -40,12 +40,13 @@ public class BottomUpExecution {
 	}
 
 	public void generateAllRules(ArrayList<Rule> rules) {
-		// try {
-		// orderStratum(rules);
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		 try {
+		 orderStratum(rules);
+		 } catch (Exception e) {
+		 // TODO Auto-generated catch block
+		 e.printStackTrace();
+		 }		 
+		
 		for (Rule rule : rules) {
 			getAnswer(rule);
 		}
@@ -314,60 +315,126 @@ public class BottomUpExecution {
 
 	// Stratifizierung der IDB Regeln
 	public void orderStratum(ArrayList<Rule> rules) throws Exception {
-		int size = rules.size() - 1;
-		Map<String, Integer> map = new HashMap<String, Integer>();
-		for (Rule rule : rules) {
-			map.put(rule.getHead().getKind(), 0);
-			for (Predicate predicate : rule.getPredicates())
-				map.put(predicate.getKind(), 0);
+		int size=rules.size()-1;
+		Map<String, Integer> mapStratum = new HashMap<String, Integer>();
+
+		for (Rule rule : rules){
+				System.out.println(rule.getHead().getKind());	
+				mapStratum.put(rule.getHead().getKind(), 0);
+				for (Predicate predicate : rule.getPredicates()){
+					mapStratum.put(predicate.getKind(), 0);
+				}
 		}
+		
 		boolean changed;
 		do {
-			changed = false;
+			changed = false;						
 			for (Rule rule : rules)
-				for (Predicate predicate : rule.getPredicates()) {
-					System.out.println(rule.getHead().getKind() + " "
-							+ rule.getHead().getStratum());
-					System.out.println(predicate.getKind() + " "
-							+ predicate.getStratum());
+				for (Predicate predicate : rule.getPredicates()){
+					String head = rule.getHead().getKind();
 					if (predicate.isNot()) {
-						String left = rule.getHead().getKind();
-						int oldVal = map.get(left);
-						int newVal = Math.max(map.get(left),
-								map.get(predicate.getKind()) + 1);
-						System.out.println("new: " + newVal);
-						if (newVal > size)
-							throw new Exception("no stratification possible");
-						if (oldVal < newVal) {
-							map.put(left, newVal);
+						int headStratum = mapStratum.get(head);
+						int predicateStratum = mapStratum.get(predicate.getKind());
+						int newStratum = Math.max(headStratum, predicateStratum + 1);
+						if (newStratum>size) throw new Exception("no stratification possible");
+						if (headStratum < newStratum) {
+							mapStratum.put(head, newStratum);
 							changed = true;
-							rule.getHead().setStratum(newVal);
 						}
 					} else {
-						String left = rule.getHead().getKind();
-						int oldVal = map.get(left);
-						int newVal = Math.max(map.get(left),
-								map.get(predicate.getKind()));
-						System.out.println("new: " + newVal);
-						if (oldVal < newVal) {
-							map.put(left, newVal);
+						int headStratum = mapStratum.get(head);
+						int predicateStratum = mapStratum.get(predicate.getKind());
+						int newStratum = Math.max(headStratum,predicateStratum);
+						if (headStratum < newStratum) {
+							mapStratum.put(head, newStratum);
 							changed = true;
-							rule.getHead().setStratum(newVal);
 						}
 					}
 				}
-		} while (changed);
+			} while (changed);
 
+		//schreibe die Stratum Werte in die Prädikatsobjekte
+		for (Rule r : rules){
+			String head = r.getHead().getKind();
+			r.getHead().setStratum(mapStratum.get(head));
+		}
+		
+		sortRules(rules, mapStratum);
+
+	}
+
+	//generiere eine Abhängigkeits-Map
+	//return : z.B. [Mission2, ( Mission, latestMission, Player, latestPlayer )]
+	public Map<String, ArrayList<String>> generateDependencyMap(ArrayList<Rule> rules){
+		Map<String, ArrayList<String>> dependencyMap = new HashMap<String, ArrayList<String>>();
+		for (Rule rule : rules){
+			String headKind = rule.getHead().getKind();
+			ArrayList <String> bodyKind = rule.getDependencies();
+			if (dependencyMap.get(headKind) == null) dependencyMap.put(headKind, bodyKind);
+			else
+			{
+				ArrayList<String> currentDependencies = new ArrayList<String>();
+				currentDependencies = dependencyMap.get(headKind);
+				for (String s: bodyKind){
+					if (!currentDependencies.contains(s)) currentDependencies.add(s); 
+				}
+			}
+		}		
+		
+		return dependencyMap;
+	}
+
+	//sortiere die IDB Regeln mithilfe der stratum- Werte und den Abhängigkeiten
+	public void sortRules(ArrayList<Rule> rules, Map<String, Integer> mapStratum){
+		System.out.println("Vor dem Sortieren:");
+		Map<String, ArrayList<String>> dependencyMap = generateDependencyMap(rules);
+		Map<String, Integer> rankingMap = mapStratum;
+		
+		//setze default Werte von Ranking auf stratum Werte
+		for (Rule r : rules){
+			int stratum = r.getHead().getStratum();
+			r.getHead().setRanking(stratum);
+			System.out.println(r.getHead().getKind() + ":" + stratum + ":" + r.getHead().getRanking());
+		}
+		
+		boolean changed = true;
+		do {
+			changed = false;
+			for (Rule r : rules){
+				String head = r.getHead().getKind();
+				int headRanking = r.getHead().getRanking();
+				
+				ArrayList<String> dependentPredicates = dependencyMap.get(head);
+				for (String predicate: dependentPredicates){
+					int predicateStratum = rankingMap.get(predicate);
+					if (headRanking <= predicateStratum) {
+						rankingMap.put(r.getHead().getKind(), predicateStratum + 1);
+						r.getHead().setRanking(predicateStratum + 1);
+						changed = true;
+					}
+				}				
+			}
+		}while (changed);
+		
 		Collections.sort(rules, new Comparator<Rule>() {
 			@Override
 			public int compare(Rule z1, Rule z2) {
-				if (z1.getHead().getStratum() > z2.getHead().getStratum())
+				if (z1.getHead().getRanking()> z2.getHead()
+						.getRanking())
 					return 1;
-				if (z1.getHead().getStratum() < z2.getHead().getStratum())
+				if (z1.getHead().getRanking() < z2.getHead()
+						.getRanking())
 					return -1;
 				return 0;
 			}
-		});
+		});		
+		
+		System.out.println("Nach dem Sortieren:");
+		for (Rule r : rules){
+			String head = r.getHead().getKind();
+			int stratum = r.getHead().getStratum();
+			int headRanking = r.getHead().getRanking();
+			System.out.println(head + ":" + stratum + ":" + headRanking);
+		}
 	}
-
 }

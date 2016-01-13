@@ -10,6 +10,7 @@ public class Predicate {
 	private ArrayList<String> werte; // --> (?x,?y)
 	private boolean isNot=false;
 	private int stratum=0;
+	private int ranking=0;
 	
 	public Predicate(String kind, int anz, ArrayList<String> werte) {
 		super();
@@ -46,5 +47,11 @@ public class Predicate {
 	}
 	public void setStratum(int stratum) {
 		this.stratum = stratum;
+	}
+	public int getRanking() {
+		return ranking;
+	}
+	public void setRanking(int ranking) {
+		this.ranking = ranking;
 	}
 }
