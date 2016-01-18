@@ -1,4 +1,4 @@
-package bottomUp;
+package eagerMigration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import datalog.Condition;
+import datalog.Fact;
+import datalog.Predicate;
+import datalog.Rule;
 
 public class BottomUpExecution {
 
@@ -84,7 +89,7 @@ public class BottomUpExecution {
 							&& iterateAnswer.containsAll(oneAnswer))
 						alreadyExist = true;
 				if (!alreadyExist) {
-					Fact factnew = new Fact(kind, oneAnswer);
+					Fact factnew = new Fact(kind,oneAnswer);
 					values.add(factnew);
 					answer.add(oneAnswer);
 				}
@@ -319,10 +324,12 @@ public class BottomUpExecution {
 		Map<String, Integer> mapStratum = new HashMap<String, Integer>();
 
 		for (Rule rule : rules){
-				System.out.println(rule.getHead().getKind());	
-				mapStratum.put(rule.getHead().getKind(), 0);
+				String kindHead = rule.getHead().getKind();
+				System.out.println(kindHead);	
+				mapStratum.put(kindHead, 0);
 				for (Predicate predicate : rule.getPredicates()){
-					mapStratum.put(predicate.getKind(), 0);
+					String kindPredicate = predicate.getKind();
+					mapStratum.put(kindPredicate, 0);
 				}
 		}
 		
@@ -436,5 +443,6 @@ public class BottomUpExecution {
 			int headRanking = r.getHead().getRanking();
 			System.out.println(head + ":" + stratum + ":" + headRanking);
 		}
-	}
+	}	
+	
 }

@@ -1,4 +1,4 @@
-package bottomUp;
+package eagerMigration;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -13,11 +13,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import lazyMigration.DatalogRulesGenerator;
+import datalog.DatalogRulesGenerator;
+import datalog.Fact;
+import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
-import parserRuletoJava.*;
-public class TestDatalogRulesGui {
+import parserRuletoJava.ParserRuleToJava;
+
+public class TestGui {
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -36,6 +39,7 @@ public class TestDatalogRulesGui {
 		 */
 		private static final long serialVersionUID = 1L;
 		JButton startBottomUp = new JButton("BottomUp Ausführung");
+		JButton generateDatalog = new JButton("Generate IDB");
 		JTextArea edbTextArea = new JTextArea();
 		JTextArea queryTextArea = new JTextArea();
 		JTextArea idbTextArea = new JTextArea();
@@ -55,48 +59,87 @@ public class TestDatalogRulesGui {
 
 		private void initComponents() {
 			setTitle("TestGui");
-			setLayout(new GridLayout(4, 1));
+			setLayout(new GridLayout(5, 1));
 
 			String edb = datalogGenerator.getEDBFacts();
-
-			edbTextArea.setText(edb);
-			idbTextArea
-					.setText("legacyPlayer(?id,?ts):-Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts.\n"
-							+ "latestPlayer(?id,?ts):-Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts).\n"
-							+ "legacyMission(?id,?ts):-Mission(?id, ?title,?pid, ?ts),Mission(?id, ?title2,?pid2,?nts), ?ts < ?nts.\n"
-							+ "latestMission(?id,?ts):-Mission(?id, ?title,?pid,?ts), not legacyMission(?id,?ts).\n"
-							+ "Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1),Player(?id2, ?name,?score,?ts2), latestPlayer(?id2, ?ts2),?pid = ?id2.\n"
-							+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1), not Player(?id2, ?name,?score,?ts2), ?pid = ?id2.");
-
+			
+			edbTextArea.setText(edb);	
+			
 			add(scroll);
-			add(scroll2);
+			add(scroll2);		
+			panel.setLayout(new GridLayout(1,2));
+			panel.add(scroll3);
+			panel.add(generateDatalog);
+			add(panel);
+			add(scroll4);	
 			add(startBottomUp);
-			add(scroll4);
+
 			pack();
 			setSize(700, 600);
 			setVisible(true);
-			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
+			
 			startBottomUp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-
-					if (!edbTextArea.getText().equals("")
-							&& !idbTextArea.getText().equals(""))
+					
+					if (!edbTextArea.getText().equals("") && !idbTextArea.getText().equals(""))
 						executeQuery();
-					else
-						answerTextArea.setText("No EDB or IDB found!");
+					else answerTextArea.setText("No EDB or IDB found!");
 				}
 			});
+			
+			generateDatalog.addActionListener(new ActionListener(){
 
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					
+					String uiInput = "";
+					String rules = "";
+					uiInput = queryTextArea.getText();
+					DatalogRulesGenerator drg = new DatalogRulesGenerator();
+					
+					if (uiInput.startsWith("get")){
+						rules = drg.get(uiInput);
+						idbTextArea.setText(rules);
+					}					
+					else if (uiInput.startsWith("add")){
+						rules = drg.addAttribute(uiInput);
+						idbTextArea.setText(rules);
+					}					
+					else if (uiInput.startsWith("delete")){
+						rules = drg.deleteAttribute(uiInput);
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("move")){
+						rules = drg.moveAttribute(uiInput);
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("copy")){
+						rules = drg.copyAttribute(uiInput);
+						idbTextArea.setText(rules);
+					}
+					else if (uiInput.startsWith("put")){
+						//To do : write in json file
+					}
+					else {
+						answerTextArea.setText("No valid query");
+					}
+						
+				}
+				
+			});
+			
 		}
 
+
 		private void executeQuery() {
-			// set edb-facts in gui
+			//set edb-facts in gui
 			edbTextArea.setText(datalogGenerator.getEDBFacts());
 			String[] edbFacts = edbTextArea.getText().split("\n");
-			String answerString = "";
-
+			String query = queryTextArea.getText();
+			
 			facts = new ArrayList<Fact>();
 			for (String factString : edbFacts) {
 				try {
@@ -106,29 +149,22 @@ public class TestDatalogRulesGui {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-			try {
-				rules = new ParserRuleToJava(new StringReader(
-						idbTextArea.getText())).start();
-			} catch (parserRuletoJava.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			BottomUpExecution bottomup = new BottomUpExecution(facts);
-			bottomup.generateAllRules(rules);
-			for (Rule rule : rules) {
-				ArrayList<ArrayList<String>> answers = bottomup.getFact(rule
-						.getHead().getKind(), rule.getHead().getAnz());
-				answerString = answerString + "Results for IDB Fact '"
-						+ rule.getHead().getKind() + "'\n";
-				for (ArrayList<String> answer : answers)
-					answerString = answerString + answer.toString() + "\n";
-			}
+			}			
+	
+				try {
+					rules = new ParserRuleToJava(new StringReader(
+							idbTextArea.getText())).start();
+				} catch (parserRuletoJava.ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+					
+			EagerMigration migrate = new EagerMigration(facts, rules, query);
+			String answerString = migrate.writeAnswersInDatabase();
 
 			answerTextArea.setText(answerString);
 		}
-
+		
 	}
 
 }

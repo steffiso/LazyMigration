@@ -1,4 +1,4 @@
-package bottomUp;
+package datalog;
 
 import java.util.ArrayList;
 
@@ -7,7 +7,6 @@ public class Fact {
 	// Speichere die Werte eines Faktes hier ab. Bsp. A(1,2)
 
 	private String kind; // Wert für kind --> A
-
 	private ArrayList<String> listOfValues; // alle Werte innerhalb eines Faktes
 											// --> (1,2)
 

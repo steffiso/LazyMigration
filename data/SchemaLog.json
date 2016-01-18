@@ -1,0 +1,8 @@
+[
+{"kind":"Player",
+"schemaversion":1,
+"values":"?name,?score"},
+{"kind":"Mission",
+"schemaversion":1,
+"values":"?title,?pid"}
+]

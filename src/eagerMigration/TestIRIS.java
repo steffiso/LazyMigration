@@ -1,4 +1,4 @@
-package lazyMigration;
+package eagerMigration;
 
 /*
  * Integrated Rule Inference System (IRIS):
@@ -51,6 +51,8 @@ import org.deri.iris.evaluation.wellfounded.WellFoundedEvaluationStrategyFactory
 import org.deri.iris.optimisations.magicsets.MagicSets;
 import org.deri.iris.optimisations.rulefilter.RuleFilter;
 import org.deri.iris.rules.safety.AugmentingRuleSafetyProcessor;
+
+import datalog.DatalogRulesGenerator;
 
 /**
  * A GUI version of the Demo application.
@@ -193,7 +195,7 @@ public class TestIRIS {
 				break;
 			case "Put":
 				rules = rules + "/*Put Player with attributes [1,Lisa.S,550]*/\n"
-						+ newTestEDB.putKind("Player", "1,'Lisa.S',550")+".";
+						+ newTestEDB.putKindToDatalog("Player", "1,'Lisa.S',550")+".";
 				break;
 			}
 			return rules;

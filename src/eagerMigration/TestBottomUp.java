@@ -1,15 +1,16 @@
-package bottomUp;
+package eagerMigration;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
+import datalog.Fact;
+import datalog.Predicate;
+import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 
-public class TestJoin {
+public class TestBottomUp {
 	public static void main(String[] args) throws ParseException,
 			 parserRuletoJava.ParseException {
 		/*
@@ -52,14 +53,14 @@ public class TestJoin {
 		 */
 
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
-				"Player(1,'Lisa',20,'2015-11-22 18:29:50.589').")).start();
+				"Player1(1,'Lisa',20,'2015-11-22 18:29:50.589').")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player(1,'Homer',20,'2015-12-02 18:29:50.589').")).start();
+				"Player1(1,'Homer',20,'2015-12-02 18:29:50.589').")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
-				"Mission(1,'find the ring',1,'2015-11-26 18:29:50.589')."))
+				"Mission1(1,'find the ring',1,'2015-11-26 18:29:50.589')."))
 				.start();
 		Fact ff4 = new ParserforDatalogToJava(new StringReader(
-				"Mission(2,'find the ring2',2,'2015-12-01 18:29:50.589')."))
+				"Mission1(2,'find the ring2',2,'2015-12-01 18:29:50.589')."))
 				.start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
@@ -67,12 +68,12 @@ public class TestJoin {
 		ff.add(ff3);
 		ff.add(ff4);
 		ArrayList<Rule> qq = new ParserRuleToJava(
-				new StringReader("Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1),Player(?id2, ?name,?score,?ts2), latestPlayer(?id2, ?ts2),?id2 = ?pid." 
-						+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1), not Player(?id2, ?name,?score,?ts2),?id2 = ?pid."
-						+ "legacyPlayer(?id,?ts):-Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts." 
-						+ "latestPlayer(?id,?ts):-Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts)."
-						+ "legacyMission(?id,?ts):-Mission(?id, ?title,?pid, ?ts),Mission(?id, ?title2,?pid2,?nts), ?ts < ?nts."
-						+ "latestMission(?id,?ts):-Mission(?id, ?title,?pid,?ts), not legacyMission(?id,?ts)."))
+				new StringReader("Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player1(?id2, ?name,?score,?ts2), latestPlayer1(?id2, ?ts2),?id2 = ?pid." 
+						+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player1(?id2, ?name,?score,?ts2),?id2 = ?pid."
+						+ "legacyPlayer1(?id,?ts):-Player1(?id, ?name,?score, ?ts),Player1(?id, ?name2,?score2,?nts), ?ts < ?nts." 
+						+ "latestPlayer1(?id,?ts):-Player1(?id, ?name,?score,?ts), not legacyPlayer1(?id,?ts)."
+						+ "legacyMission1(?id,?ts):-Mission1(?id, ?title,?pid, ?ts),Mission1(?id, ?title2,?pid2,?nts), ?ts < ?nts."
+						+ "latestMission1(?id,?ts):-Mission1(?id, ?title,?pid,?ts), not legacyMission1(?id,?ts)."))
 //						"legacyPlayer(?id,?ts):-Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts." 
 //								+ "latestPlayer(?id,?ts):-Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts)."
 //								+ "legacyMission(?id,?ts):-Mission(?id, ?title,?pid, ?ts),Mission(?id, ?title2,?pid2,?nts), ?ts < ?nts."
@@ -87,7 +88,7 @@ public class TestJoin {
 		BottomUpExecution mmm = new BottomUpExecution(ff);
 		mmm.generateAllRules(qq);
 		
-		System.out.println(mmm.getFact("latestPlayer", 2));
+		System.out.println(mmm.getFact("latestPlayer1", 2));
 		for (Rule qqq : qq) {
 		System.out.print(qqq.getHead().getWerte()+":-");
 		for(Predicate p:qqq.getPredicates())

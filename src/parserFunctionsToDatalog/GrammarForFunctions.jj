@@ -3,53 +3,52 @@
  */options{  static = false;}PARSER_BEGIN(ParserForFunctions)package parserFunctionsToDatalog;import java.io.BufferedReader;import java.io.File;import java.io.FileReader;import java.io.IOException;import java.util.ArrayList;import java.sql.Timestamp;import java.util.Date;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
-import java.io.FileWriter;public class ParserForFunctions{
-    private static String getCurrentSchema(String kind)  {    String currentSchema = null;    final File filename = new File("data/" + kind + "Schema");
-    
-    BufferedReader br = null;	try {          br = new BufferedReader(new FileReader(filename));
-    	currentSchema = null;
-		String temp =null;
+import java.io.FileWriter;import database.Database;
+public class ParserForFunctions{
+  private static String getCurrentSchema(String kind)  {
+	Database db = new Database();
+      String currentSchema = db.getLatestSchema(kind);
+    return currentSchema;  }
 
-		while( (temp = br.readLine()) != null)
-		{
-			currentSchema = temp;
-		}
-	}    catch (IOException e)    {      e.printStackTrace();    }    finally    {      try      {        if (br != null) br.close();      }      catch (IOException ex)      {        ex.printStackTrace();      }    }
-
-    return currentSchema;  }  private static String getSchemaWithoutAttribute(String kind, String value)  {
-    String currentSchema = getCurrentSchema(kind);    String tempNewSchema = "";    String [] attributes = currentSchema.split(",");    for (String attribute : attributes)    {      if (!attribute.equals("?" + value)) tempNewSchema = tempNewSchema + attribute + ",";    }    String lastChar = tempNewSchema.substring(tempNewSchema.length() - 1);    if (lastChar.equals(","))    {      tempNewSchema = tempNewSchema.substring(0, tempNewSchema.length() - 1);    }    return tempNewSchema;  }  private static String getSchemaWithNewAttribute(String kind, String value)  {
+  private static int getCurrentSchemaVersion(String kind)  {
+    Database db = new Database();
+  
+    int currentSchemaVersion = db.getLatestSchemaVersion(kind);
+    return currentSchemaVersion;  }  private static String getNewSchemaDelete(String kind, String value)  {
+    String currentSchema = getCurrentSchema(kind);    String tempNewSchema = "";    String [] attributes = currentSchema.split(",");    for (String attribute : attributes)    {      if (!attribute.equals("?" + value)) tempNewSchema = tempNewSchema + attribute + ",";    }    String lastChar = tempNewSchema.substring(tempNewSchema.length() - 1);    if (lastChar.equals(","))    {      tempNewSchema = tempNewSchema.substring(0, tempNewSchema.length() - 1);    }    return tempNewSchema;  }  private static String getNewSchemaAdd(String kind, String value)  {
     String currentSchema = getCurrentSchema(kind);    String newSchema = currentSchema + "," + value;    return newSchema;  }
 
-  private static void saveCurrentSchema(String kind, String newSchema){
-    String currentSchema = getCurrentSchema(kind);
-    if (!currentSchema.equals(newSchema))    {      
-		PrintWriter out;
-		try {
-			out = new PrintWriter(new BufferedWriter(new FileWriter("data/"+kind + "Schema", true)));
-		    out.append(String.format("%n")+newSchema);
-		    out.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();		}
-			}
-}
+  private static void saveCurrentSchema(String kind, String newSchema)  {	Database db = new Database();    String currentSchema = getCurrentSchema(kind);    if (!currentSchema.equals(newSchema))    {    	db.saveCurrentSchema(kind,newSchema);			}  }
   private static String getResidualRules(String kind)  {    String value = null;    String schema = getCurrentSchema(kind);
     String[] secondValues = schema.split(",");
     String secondScheme = "";
+    int currentVersion = getCurrentSchemaVersion(kind);
     for (String s: secondValues)
     {		secondScheme = secondScheme + s + "2,";
-    }    value = "legacy" + kind + "(?id,?ts):-" + kind + "(?id, " + schema + ", ?ts)," + kind + "(?id, " +     //schema.replaceAll("title", "title2").replaceAll("name", "name2").replaceAll("score", "score2") + ",?nts), ?ts < ?nts.\n" +
-    secondScheme + "?nts), ?ts < ?nts.\n" + "latest" + kind + "(?id,?ts):-" + kind + "(?id, " + schema + ",?ts), not legacy" + kind + "(?id,?ts).\n";    return value;  }  private static String getTimestamp()  {    Date date = new Date();    Timestamp ts = new Timestamp(date.getTime());    String time = ts.toString();    return time;  }}PARSER_END(ParserForFunctions)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < add : "add" >| < delete : "delete" >| < copy : "copy" >| < move : "move" >| < string : "\"" (~[ "\"" ])* "\"" >}String getFunctionRule() :{  String value = null;}{  value = start() < EOF >  {    return value;  }}String start() :{  String value = null;}{  (    value = add()  | value = delete()  | value = copy()  | value = move()  )  {    return value;  }}String add() :{  Token kindToken = null;  Token propertyToken = null;  Token valueToken = null;}{  < add > kindToken = < string > "." propertyToken = < string > "=" valueToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String propertyValue = valueToken.toString();    propertyValue = propertyValue.substring(1, propertyValue.length() - 1);    String kind = kindToken.toString();    kind = kind.substring(1, kind.length() - 1);    String currentSchema = getCurrentSchema(kind);
-    String newSchema = getSchemaWithNewAttribute(kind, "?" + propertyName);    String rules = getResidualRules(kind);    rules = rules + kind + "2(?id," + getSchemaWithNewAttribute(kind, propertyValue) + "," + "?ts" /*getTimestamp() */ + "):-" + kind + "(?id," + currentSchema + ",?ts), latest" + kind + "(?id, ?ts).";	saveCurrentSchema(kind, newSchema);
+    }    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(?id, " + schema + ", ?ts)," + kind + currentVersion + "(?id, " +     //schema.replaceAll("title", "title2").replaceAll("name", "name2").replaceAll("score", "score2") + ",?nts), ?ts < ?nts.\n" +
+    secondScheme + "?nts), ?ts < ?nts.\n" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(?id, " + schema + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\n";    return value;  }  private static String getTimestamp()  {    Date date = new Date();    Timestamp ts = new Timestamp(date.getTime());    String time = ts.toString();    return time;  }}PARSER_END(ParserForFunctions)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < add : "add" >| < delete : "delete" >| < copy : "copy" >| < move : "move" >| < string : "\"" (~[ "\"" ])* "\"" >}String getFunctionRule() :{  String value = null;}{  value = start() < EOF >  {    return value;  }}String start() :{  String value = null;}{  (    value = add()  | value = delete()  | value = copy()  | value = move()  )  {    return value;  }}String add() :{  Token kindToken = null;  Token propertyToken = null;  Token valueToken = null;}{  < add > kindToken = < string > "." propertyToken = < string > "=" valueToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String propertyValue = valueToken.toString();    propertyValue = propertyValue.substring(1, propertyValue.length() - 1);    String kind = kindToken.toString();    kind = kind.substring(1, kind.length() - 1);    String currentSchema = getCurrentSchema(kind);
+    String newSchema = getNewSchemaAdd(kind, "?" + propertyName);
+    int currentSchemaVersion = getCurrentSchemaVersion(kind);
+    int newSchemaVersion = currentSchemaVersion + 1;    String rules = getResidualRules(kind);    rules = rules + kind + newSchemaVersion + "(?id," + getNewSchemaAdd(kind, propertyValue) + "," + "?ts" /*getTimestamp() */ + "):-" + kind + currentSchemaVersion + "(?id," + currentSchema + ",?ts), latest" + kind + currentSchemaVersion+ "(?id, ?ts).";	saveCurrentSchema(kind, newSchema);
     return rules;  }}String delete() :{  Token kindToken = null;  Token propertyToken = null;}{  < delete > kindToken = < string > "." propertyToken = < string >  {    String propertyName = propertyToken.toString();    propertyName = propertyName.substring(1, propertyName.length() - 1);    String kind = kindToken.toString();    kind = kind.substring(1, kind.length() - 1);    String schema = getCurrentSchema(kind);
-    String newSchema = getSchemaWithoutAttribute(kind, propertyName);    String rules = getResidualRules(kind);    rules = rules + kind + "2(?id," + newSchema + ",'" + getTimestamp() + "'):-" + kind + "(?id," + schema + ", ?ts), latest" + kind + "(?id, ?ts).";	saveCurrentSchema(kind, newSchema);
+    String newSchema = getNewSchemaDelete(kind, propertyName);
+    int currentVersion = getCurrentSchemaVersion(kind);
+    int newVersion = currentVersion + 1;    String rules = getResidualRules(kind);    rules = rules + kind + newVersion + "(?id," + newSchema + ",'" + getTimestamp() + "'):-" + kind + currentVersion + "(?id," + schema + ", ?ts), latest" + kind + currentVersion + "(?id, ?ts).";	saveCurrentSchema(kind, newSchema);
     return rules;  }}String copy() :{  Token kindFromToken = null;  Token kindToToken = null;  Token propertyToken = null;  Token conditionFromToken = null;  Token conditionToToken = null;}{  < copy > kindFromToken = < string > "." propertyToken = < string > " to " kindToToken = < string > " where " kindFromToken = < string > "." conditionFromToken = < string > "=" kindToToken = < string > "." conditionToToken = < string >  {    String kindFrom = kindFromToken.toString();    kindFrom = kindFrom.substring(1, kindFrom.length() - 1);    String kindTo = kindToToken.toString();    kindTo = kindTo.substring(1, kindTo.length() - 1);    String attribute = propertyToken.toString();    attribute = attribute.substring(1, attribute.length() - 1);    String conditionFrom = conditionFromToken.toString();    conditionFrom = conditionFrom.substring(1, conditionFrom.length() - 1);    String conditionTo = conditionToToken.toString();    conditionTo = conditionTo.substring(1, conditionTo.length() - 1);    String rules = getResidualRules(kindFrom) + getResidualRules(kindTo);    String schemaFrom = getCurrentSchema(kindFrom);    String schemaTo = getCurrentSchema(kindTo);
-    String schemaToNew = getSchemaWithNewAttribute(kindTo, "?" + attribute);
-        if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;    rules = rules + kindTo + "2(?id1, " + schemaToNew + ",'" + getTimestamp() + "')" + ":-"     + kindTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + "(?id1, ?ts1),"     + kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2),"     + condition + ".\n";    rules = rules + kindTo + "2(?id1, " + getSchemaWithNewAttribute(kindTo, "''") + ",'" + getTimestamp() + "')" + ":-"     + kindTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + "(?id1, ?ts1),"      + " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2),"     + condition + ".\n";
+    String schemaToNew = getNewSchemaAdd(kindTo, "?" + attribute);
+    int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
+    int currentSchemaVersionFrom = getCurrentSchemaVersion(kindFrom);
+    int newSchemaVersionTo = currentSchemaVersionTo + 1;
+        if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToNew + ",'" + getTimestamp() + "')" + ":-"     + kindTo + currentSchemaVersionTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"     + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2),"     + condition + ".\n";    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + getNewSchemaAdd(kindTo, "''") + ",'" + getTimestamp() + "')" + ":-"     + kindTo + currentSchemaVersionTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"      + " not " + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaFrom + ",?ts2),"     + condition + ".\n";
     saveCurrentSchema(kindTo, schemaToNew);    return rules;  }}String move() :{  Token kindFromToken = null;  Token kindToToken = null;  Token propertyToken = null;  Token conditionFromToken = null;  Token conditionToToken = null;}{  < move > kindFromToken = < string > "." propertyToken = < string > " to " kindToToken = < string > " where " kindFromToken = < string > "." conditionFromToken = < string > "=" kindToToken = < string > "." conditionToToken = < string >  {    String kindFrom = kindFromToken.toString();    kindFrom = kindFrom.substring(1, kindFrom.length() - 1);    String kindTo = kindToToken.toString();    kindTo = kindTo.substring(1, kindTo.length() - 1);    String attribute = propertyToken.toString();    attribute = attribute.substring(1, attribute.length() - 1);    String conditionFrom = conditionFromToken.toString();    conditionFrom = conditionFrom.substring(1, conditionFrom.length() - 1);    String conditionTo = conditionToToken.toString();    conditionTo = conditionTo.substring(1, conditionTo.length() - 1);    String rules = getResidualRules(kindFrom) + getResidualRules(kindTo);    String schemaFrom = getCurrentSchema(kindFrom);    String schemaTo = getCurrentSchema(kindTo);
-    String schemaFromNew = getSchemaWithoutAttribute(kindFrom, attribute);
-    String schemaToNew = getSchemaWithNewAttribute(kindTo, "?" + attribute);    if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;    rules = rules + kindTo + "2(?id1, " + schemaToNew  + ",'" + getTimestamp() + "')" + ":-"     + kindTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + "(?id1, ?ts1),"     + kindFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + "(?id2, ?ts2),"     + condition + ".\n";    rules = rules + kindTo + "2(?id1, " + getSchemaWithNewAttribute(kindTo, "''") + ",'" + getTimestamp() + "')" + ":-"     + kindTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + "(?id1, ?ts1),"     + " not " + kindFrom + "(?id2, " + schemaFrom + ",?ts2),"     + condition + ".\n";    
-    rules = rules + kindFrom + "2(?id," + schemaFromNew + ",'" + getTimestamp() + "'):-" + kindFrom + "(?id," + schemaFrom + ", ?ts), latest" + kindFrom + "(?id, ?ts).";
+    String schemaFromNew = getNewSchemaDelete(kindFrom, attribute);
+    String schemaToNew = getNewSchemaAdd(kindTo, "?" + attribute);
+    int currentSchemaVersionFrom = getCurrentSchemaVersion(kindFrom);
+    int newSchemaVersionFrom = currentSchemaVersionFrom + 1;
+    int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
+    int newSchemaVersionTo = currentSchemaVersionTo + 1;
+        if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToNew  + ",'" + getTimestamp() + "')" + ":-"     + kindTo + currentSchemaVersionTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"     + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaFrom + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom +"(?id2, ?ts2),"     + condition + ".\n";    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + getNewSchemaAdd(kindTo, "''") + ",'" + getTimestamp() + "')" + ":-"     + kindTo + currentSchemaVersionTo + "(?id1, " + schemaTo + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"     + " not " + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaFrom + ",?ts2),"     + condition + ".\n";    
+    rules = rules + kindFrom + newSchemaVersionFrom + "(?id," + schemaFromNew + ",'" + getTimestamp() + "'):-" + kindFrom + currentSchemaVersionFrom + "(?id," + schemaFrom + ", ?ts), latest" + kindFrom + currentSchemaVersionFrom +"(?id, ?ts).";
     
     saveCurrentSchema(kindFrom, schemaFromNew);
     saveCurrentSchema(kindTo, schemaToNew);    return rules;  }}

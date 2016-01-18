@@ -1,4 +1,4 @@
-package bottomUp;
+package datalog;
 
 import java.util.ArrayList;
 

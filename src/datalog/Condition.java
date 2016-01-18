@@ -1,4 +1,4 @@
-package bottomUp;
+package datalog;
 
 public class Condition {
 
