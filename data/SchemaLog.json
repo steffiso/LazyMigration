@@ -4,5 +4,11 @@
 "values":"?name,?score"},
 {"kind":"Mission",
 "schemaversion":1,
-"values":"?title,?pid"}
+"values":"?title,?pid"},
+{"kind":"Mission",
+"schemaversion":2,
+"values":"?pid"},
+{"kind":"Player",
+"schemaversion":2,
+"values":"?name,?score,?title"}
 ]

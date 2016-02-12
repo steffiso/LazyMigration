@@ -156,7 +156,7 @@ public class BottomUpExecution {
 			}
 
 		} else
-			mapList = getMap(predicates.get(0));
+			mapList = map;
 
 		return mapList;
 	}
