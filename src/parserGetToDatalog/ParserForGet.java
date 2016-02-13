@@ -8,13 +8,23 @@ import java.util.ArrayList;
 import database.Database;
 
 public class ParserForGet implements ParserForGetConstants {
-  private static String getCurrentSchema(String kind)
+  private static ArrayList<String > getCurrentSchema(String kind)
   {
     Database db = new Database();
-    String currentSchema = db.getLatestSchema(kind);
+    ArrayList<String > currentSchema = db.getLatestSchema(kind);
 
         return currentSchema;
 
+  }
+  private static String schemaToString(ArrayList<String > schema)
+  {
+    String schemaStr = "";
+    for (String s: schema)
+    {
+      schemaStr = schemaStr + s + ",";
+        }
+        schemaStr = schemaStr.substring(0,schemaStr.length() - 1);
+        return schemaStr;
   }
 
   private static int getCurrentSchemaVersion(String kind)
@@ -27,17 +37,16 @@ public class ParserForGet implements ParserForGetConstants {
   private static String getKindRule(String kind)
   {
     String value=null;
-    String schema = getCurrentSchema(kind);
+    ArrayList<String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
 
-        String[] secondValues = schema.split(",");
-    String secondSchema = "";
-    for (String s: secondValues)
+        ArrayList<String > secondSchema = schema;
+    for (String s: secondSchema)
     {
-                secondSchema = secondSchema + s + "2,";
+                s = s + "2";
     }
-    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(?id, " + schema + ", ?ts)," + kind + currentVersion + "(?id, " +
-    secondSchema + "?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(?id, " + schema + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
+    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts)," + kind + currentVersion + "(" +
+    schemaToString(secondSchema) + "?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
     return value;
   }
 
@@ -52,11 +61,11 @@ public class ParserForGet implements ParserForGetConstants {
     kind = kind.substring(1, kind.length() - 1);
     String id = idToken.toString();
     id = id.substring(1, id.length() - 1);
-    String schema = getCurrentSchema(kind);
+    ArrayList<String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
     String value = getKindRule(kind);
 
-    value = value + "get" + kind + currentVersion + "(?id," + schema + ",?ts):-" + kind + currentVersion + "(?id, " + schema + ", ?ts), latest" + kind + currentVersion +"(?id,?ts),?id="+id+".\u005cn";
+    value = value + "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts), latest" + kind + currentVersion +"(?id,?ts),?id="+id+".\u005cn";
 
     {if (true) return value;}
     jj_consume_token(0);
@@ -67,10 +76,11 @@ public class ParserForGet implements ParserForGetConstants {
   String value = null;
     jj_consume_token(get);
     jj_consume_token(0);
-    String schema = getCurrentSchema(kind);
+    ArrayList<String > schema = getCurrentSchema(kind);
+    ArrayList<String > newAttribute = schema;
     value = getKindRule(kind);
-
-    value = value + "get" + kind + "(?id," + schema + ",?ts):-" + kind + "(?id, " + schema + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(" + id + ", " + schema + ",?ts).\u005cn";
+    newAttribute.set(0,Integer.toString(id));
+    value = value + "get" + kind + "(" + schemaToString(schema) + ",?ts):-" + kind + "(" + schemaToString(schema) + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(" + schemaToString(newAttribute) + ",?ts).\u005cn";
 
 
     {if (true) return value;}
@@ -81,9 +91,9 @@ public class ParserForGet implements ParserForGetConstants {
   String value = null;
     jj_consume_token(get);
     jj_consume_token(0);
-    String schema = getCurrentSchema(kind);
+    ArrayList<String > schema = getCurrentSchema(kind);
     value = getKindRule(kind);
-    value = value + "get" + kind + "(?id," + schema + ",?ts):-" + kind + "(?id, " + schema + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(?id, " + schema + ",?ts).\u005cn";
+    value = value + "get" + kind + "(" + schemaToString(schema) + ",?ts):-" + kind + "(" + schemaToString(schema) + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(" + schemaToString(schema) + ",?ts).\u005cn";
 
     {if (true) return value;}
     throw new Error("Missing return statement in function");

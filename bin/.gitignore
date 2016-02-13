@@ -1,3 +1,10 @@
-/lazyMigration
-/parserRuletoJava
-/eagerMigration
+/database/
+/datalog/
+/eagerMigration/
+/lazyMigration/
+/parserEDBFactToJava/
+/parserFunctionsToDatalog/
+/parserGetToDatalog/
+/parserJSONToEDBFacts/
+/parserPutToDatalog/
+/parserRuletoJava/

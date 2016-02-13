@@ -1,16 +1,23 @@
 package database;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Entity {
 	
+	@JsonProperty("kind")
 	private String kind;
+	@JsonProperty("schemaversion")
 	private int schemaversion;
-	private ArrayList<String> values;
-	
-	public Entity(){
-		
-	}
+	@JsonProperty("attributes")
+	SortedMap<String,String> attributes;
+	@JsonProperty("ts")
+	int timestamp;
+
 	public String getKind() {
 		return kind;
 	}
@@ -23,25 +30,34 @@ public class Entity {
 	public void setSchemaversion(int schemaversion) {
 		this.schemaversion = schemaversion;
 	}
-	public ArrayList<String> getValues() {
-		return values;
+	
+	public SortedMap<String, String> getAttributes(){
+		return attributes;
 	}
-	public void setValues(ArrayList<String> values) {
-		this.values = values;
+	
+	public void setAttributes(SortedMap<String, String> attributes){
+		this.attributes = attributes;
+	}
+	
+	public int getTimestamp(){
+		return this.timestamp;
 	}
 	
 	public String toString(){
 		String entity = kind + Integer.toString(schemaversion) + "(";
-		for (String s : values){
+		String temp;
+		for (Map.Entry<String, String> attributeEntry : attributes.entrySet()){
 			try{
-				int value = Integer.parseInt(s);
+				int value = Integer.parseInt(attributeEntry.getValue());
+				entity = entity + value + ",";
 			}catch ( NumberFormatException e){
-				s = "'" + s + "'";
+				temp = "'" + attributeEntry.getValue() + "'";
+				entity = entity + temp + ",";
 			}
-			entity = entity + s + ",";
 		}
 		if (entity.endsWith(",")) entity = entity.substring(0, entity.length()-1);
 		entity = entity + ").\n";
 		return entity;
+
 	}
 }

@@ -5,14 +5,12 @@ import java.util.ArrayList;
 public class Rule {
 
 	private Predicate ruleHead;
-	private ArrayList<Predicate> predicates;
-	private ArrayList<Condition> conditions;
+	private RuleBody ruleBody;
 	private ArrayList<String> dependencies;
-
-	public Rule(Predicate ruleHead, ArrayList<Predicate> predicates) {
-		super();
+	
+	public Rule(Predicate ruleHead, RuleBody ruleBody){
 		this.ruleHead = ruleHead;
-		this.predicates = predicates;
+		this.setRuleBody(ruleBody);
 		setDependencies();
 	}
 
@@ -24,25 +22,33 @@ public class Rule {
 		this.ruleHead = ruleHead;
 	}
 
+	public RuleBody getRuleBody() {
+		return ruleBody;
+	}
+
+	public void setRuleBody(RuleBody ruleBody) {
+		this.ruleBody = ruleBody;
+	}
+
 	public ArrayList<Predicate> getPredicates() {
-		return predicates;
+		return ruleBody.getPredicates();
 	}
 
 	public void setPredicates(ArrayList<Predicate> predicates) {
-		this.predicates = predicates;
+		ruleBody.setPredicates(predicates);
 	}
 
 	public ArrayList<Condition> getConditions() {
-		return conditions;
+		return ruleBody.getConditions();
 	}
 
 	public void setConditions(ArrayList<Condition> conditions) {
-		this.conditions = conditions;
+		ruleBody.setConditions(conditions);
 	}
 	
 	public void setDependencies(){
 		dependencies = new ArrayList<String>();
-		for (Predicate p:predicates) {
+		for (Predicate p:ruleBody.getPredicates()) {
 			String kind = p.getKind();
 			if (!dependencies.contains(kind)) dependencies.add(kind);
 		}		
@@ -50,6 +56,17 @@ public class Rule {
 
 	public ArrayList<String> getDependencies(){
 		return dependencies;
+	}
+	
+	@Override
+	public String toString(){
+		String rule =  ruleHead.toString() + ":-" ;
+		ArrayList<Predicate> predicates = ruleBody.getPredicates();
+		ArrayList<Condition> conditions = ruleBody.getConditions();
+		if (predicates != null) rule = rule + predicates.toString();
+		if (conditions != null) rule = rule + conditions.toString();
+		
+		return rule;
 	}
 
 }

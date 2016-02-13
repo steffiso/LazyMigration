@@ -1,5 +1,7 @@
 package database;
 
+import java.util.ArrayList;
+
 public class TestDatabase {
 
 	public static void main(String[] args) {
@@ -14,8 +16,12 @@ public class TestDatabase {
 		//String latestSchema = db.getLatestSchema("Player");
 		//System.out.println(latestSchema);
 		//System.out.println(latestVersion + ":" + latestSchema);
-		//db.saveCurrentSchema("Player", "\"?id\",\"?test1\",\"?test2\",\"?test3\"");
-		db.putToDatabase("Player1(3,'Maggie',23,'12345')");
+//		ArrayList<String> newSchema = new ArrayList<String>();
+//		newSchema.add("?test1");
+//		newSchema.add("?test2");
+//		newSchema.add("?test3");
+		//db.saveCurrentSchema("Player", newSchema);
+		db.putToDatabase("Player1(3,'Maggie',23)");
 	}
 
 }

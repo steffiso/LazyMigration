@@ -6,16 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import datalog.Fact;
+import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
-import datalog.Fact;
-import datalog.Rule;
 
-public class TestTopDown {
+public class TestTopDownK {
+
 	public static void main(String[] args) throws ParseException,
-			parserRuletoJava.ParseException {
-
+	 parserRuletoJava.ParseException{
+		// TODO Auto-generated method stub
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
 				"Player1(1,'Lisa',1).")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
@@ -48,6 +49,8 @@ public class TestTopDown {
 			for (Map<String, String> map : maps)
 				for (Entry<String, String> e : map.entrySet())
 					System.out.println(e.getKey() + " " + e.getValue());
-
 	}
-}
+	
+	}
+
+

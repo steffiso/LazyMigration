@@ -29,4 +29,8 @@ public class Condition {
 	public void setOperator(String operator) {
 		this.operator = operator;
 	}
+	
+	public String toString(){
+		return leftOperand + operator + rightOperand;
+	}
 }

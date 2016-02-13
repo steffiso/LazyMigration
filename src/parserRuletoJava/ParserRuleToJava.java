@@ -5,6 +5,10 @@ import datalog.Predicate;
 import datalog.Rule;
 import datalog.Condition;
 import datalog.RuleBody;
+import database.Database;
+import database.Schema;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class ParserRuleToJava implements ParserRuleToJavaConstants {
 
@@ -19,8 +23,8 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
       leftRelation = getRelation();
       jj_consume_token(13);
       p = getRelationList();
-      q = new Rule(leftRelation, p.predicates);
-      if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
+      q = new Rule(leftRelation, p);
+      //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
       querys.add(q);
       jj_consume_token(14);
       label_1:
@@ -37,8 +41,8 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
         leftRelation = getRelation();
         jj_consume_token(13);
         p = getRelationList();
-          q = new Rule(leftRelation, p.predicates);
-          if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
+          q = new Rule(leftRelation, p);
+          //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
           querys.add(q);
         jj_consume_token(14);
       }
@@ -122,8 +126,10 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
   Token kind = null;
   Token schemaToken = null;
   String value = null;
-  ArrayList < String > values = new ArrayList < String > ();
+  String attribute = null;
+  SortedMap <String, String > values = new TreeMap <String, String > ();
   Predicate predicate = null;
+  Schema schema = null;
   boolean isNot = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case not:
@@ -149,7 +155,18 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
     case string:
     case number:
       value = getValue();
-      values.add(value);
+                    if (value.startsWith("?"))
+                    {
+                      attribute = value;
+                      value = "";
+                    }
+                    else
+                        attribute = "";
+                        //toDO: aus Schema den Attributsnamen rausbekommen und in Map schreiben !!      
+                        //attribute = getAttributeName(kind, schemaToken, pos);
+                    {
+                      values.put(attribute, value);
+                    }
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -162,7 +179,16 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
         }
         jj_consume_token(15);
         value = getValue();
-          values.add(value);
+                            if (value.startsWith("?"))
+                            {
+                              attribute = value;
+                              value = "";
+                            }
+                                else
+                                        attribute = "";
+                        {
+                          values.put(attribute, value);
+                        }
       }
       break;
     default:
@@ -377,4 +403,5 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
   final public void disable_tracing() {
   }
 
- }
+//  public Schema getSchema(String kind, int schemaNumber)//  {//    Database db = new Database();//    Schema currentSchema = db.getSchema(kind, schemaNumber);//    return currentSchema;//  }
+}

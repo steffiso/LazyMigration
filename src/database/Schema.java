@@ -1,10 +1,19 @@
 package database;
 
+import java.util.ArrayList;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Schema {
 
+	@JsonProperty("kind")
 	private String kind;
+	@JsonProperty("schemaversion")
 	private int schemaversion;
-	private String values;
+	@JsonProperty("attributes")
+	private ArrayList<String> attributes;
+	@JsonProperty("ts")
+	private int timestamp;
 	
 	public String getKind() {
 		return kind;
@@ -18,10 +27,16 @@ public class Schema {
 	public void setSchemaversion(int schemaversion) {
 		this.schemaversion = schemaversion;
 	}
-	public String getValues() {
-		return values;
+	public ArrayList<String> getAttributes() {
+		return attributes;
 	}
-	public void setValues(String values) {
-		this.values = values;
+	public void setValues(ArrayList<String> attributes){
+		this.attributes = attributes;
+	}
+	public void setTimestamp(int timestamp) {
+		this.timestamp = timestamp;
+	}
+	public int getTimestamp() {
+		return timestamp;
 	}
 }

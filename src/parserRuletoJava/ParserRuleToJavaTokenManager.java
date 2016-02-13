@@ -5,6 +5,10 @@ import datalog.Predicate;
 import datalog.Rule;
 import datalog.Condition;
 import datalog.RuleBody;
+import database.Database;
+import database.Schema;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /** Token Manager. */
 public class ParserRuleToJavaTokenManager implements ParserRuleToJavaConstants

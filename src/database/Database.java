@@ -21,11 +21,16 @@ import parserPutToDatalog.ParserForPut;
 
 public class Database {
 
-	String filenameEDB = "data/EDB.json";
-	String filenameSchema = "data/SchemaLog.json";
-	String filenameLegacy = "data/LegacyEntities.txt";
+	private String filenameEDB;
+	private String filenameSchema;
+	private String filenameLegacy;
 	
-	
+	public Database(){
+		filenameEDB = "data/EDB.json";
+		filenameSchema = "data/SchemaLog.json";
+		filenameLegacy = "data/LegacyEntities.txt";
+	}
+
 	//returns all edb-facts from database in one string
 	public String getEDB(){
 		String edb = "";
@@ -56,9 +61,9 @@ public class Database {
 		
 	//returns the schema for one version and one kind
 	//something like "?name,?score" (without id and ts)
-	public String getSchema(String inputKind, int inputVersion){	
+	public ArrayList<String> getSchema(String inputKind, int inputVersion){	
 		
-		String schema = "";
+		ArrayList<String> schema = null;
 		ArrayList<Schema> schemata;
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -67,7 +72,7 @@ public class Database {
 			
 			for (Schema s: schemata){
 				if (s.getKind().equals(inputKind) && s.getSchemaversion() == inputVersion){
-					schema = s.getValues();
+					schema = s.getAttributes();
 				}
 			}
 		} catch (JsonParseException e) {
@@ -115,7 +120,8 @@ public class Database {
 	}
 	
 	//writes the datalogFact in json-File
-	//input: "Player-2(4,'Lisa',40, '2016-01-01 ...')"
+	//input: "Player2(4,'Lisa',40)"
+	//timestamp will be added automatically
 	public void putToDatabase(String datalogFact) {
 		
 		String json=null;
@@ -131,9 +137,9 @@ public class Database {
 	
 	//returns the latest schema for input kind
 	//output: "?name,?score,?points"
-	public String getLatestSchema(String kind){
+	public ArrayList<String> getLatestSchema(String kind){
 		int currentSchemaVersion = 0;
-		String currentSchema = "";
+		ArrayList<String> currentSchema = null;
 
 		currentSchemaVersion = getLatestSchemaVersion(kind);
 		currentSchema = getSchema(kind, currentSchemaVersion);
@@ -143,17 +149,57 @@ public class Database {
 	
 	//write a schema to file "SchemaLog.json"
 	//input example: newSchema = "?a,?b,?c"
-	public void saveCurrentSchema(String kind, String newSchema){
+	public void saveCurrentSchema(String kind, ArrayList<String> newSchemaList){
 		int latestSchemaVersion = getLatestSchemaVersion(kind);		
 		int newSchemaVersion = latestSchemaVersion + 1;
-		newSchema = "\"" + newSchema + "\"";
+		String newSchema = "[";
+		for (String s: newSchemaList){
+			newSchema = newSchema + "\"" + s + "\",";
+		}
+		newSchema = newSchema.substring(0, newSchema.length()-1) + "]";
+		
 		writeInJsonFile(filenameSchema, kind, newSchemaVersion, newSchema);
+	}
+	
+	public int getLastTimestamp(){
+		int ts = 0;
+		
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayList<Schema> schemata;
+		ArrayList<Entity> entities;
+
+			try {
+				schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});	
+				for (Schema s: schemata){
+					if (s.getTimestamp()>ts) ts = s.getTimestamp();
+				}
+				
+				entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
+				for (Entity e: entities){
+					if (e.getTimestamp() > ts) ts = e.getTimestamp();
+				}
+
+			} catch (JsonParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (JsonMappingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		
+				
+		return ts;
 	}
 	
 	
 	public void writeInJsonFile(String filename, String kind, int schemaVersion, String values){
 		String jsonString = "";
-		jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + Integer.toString(schemaVersion) + ",\n" + "\"values\":" + values + "}";
+		int newTS = getLastTimestamp() + 1;
+		jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + Integer.toString(schemaVersion) + ",\n" + "\"attributes\":" + values + ",\n\"ts\":" + newTS + "}";
 		
 		writeInJsonFile(filename, jsonString);		
 	}

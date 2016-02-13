@@ -30,5 +30,9 @@ public class Fact {
 	public void setKind(String kind) {
 		this.kind = kind;
 	}
+	
+	public String toString(){
+		return kind + "(" + listOfValues.toString() + ").";
+	}
 
 }
