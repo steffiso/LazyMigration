@@ -46,7 +46,14 @@ public class TestTopDownS {
 //	attributeMap.put("?score", "");
 //	attributeMap.put("?score2", "");
 //	attributeMap.put("?ts", "");
-//	Predicate goal = new Predicate("getPlayer2", 5, attributeMap);		
+//	
+//	ArrayList<String> schema = new ArrayList<String>();
+//	schema.add("?id");
+//	schema.add("?name");
+//	schema.add("?score");
+//	schema.add("?score2");
+//	
+//	Predicate goal = new Predicate("getPlayer2", 5, schema, attributeMap);		
 //	
 //	ArrayList<Rule> rules = new ParserRuleToJava(
 //			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id, ?name,?score, ?ts),Player1(?id, ?name2,?score2,?nts), ?ts < ?nts." + 
@@ -65,10 +72,15 @@ public class TestTopDownS {
 	attributeMap.put("?name", "");
 	attributeMap.put("?score", "");
 	attributeMap.put("?ts", "");
-	Predicate goal = new Predicate("getPlayer1", 4, attributeMap);		
+	
+	ArrayList<String> schema = new ArrayList<String>();
+	schema.add("?id");
+	schema.add("?name");
+	schema.add("?score");
+	Predicate goal = new Predicate("getPlayer1", 4, schema, attributeMap);		
 	
 	ArrayList<Rule> rules = new ParserRuleToJava(
-			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name,?score,?nts), ?ts < ?nts." + 
+			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." + 
 							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
 							"getPlayer1(?id,?name,?score,?ts):-Player1(?id, ?name,?score,?ts), latestPlayer1(?id,?ts),?id=1."))
 			

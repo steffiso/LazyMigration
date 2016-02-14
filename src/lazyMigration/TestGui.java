@@ -170,7 +170,13 @@ public class TestGui {
 			attributeMap.put("?name", null);
 			attributeMap.put("?score", null);
 			attributeMap.put("?ts", null);
-			Predicate goal = new Predicate("getPlayer1", 3, attributeMap);	
+			
+			ArrayList<String> schema = new ArrayList<String>();
+			schema.add("?id");
+			schema.add("?name");
+			schema.add("?score");
+			
+			Predicate goal = new Predicate("getPlayer1", 3, schema, attributeMap);	
 				
 			TopDownExecution migrate = new TopDownExecution(facts, rules, goal);
 			ArrayList<Fact> answerString = migrate.getAnswers();

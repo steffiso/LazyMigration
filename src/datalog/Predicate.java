@@ -4,22 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+
+import database.Schema;
+
 import java.util.Map.Entry;
 
 public class Predicate {
 
 	// eine Relation innerhalb einer Query, Bsp. A(?x,?y)
 	private String kind;  // --> A
+	private ArrayList<String> schema;
 	private int anz; // --> 2
 	//private ArrayList<String> werte; // --> (?x,?y)
-	private SortedMap<String, String> werte;
+	private Map<String, String> werte;
 	private int timestamp;
 	private boolean isNot=false;
 	private int stratum=0;
 	private int ranking=0;
 	private ArrayList<Map<String, String>> resultMap;
 	
-	public Predicate(String kind, int anz, SortedMap<String, String> werte) {
+	public Predicate(String kind, int anz, ArrayList<String> schema, Map<String, String> werte) {
 		super();
 		this.kind = kind;
 		this.anz = anz;
@@ -31,7 +35,7 @@ public class Predicate {
 	public int getAnz() {
 		return anz;
 	}
-	public SortedMap<String, String> getWerte() {
+	public Map<String, String> getWerte() {
 		return werte;
 	}
 	public void setKind(String kind) {
@@ -40,7 +44,7 @@ public class Predicate {
 	public void setAnz(int anz) {
 		this.anz = anz;
 	}
-	public void setWerte(SortedMap<String, String> werte) {
+	public void setWerte(Map<String, String> werte) {
 		this.werte = werte;
 	}
 	public boolean isNot() {
@@ -86,6 +90,12 @@ public class Predicate {
 		predicate = predicate.substring(0, predicate.length()-1) + ")";
 		//predicate = predicate + werte.toString() + ")";
 		return predicate;
+	}
+	public ArrayList<String> getSchema() {
+		return schema;
+	}
+	public void setSchema(ArrayList<String> schema) {
+		this.schema = schema;
 	}
 
 

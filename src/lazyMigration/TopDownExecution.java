@@ -64,8 +64,9 @@ public class TopDownExecution {
 		ArrayList<Fact> answer = new ArrayList<Fact>();	
 		unificationMap = new HashMap<String, String>();
 		
+		//check if a mapping for predicate goal exists
 		if (getMap(goal) == 0){
-			ArrayList<Rule> childrenRules = new ArrayList<Rule>();
+			ArrayList<Rule> childrenRules = new ArrayList<Rule>();			
 			for (Rule r: rules){
 				//look for corresponding rules
 				Predicate ruleHead = r.getHead();
@@ -79,26 +80,37 @@ public class TopDownExecution {
 				System.out.println("No matching rules found!");				
 			}
 			else {
+				//no mapping found -> children rules exist
+				//compute the answers of corresponding rule goal tree
 				System.out.println("Unifizierte Regeln: " + childrenRules.toString());
 				tree = new RuleGoalTree(childrenRules);
 				goal.setResultMap(getAnswersForSubtree(tree));
+				
+				//join head predicates of all rule bodies (children of goal)
+//				ArrayList<Predicate> childrenHeads = new ArrayList<Predicate>();
+//				for (Rule r: childrenRules){
+//					childrenHeads.add(r.getHead());
+//				}
+//				goal.setResultMap(join(childrenHeads));
 			}
 			
-			//toDo: join der ruleBodies
 		}			
 		
 		else			
-			System.out.println("Mapping gefunden:" + goal.toString() + " " + goal.getResultMap().toString());	
-			//answer = goal.getResultMap().toFact !!!
+			System.out.println("Mapping gefunden:" + goal.toString() + " " + goal.getResultMap().toString());				
 		
 		System.out.println("Ergebnis: " + goal.getResultMap());
+		//toDo: goal.getResultMap() to Facts !!!
 		return answer;
 	}
 	
 	public ArrayList<Map<String, String>> getAnswersForSubtree(RuleGoalTree tree){
 		ArrayList<Map<String, String>> resultMap = new ArrayList<Map<String, String>>();
-		for (RuleBody body: tree.getChildren()){
+		
+		for (Rule rulesChildren: tree.getChildren()){
+			RuleBody body = rulesChildren.getRuleBody();
 			for (Predicate subgoal: body.getPredicates()){
+				//check if a mapping for predicate goal exists
 				if (getMap(subgoal) == 0){
 					ArrayList<Rule> childrenRules = new ArrayList<Rule>();
 					for (Rule r: rules){
@@ -113,34 +125,40 @@ public class TopDownExecution {
 						System.out.println(childrenRules.get(i).toString());
 					}
 						
-					if (!childrenRules.isEmpty()){
+					if (childrenRules.size() == 0){
+						System.out.println("Keine children rules!" + subgoal.toString());
+					}
+					else
+						//no mapping found -> children rules exist
+						//compute the answers of corresponding rule goal tree
 						System.out.println("Unifizierte Regeln: " + childrenRules.toString());
 						RuleGoalTree subTree = new RuleGoalTree(childrenRules);
 						
-						SortedMap<String, String> attributeHead = subTree.getGoal().getWerte();
+						Map<String, String> attributeHead = subTree.getGoal().getWerte();
 						subgoal.setResultMap(getAnswersForSubtree(subTree));
 						for (Map.Entry<String, String> entryHead : attributeHead.entrySet()){
 							if (!entryHead.getValue().equals("")){
-								//put ausführen mit ResultMap??
+								//toDo: hier put ausführen mit ResultMap??
 							}
 						}
-					}
-					else
-						System.out.println("Keine children rules!" + subgoal.toString());
 				}
 				else
 					System.out.println("Mapping gefunden!" + subgoal.getResultMap().toString());
 			}
-			//join der Prädikate im Rule Body
-			//resultMap = join(body.getPredicates());
-			//if (body.getConditions() != null)
-			//	resultMap = generateConditions(resultMap, body.getConditions());
+			//toDo: join der Prädikate im Rule Body
+//			resultMap = join(body.getPredicates());
+//			if (body.getConditions() != null)
+//				resultMap = generateConditions(resultMap, body.getConditions());			
+//			System.out.println("Join: " + resultMap.toString());
 			
-			//System.out.println("Join: " + resultMap.toString());
 		}
 		
-		//toDo: join der Ergebnisse der RuleBodies
-		//tree.getGoal().setResultMap(join(tree.getChildren().get(0).getPredicates()));
+		//join head predicates of all rule bodies (children of goal)
+//		ArrayList<Predicate> childrenHeads = new ArrayList<Predicate>();
+//		for (Rule r: tree.getChildren()){
+//			childrenHeads.add(r.getHead());
+//		}
+//		goal.setResultMap(join(childrenHeads));
 		return resultMap;
 	}
 	
@@ -153,8 +171,8 @@ public class TopDownExecution {
 		}
 		else {
 			// create unification Map			
-			SortedMap<String, String> valuesGoal = goal.getWerte();
-			SortedMap<String, String> valuesHead = head.getWerte();			
+			Map<String, String> valuesGoal = goal.getWerte();
+			Map<String, String> valuesHead = head.getWerte();			
 			
 			for (Map.Entry<String, String> entryGoal : valuesGoal.entrySet()) {
 				boolean containsKey = valuesHead.containsKey(entryGoal.getKey());
@@ -290,7 +308,7 @@ public class TopDownExecution {
 				Map<String, String> tempMap = new HashMap<String, String>();
 				int i = 0;
 				for (Entry<String, String> wert : predicate.getWerte().entrySet()){
-					if (wert.getValue() == "")
+					if (wert.getValue().equals(""))
 						tempMap.put(wert.getKey(), value.getListOfValues().get(i));
 					else if (value.getListOfValues().get(i).equals(wert.getValue()))
 							tempMap.put(wert.getKey(), value.getListOfValues().get(i));
