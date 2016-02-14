@@ -55,8 +55,9 @@ public class Entity {
 				entity = entity + temp + ",";
 			}
 		}
-		if (entity.endsWith(",")) entity = entity.substring(0, entity.length()-1);
-		entity = entity + ").\n";
+		if (entity.endsWith(",")) entity = entity + Integer.toString(timestamp) + ").\n";
+		else 
+			entity = entity + "," + Integer.toString(timestamp) + ").\n";
 		return entity;
 
 	}

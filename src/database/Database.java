@@ -60,7 +60,7 @@ public class Database {
 	}
 		
 	//returns the schema for one version and one kind
-	//something like "?name,?score" (without id and ts)
+	//something like "?id,?name,?score" (without ts)
 	public ArrayList<String> getSchema(String inputKind, int inputVersion){	
 		
 		ArrayList<String> schema = null;

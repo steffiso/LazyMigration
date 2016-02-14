@@ -23,7 +23,6 @@ public class EagerMigration {
 		
 		Database db = new Database();
 		String answerString = "";
-		DatalogRulesGenerator datalogGenerator = new DatalogRulesGenerator();
 		BottomUpExecution bottomUp = new BottomUpExecution(facts);
 		bottomUp.generateAllRules(rules);
 		for (Rule rule : rules) {
@@ -66,8 +65,9 @@ public class EagerMigration {
 					
 					values = values.substring(0, values.length()-2);
 					String tempKind = rule.getHead().getKind();
-					String datalogFact = datalogGenerator.putKindToDatalog(tempKind, values);
-					db.putToDatabase(datalogFact);
+					//toDo: 
+					//String datalogFact = ....
+					//db.putToDatabase(datalogFact);
 				}
 			}
 			

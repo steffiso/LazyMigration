@@ -73,28 +73,29 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
   {
     String value = null;
     ArrayList< String > schema = getCurrentSchema(kind);
-    ArrayList< String > secondScheme = schema;
-    //ArrayList< String > secondScheme = "";
+
     int currentVersion = getCurrentSchemaVersion(kind);
-    for (int i = 0; i<secondScheme.size();i++)
+        ArrayList<String > secondSchema = new ArrayList<String >();
+        secondSchema.addAll(schema);
+    for (int i = 0; i<secondSchema.size();i++)
     {
-        String s = secondScheme.get(i);
+        String s = secondSchema.get(i);
         if (!s.equals("?id"))
         {
-                        secondScheme.set(i, s + "2");
+                        secondSchema.set(i, s + "2");
                 }
     }
-    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," + kind + currentVersion + "(" +
-    schemaToString(secondScheme) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
+    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," +
+        kind + currentVersion + "(" + schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" +
+        "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
     return value;
   }
 
-  private static String getTimestamp()
+  private static int getTimestamp()
   {
-    Date date = new Date();
-    Timestamp ts = new Timestamp(date.getTime());
-    String time = ts.toString();
-    return time;
+        Database db = new Database();
+        int time = db.getLastTimestamp();
+    return time + 1;
   }
 
   final public String getFunctionRule() throws ParseException {
@@ -150,7 +151,8 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
     int currentSchemaVersion = getCurrentSchemaVersion(kind);
     int newSchemaVersion = currentSchemaVersion + 1;
     String rules = getResidualRules(kind);
-    rules = rules + kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + ",?ts):-" + kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion+ "(?id, ?ts).";
+    rules = rules + kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + "," + getTimestamp() + "):-" +
+        kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion+ "(?id, ?ts).";
         saveCurrentSchema(kind, newSchema);
     {if (true) return rules;}
     throw new Error("Missing return statement in function");
@@ -172,7 +174,8 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
     int currentVersion = getCurrentSchemaVersion(kind);
     int newVersion = currentVersion + 1;
     String rules = getResidualRules(kind);
-    rules = rules + kind + newVersion + "(" + schemaToString(newSchema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id, ?ts).";
+    rules = rules + kind + newVersion + "(" + schemaToString(newSchema) + "," + getTimestamp() + "):-" +
+        kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id, ?ts).";
         saveCurrentSchema(kind, newSchema);
     {if (true) return rules;}
     throw new Error("Missing return statement in function");
@@ -212,20 +215,26 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
     ArrayList<String > schemaFrom = getCurrentSchema(kindFrom);
     ArrayList<String > schemaTo = getCurrentSchema(kindTo);
     ArrayList<String > schemaToNew = getNewSchemaAdd(kindTo, "?" + attribute);
+    ArrayList<String > schemaToNew2 = getNewSchemaAdd(kindTo, "''");
     int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
     int currentSchemaVersionFrom = getCurrentSchemaVersion(kindFrom);
     int newSchemaVersionTo = currentSchemaVersionTo + 1;
 
+    schemaFrom.set(0,"?id2");
+    schemaTo.set(0,"?id1");
+    schemaToNew.set(0,"?id1");
+    schemaToNew2.set(0,"?id1");
+
     if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
     if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
     String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
-    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToString(schemaToNew) + ",?ts):-"
-    + kindTo + currentSchemaVersionTo + "(?id1, " + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2),"
+    rules = rules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-"
+    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
+    + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2),"
     + condition + ".\u005cn";
-    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToString(getNewSchemaAdd(kindTo, "''")) + ",?ts):-"
-    + kindTo + currentSchemaVersionTo + "(?id1, " + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + " not " + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaToString(schemaFrom) + ",?ts2),"
+    rules = rules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-"
+    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
+    + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2),"
     + condition + ".\u005cn";
     saveCurrentSchema(kindTo, schemaToNew);
     {if (true) return rules;}
@@ -267,6 +276,7 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
     ArrayList<String > schemaTo = getCurrentSchema(kindTo);
     ArrayList<String > schemaFromNew = getNewSchemaDelete(kindFrom, attribute);
     ArrayList<String > schemaToNew = getNewSchemaAdd(kindTo, "?" + attribute);
+    ArrayList<String > schemaToNew2 = getNewSchemaAdd(kindTo, "''");
     int currentSchemaVersionFrom = getCurrentSchemaVersion(kindFrom);
     int newSchemaVersionFrom = currentSchemaVersionFrom + 1;
     int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
@@ -274,17 +284,25 @@ public class ParserForFunctions implements ParserForFunctionsConstants {
 
     if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
     if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
+
+    schemaFrom.set(0,"?id2");
+    schemaFromNew.set(0,"?id2");
+    schemaTo.set(0,"?id1");
+    schemaToNew.set(0,"?id1");
+    schemaToNew2.set(0,"?id1");
+
     String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
-    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToString(schemaToNew)  + ",?ts):-"
-    + kindTo + currentSchemaVersionTo + "(?id1, " + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom +"(?id2, ?ts2),"
+    rules = rules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew)  + "," + getTimestamp() + "):-"
+    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1),"
+    + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom +"(?id2,?ts2),"
     + condition + ".\u005cn";
-    rules = rules + kindTo + newSchemaVersionTo + "(?id1, " + schemaToString(getNewSchemaAdd(kindTo, "''")) + ",?ts):-"
-    + kindTo + currentSchemaVersionTo + "(?id1, " + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + " not " + kindFrom + currentSchemaVersionFrom + "(?id2, " + schemaToString(schemaFrom) + ",?ts2),"
+    rules = rules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-"
+    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1),"
+    + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2),"
     + condition + ".\u005cn";
 
-    rules = rules + kindFrom + newSchemaVersionFrom + "(?id," + schemaToString(schemaFromNew) + ",?ts):-" + kindFrom + currentSchemaVersionFrom + "(?id," + schemaToString(schemaFrom) + ", ?ts), latest" + kindFrom + currentSchemaVersionFrom +"(?id, ?ts).";
+    rules = rules + kindFrom + newSchemaVersionFrom + "(" + schemaToString(schemaFromNew) + "," + getTimestamp() + "):-"
+        + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts), latest" + kindFrom + currentSchemaVersionFrom +"(?id,?ts).";
 
     saveCurrentSchema(kindFrom, schemaFromNew);
     saveCurrentSchema(kindTo, schemaToNew);

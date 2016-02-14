@@ -2,3 +2,9 @@
 /datalog
 /eagerMigration
 /parserRuletoJava
+/database/
+/parserEDBFactToJava/
+/parserFunctionsToDatalog/
+/parserGetToDatalog/
+/parserJSONToEDBFacts/
+/parserPutToDatalog/

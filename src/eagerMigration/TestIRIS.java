@@ -166,36 +166,34 @@ public class TestIRIS {
 			case "Add":
 				rules = rules + "/*Add Player.points = 200*/\n";
 				rules = rules
-						+ newTestEDB.addAttribute("Player", "points", "200");
+						+ newTestEDB.addAttribute("add \"Player\".\"points\"=\"200\"");
 				rules = rules + "\n?-Player2(?id, ?name,?score,?points,?ts).";
 				break;
 			case "Delete":
 				rules = rules + "/*Delete Player.score*/\n";
-				rules = rules + newTestEDB.deleteAttribute("Player", "score");
+				rules = rules + newTestEDB.deleteAttribute("delete \"Player\".\"score\"");
 				rules = rules + "\n?-Player2(?id, ?name,?ts).";
 				break;
 			case "Get":
 				rules = rules + "/*get Player with ID 1*/\n"
-						+ newTestEDB.get("Player", 1);
+						+ newTestEDB.get("get \"Player\".\"id\"=\"1\"");
 				break;
 			case "Move":
 				rules = rules + "/*move Mission.title to Player where Mission.pid=Player.id*/\n";
 				rules = rules
-						+ newTestEDB.moveAttribute("Mission", "Player",
-								"title", "pid", "id");
+						+ newTestEDB.moveAttribute("move \"Mission\".\"title\" to \"Player\" where \"Mission\".\"pid\"=\"Player\".\"id\"");
 				rules = rules + "\n?-Player2(?id1,?name,?score,?title,?ts).";
 				rules = rules + "\n?-Mission2(?id1,?pid,?ts).";
 				break;
 			case "Copy":
 				rules = rules + "/*copy Player.score to Mission where Player.id=Mission.pid*/\n";
 				rules = rules
-						+ newTestEDB.copyAttribute("Player", "Mission",
-								"score", "id", "pid");
+						+ newTestEDB.copyAttribute("copy \"Player\".\"score\" to \"Mission\" where \"Player\".\"id\"=\"Mission\".\"pid\"");
 				rules = rules + "\n?-Mission2(?id1, ?title,?pid,?score,?ts).";
 				break;
 			case "Put":
-				rules = rules + "/*Put Player with attributes [1,Lisa.S,550]*/\n"
-						+ newTestEDB.putKindToDatalog("Player", "1,'Lisa.S',550")+".";
+				rules = rules + "/*Put Player with attributes [1,Lisa.S,550]*/ (To Do)\n";
+						//+ newTestEDB.putKindToDatalog("Player", "1,'Lisa.S',550")+".";
 				break;
 			}
 			return rules;

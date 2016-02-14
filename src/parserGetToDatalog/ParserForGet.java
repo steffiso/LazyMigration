@@ -40,13 +40,18 @@ public class ParserForGet implements ParserForGetConstants {
     ArrayList<String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
 
-        ArrayList<String > secondSchema = schema;
-    for (String s: secondSchema)
+        ArrayList<String > secondSchema = new ArrayList<String >();
+        secondSchema.addAll(schema);
+    for (int i = 0; i<secondSchema.size();i++)
     {
-                s = s + "2";
+        String s = secondSchema.get(i);
+        if (!s.equals("?id"))
+        {
+                        secondSchema.set(i, s + "2");
+                }
     }
-    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts)," + kind + currentVersion + "(" +
-    schemaToString(secondSchema) + "?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
+    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," + kind + currentVersion + "(" +
+    schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
     return value;
   }
 
@@ -69,33 +74,6 @@ public class ParserForGet implements ParserForGetConstants {
 
     {if (true) return value;}
     jj_consume_token(0);
-    throw new Error("Missing return statement in function");
-  }
-
-  final public String get(String kind, int id) throws ParseException {
-  String value = null;
-    jj_consume_token(get);
-    jj_consume_token(0);
-    ArrayList<String > schema = getCurrentSchema(kind);
-    ArrayList<String > newAttribute = schema;
-    value = getKindRule(kind);
-    newAttribute.set(0,Integer.toString(id));
-    value = value + "get" + kind + "(" + schemaToString(schema) + ",?ts):-" + kind + "(" + schemaToString(schema) + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(" + schemaToString(newAttribute) + ",?ts).\u005cn";
-
-
-    {if (true) return value;}
-    throw new Error("Missing return statement in function");
-  }
-
-  final public String getAll(String kind) throws ParseException {
-  String value = null;
-    jj_consume_token(get);
-    jj_consume_token(0);
-    ArrayList<String > schema = getCurrentSchema(kind);
-    value = getKindRule(kind);
-    value = value + "get" + kind + "(" + schemaToString(schema) + ",?ts):-" + kind + "(" + schemaToString(schema) + ", ?ts), latest" + kind + "(?id,?ts).\u005cn?-get" + kind + "(" + schemaToString(schema) + ",?ts).\u005cn";
-
-    {if (true) return value;}
     throw new Error("Missing return statement in function");
   }
 
