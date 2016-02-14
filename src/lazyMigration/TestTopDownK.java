@@ -22,13 +22,17 @@ public class TestTopDownK {
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
 				"Player1(1,'Lisa',2).")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
-				"Player1(2,'Homer',1).")).start();
+				"Player1(2,'Homer',2).")).start();
 		Fact ff4 = new ParserforDatalogToJava(new StringReader(
 				"M1(3,2).")).start();
 		Fact ff5 = new ParserforDatalogToJava(new StringReader(
-				"M1(2,55).")).start();
+				"M1(3,55).")).start();
 		Fact ff6 = new ParserforDatalogToJava(new StringReader(
-				"M1(2,33).")).start();
+				"M1(3,33).")).start();
+		Fact ff7 = new ParserforDatalogToJava(new StringReader(
+				"A1(2,4445).")).start();
+		Fact ff8 = new ParserforDatalogToJava(new StringReader(
+				"A1(1,3333).")).start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
 		ff.add(ff2);
@@ -36,10 +40,13 @@ public class TestTopDownK {
 		ff.add(ff4);
 		ff.add(ff5);
 		ff.add(ff6);
+		ff.add(ff7);
+		ff.add(ff8);
+
 
 		ArrayList<Rule> qq = new ParserRuleToJava(
 				new StringReader(
-						"Player2(?id~1, ?name,?score,?ts):-Player1(?id~1, ?name,?ts), not M1(?id, ?score),?ts=2."))
+						"Player2(?id, ?name,?score,?ts):-Player1(?id, ?name,?ts),  A1(?id,?points), not M1(?name,?score),Player1(?id,?j,?k), ?ts=2."))
 				.start();
 		TopDownExecution tp = new TopDownExecution(ff);
 		List<Map<String, String>> maps = tp.getAnswer(qq.get(0));

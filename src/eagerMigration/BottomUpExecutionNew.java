@@ -8,20 +8,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
-
 import datalog.Condition;
 import datalog.Fact;
 import datalog.Predicate;
 import datalog.Rule;
 
-public class BottomUpExecution {
+public class BottomUpExecutionNew {
 
 	// Alle EDB-Fakten und generierten IDB-Fakten
 	private ArrayList<Fact> values;
 
 	// Setze EDB-Fakten
-	public BottomUpExecution(ArrayList<Fact> values) {
+	public BottomUpExecutionNew(ArrayList<Fact> values) {
 		super();
 		this.values = values;
 	}
@@ -62,28 +60,31 @@ public class BottomUpExecution {
 	// Generiere alle Ergebnisse einer IDB Regel und speichere sie in den Fakten
 	// ab
 	public void getAnswer(Rule rule) {
-		List<Map<String, String>> mapList = null;
+		Predicate factList = null;
 		String kind = rule.getHead().getKind();
 		ArrayList<Predicate> predicates = rule.getPredicates();
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		if (!predicates.isEmpty()) {
 			if (predicates.size() > 1) {
 				rulesBodyUnificationandReorder(rule);
-				mapList = generateRule(rule.getPredicates());
+				factList = generateRule(rule.getPredicates());
 
+			} else {
+				getMap(predicates.get(0));
+				factList = predicates.get(0);
 			}
-			else mapList=getMap(predicates.get(0));
 		}
-		if (mapList != null) {
+		if (factList != null) {
 			if (rule.getConditions() != null) {
-				mapList = generateConditions(mapList, rule.getConditions());
+				factList = generateConditions(factList, rule.getConditions());
 			}
-			Map<String, String> werte = rule.getHead().getWerte();
-			for (Map<String, String> oneMap : mapList) {
+			ArrayList<String> werte = rule.getHead().getScheme();
+			for (ArrayList<String> oneMap : factList.getResultMap2()) {
 				ArrayList<String> oneAnswer = new ArrayList<String>();
-				for (String wert : werte.keySet())
+				for (String wert : werte)
 					if (wert.startsWith("?"))
-						oneAnswer.add(oneMap.get(wert));
+						oneAnswer.add(oneMap.get(factList.getScheme().indexOf(
+								wert)));
 					else
 						oneAnswer.add(wert);
 				boolean alreadyExist = false;
@@ -106,7 +107,9 @@ public class BottomUpExecution {
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {
 				Condition cond = iterator.next();
-				if (cond.getOperator().equals("=")) {
+				if (cond.getOperator().equals("=")
+						&& cond.getLeftOperand().startsWith("?")
+						&& cond.getRightOperand().startsWith("?")) {
 					String left = cond.getLeftOperand();
 					String right = cond.getRightOperand();
 					renameVariablesOfAllPredicates(rule, left, right);
@@ -133,23 +136,22 @@ public class BottomUpExecution {
 		}
 	}
 
-	private List<Map<String, String>> generateRule(
-			ArrayList<Predicate> predicates) {
-		ArrayList<Map<String, String>> temp = null;
-		ArrayList<Map<String, String>> map = getMap(predicates.get(0));
+	private Predicate generateRule(ArrayList<Predicate> predicates) {
+		Predicate temp = null;
+		ArrayList<ArrayList<String>> map = getMap(predicates.get(0));
 		if (!map.isEmpty())
 			if (predicates.get(1).isNot())
-				temp = getTempNotResult(map, predicates.get(1));
+				temp = getTempNotResult(predicates.get(0), predicates.get(1));
 			else
-				temp = getTempJoinResult(map, predicates.get(1));
-		ArrayList<Map<String, String>> mapList = null;
+				temp = getTempJoinResult(predicates.get(0), predicates.get(1));
+		Predicate mapList = null;
 		if (temp != null) {
-			if (!temp.isEmpty()) {
+			if (!temp.getResultMap2().isEmpty()) {
 				int iAnz = predicates.size();
 				for (int i = 2; i < iAnz; i++) {
-					if (temp.isEmpty())
+					if (temp.getResultMap2().isEmpty())
 						break;
-					ArrayList<Map<String, String>> newTemp = null;
+					Predicate newTemp = null;
 					if (predicates.get(i).isNot())
 						newTemp = getTempNotResult(temp, predicates.get(i));
 					else
@@ -160,13 +162,13 @@ public class BottomUpExecution {
 			}
 
 		} else
-			mapList = map;
+			mapList = temp;
 
 		return mapList;
 	}
 
-	private List<Map<String, String>> generateConditions(
-			List<Map<String, String>> mapList, ArrayList<Condition> conditions) {
+	private Predicate generateConditions(Predicate mapList,
+			ArrayList<Condition> conditions) {
 		for (Condition cond : conditions) {
 			mapList = getTempCondResult(mapList, cond);
 		}
@@ -176,21 +178,21 @@ public class BottomUpExecution {
 	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z),?y=?z.
 	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
-	private List<Map<String, String>> getTempCondResult(
-			List<Map<String, String>> mapList, Condition cond) {
-		List<Map<String, String>> facts = new ArrayList<Map<String, String>>();
+	private Predicate getTempCondResult(Predicate p, Condition cond) {
+		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		String rightOperand = cond.getRightOperand();
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
-		for (Map<String, String> mapOfMapList : mapList) {
+		List<ArrayList<String>> mapList = p.getResultMap2();
+		for (ArrayList<String> mapOfMapList : mapList) {
 			String left = "";
 			String right = "";
 			if (leftOperand.startsWith("?"))
-				left = mapOfMapList.get(leftOperand);
+				left = mapOfMapList.get(p.getScheme().indexOf(leftOperand));
 			else
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
-				right = mapOfMapList.get(rightOperand);
+				right = mapOfMapList.get(p.getScheme().indexOf(rightOperand));
 			else
 				right = rightOperand;
 			boolean condPredicate = false;
@@ -216,60 +218,74 @@ public class BottomUpExecution {
 				facts.add(mapOfMapList);
 			}
 		}
-		return facts;
+		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
 
 	}
 
 	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
 	// Joine die Werte von A und B nach ?x
-	private ArrayList<Map<String, String>> getTempJoinResult(
-			ArrayList<Map<String, String>> fact1, Predicate relation2) {
-		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
-
-		ArrayList<Map<String, String>> fact2 = getMap(relation2);
-		ArrayList<String> equalList = getEqualList(fact1.get(0).keySet(),
-				relation2.getWerte().keySet());
-		for (Map<String, String> mapOfFact1 : fact1)
-			for (Map<String, String> mapOfFact2 : fact2) {
+	private Predicate getTempJoinResult(Predicate predicate1,
+			Predicate predicate2) {
+		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
+		ArrayList<ArrayList<String>> fact2 = getMap(predicate2);
+		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
+				predicate2.getScheme());
+		ArrayList<Integer> liste = new ArrayList<Integer>();
+		for (Integer[] wert : equalList)
+			liste.add(wert[1]);
+		for (ArrayList<String> mapOfFact1 : fact1) {
+			for (ArrayList<String> mapOfFact2 : fact2) {
 				boolean joinPredicate = true;
-				for (String wert : equalList) {
-					if (!mapOfFact1.get(wert).equals(mapOfFact2.get(wert)))
+				for (Integer[] wert : equalList) {
+					if (!mapOfFact1.get(wert[0])
+							.equals(mapOfFact2.get(wert[1])))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
-					Map<String, String> temp = new HashMap<String, String>();
-					for (Map.Entry<String, String> e : mapOfFact1.entrySet()) {
-						temp.put(e.getKey(), e.getValue());
+					ArrayList<String> temp = new ArrayList<String>();
+					for (String e : mapOfFact1) {
+						temp.add(e);
 					}
-					for (Map.Entry<String, String> e : mapOfFact2.entrySet()) {
-						if (!equalList.contains(e.getKey()))
-							temp.put(e.getKey(), e.getValue());
+
+					for (int i = 0; i < mapOfFact2.size(); i++) {
+						if (!liste.contains(i))
+							temp.add(mapOfFact2.get(i));
 					}
 					facts.add(temp);
 				}
 			}
-		return facts;
+		}
+		ArrayList<String> newSchema = predicate1.getScheme();
+		for (int i = 0; i < predicate2.getScheme().size(); i++)
+			if (!liste.contains(i))
+				newSchema.add(predicate2.getScheme().get(i));
+		return new Predicate("temp", newSchema.size(), newSchema, facts);
 
 	}
 
 	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
 	// not B(?x,?z).
 	// Alle ?x Werte von A die nicht in ?x Werte von B sind
-	private ArrayList<Map<String, String>> getTempNotResult(
-			ArrayList<Map<String, String>> fact1, Predicate relation2) {
-		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
-
-		ArrayList<Map<String, String>> fact2 = getMap(relation2);
-		ArrayList<String> equalList = getEqualList(fact1.get(0).keySet(),
-				relation2.getWerte().keySet());
+	private Predicate getTempNotResult(Predicate predicate1,
+			Predicate predicate2) {
+		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
+		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
+		ArrayList<ArrayList<String>> fact2 = getMap(predicate2);
+		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
+				predicate2.getScheme());
+		ArrayList<Integer> liste = new ArrayList<Integer>();
+		for (Integer[] wert : equalList)
+			liste.add(wert[1]);
 		int pos = 0;
 		ArrayList<Integer> positionen = new ArrayList<Integer>();
-		for (Map<String, String> mapOfFact1 : fact1) {
-			for (Map<String, String> mapOfFact2 : fact2) {
+		for (ArrayList<String> mapOfFact1 : fact1) {
+			for (ArrayList<String> mapOfFact2 : fact2) {
 				boolean joinPredicate = true;
-				for (String wert : equalList) {
-					if (!mapOfFact1.get(wert).equals(mapOfFact2.get(wert)))
+				for (Integer[] wert : equalList) {
+					if (!mapOfFact1.get(wert[0])
+							.equals(mapOfFact2.get(wert[1])))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
@@ -283,19 +299,21 @@ public class BottomUpExecution {
 			if (!positionen.contains(i))
 				facts.add(fact1.get(i));
 		}
-		return facts;
+		return new Predicate("temp", predicate1.getScheme().size(),
+				predicate1.getScheme(), facts);
 
 	}
 
 	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
 	// ist Join Prädikat
-	private ArrayList<String> getEqualList(String[] strings,
+	private ArrayList<Integer[]> getEqualList(ArrayList<String> strings,
 			ArrayList<String> strings2) {
-		ArrayList<String> list = new ArrayList<String>();
-		for (String wert : strings)
-			for (String wert2 : strings2)
-				if (wert.equals(wert2))
-					list.add(wert);
+		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
+		for (int i = 0; i < strings.size(); i++)
+			for (int j = 0; j < strings2.size(); j++)
+				if (strings.get(i).startsWith("?"))
+					if (strings.get(i).equals(strings2.get(j)))
+						list.add(new Integer[] { i, j });
 		return list;
 	}
 
@@ -315,35 +333,28 @@ public class BottomUpExecution {
 	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
 	// neue Map für A: "?x" : 1, "?y" : 2
-	private ArrayList<Map<String, String>> getMap(Predicate predicate) {
-		ArrayList<Map<String, String>> facts = new ArrayList<Map<String, String>>();
+	private ArrayList<ArrayList<String>> getMap(Predicate predicate) {
+		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
 		int anz = predicate.getAnz();
 		for (Fact value : values) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
 				boolean set = true;
-				Map<String, String> tempMap = new HashMap<String, String>();
 				int i = 0;
-				for (Entry<String, String> wert : predicate.getWerte()
-						.entrySet()) {
-					if (wert.getValue().equals(""))
-						tempMap.put(wert.getKey(),
-								value.getListOfValues().get(i));
-					else if (value.getListOfValues().get(i)
-							.equals(wert.getValue()))
-						tempMap.put(wert.getKey(),
-								value.getListOfValues().get(i));
-					else {
-						set = false;
-						break;
-					}
+				for (String wert : predicate.getScheme()) {
+					if (!wert.startsWith("?"))
+						if (!value.getListOfValues().get(i).equals(wert)) {
+							set = false;
+							break;
+						}
 					i++;
 				}
 				if (set)
-					facts.add(tempMap);
+					facts.add(value.getListOfValues());
 			}
 		}
+		predicate.setResultMap2(facts);
 		return facts;
 
 	}

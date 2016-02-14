@@ -14,6 +14,7 @@ public class Predicate {
 	// eine Relation innerhalb einer Query, Bsp. A(?x,?y)
 	private String kind;  // --> A
 	private ArrayList<String> schema;
+	private ArrayList<String> scheme;
 	private int anz; // --> 2
 	//private ArrayList<String> werte; // --> (?x,?y)
 	private Map<String, String> werte;
@@ -22,12 +23,21 @@ public class Predicate {
 	private int stratum=0;
 	private int ranking=0;
 	private ArrayList<Map<String, String>> resultMap;
+	private ArrayList<ArrayList<String>> resultMap2;
 	
 	public Predicate(String kind, int anz, ArrayList<String> schema, Map<String, String> werte) {
 		super();
 		this.kind = kind;
 		this.anz = anz;
 		this.werte = werte;
+	}
+	
+	public Predicate(String kind, int anz, ArrayList<String> scheme, ArrayList<ArrayList<String>> resultMap2) {
+		super();
+		this.kind = kind;
+		this.anz = anz;
+		this.scheme=scheme;
+		this.resultMap2 = resultMap2;
 	}
 	public String getKind() {
 		return kind;
@@ -96,6 +106,20 @@ public class Predicate {
 	}
 	public void setSchema(ArrayList<String> schema) {
 		this.schema = schema;
+	}
+	public ArrayList<ArrayList<String>> getResultMap2() {
+		return resultMap2;
+	}
+	public void setResultMap2(ArrayList<ArrayList<String>> resultMap2) {
+		this.resultMap2 = resultMap2;
+	}
+
+	public ArrayList<String> getScheme() {
+		return scheme;
+	}
+
+	public void setScheme(ArrayList<String> scheme) {
+		this.scheme = scheme;
 	}
 
 

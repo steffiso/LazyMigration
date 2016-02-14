@@ -7,24 +7,24 @@ import datalog.Condition;
 import datalog.RuleBody;
 import database.Database;
 import database.Schema;
-import java.util.SortedMap;
-import java.util.TreeMap;
+//import java.util.SortedMap;//import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 public class ParserRuleToJava implements ParserRuleToJavaConstants {
-          public ArrayList<String> getSchema(String kind, int schemaNumber)
-          {
-            Database db = new Database();
-            ArrayList<String> currentSchema = db.getSchema(kind, schemaNumber);
-            return currentSchema;
-          }
+  public ArrayList < String > getSchema(String kind, int schemaNumber)
+  {
+    Database db = new Database();
+    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);
+    return currentSchema;
+  }
 
-          public String getAttributeName(String kind, int schemaNumber, int pos)
-          {
-                Database db = new Database();
-                ArrayList<String> currentSchema = db.getSchema(kind, schemaNumber);
-                String value = currentSchema.get(pos);
-                return value;
-        }
+  public String getAttributeName(String kind, int schemaNumber, int pos)
+  {
+    Database db = new Database();
+    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);
+    String value = currentSchema.get(pos);
+    return value;
+  }
 
   final public ArrayList < Rule > start() throws ParseException {
   ArrayList < Rule > querys = new ArrayList < Rule > ();
@@ -141,13 +141,17 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
   Token schemaToken = null;
   String value = null;
   String attribute = null;
-  SortedMap <String, String > values = null;
+  ArrayList < String > scheme = null;
+  //SortedMap <String, String > values = null;
+  LinkedHashMap < String, String > values = null;
   Predicate predicate = null;
-  ArrayList<String> schema = null;
+  ArrayList < String > schema = null;
   boolean isNot = false;
   boolean schemaExists = true;
-        values = new TreeMap <String, String > ();
-        int pos = 0;
+    //values = new TreeMap <String, String > ();
+    values = new LinkedHashMap < String, String > ();
+    scheme = new ArrayList < String > ();
+    int pos = 0;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case not:
       jj_consume_token(not);
@@ -166,34 +170,34 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
       jj_la1[7] = jj_gen;
       ;
     }
-        schema = getSchema(kind.toString(), Integer.parseInt(schemaToken.toString()));
-        if (schema == null)
-        {
-          schema = new ArrayList<String >();
-          schemaExists = false;
-        }
+    schema = getSchema(kind.toString(), Integer.parseInt(schemaToken.toString()));
+    if (schema == null)
+    {
+      schema = new ArrayList < String > ();
+      schemaExists = false;
+    }
     jj_consume_token(16);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case variable:
     case string:
     case number:
       value = getValue();
-                    if (value.startsWith("?"))
-                    {
-                            if (!schemaExists)
-                                {
-                                        schema.add(value);
-                                }
-                            attribute = value;
-                            value = "";
-                    }
-                    else
-                        attribute = "";
-                        //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
-                    {
-                      values.put(attribute, value);
-                    }
-                    pos++;
+      scheme.add(value);
+      if (value.startsWith("?"))
+      {
+        if (!schemaExists)
+        {
+          schema.add(value);
+        }
+        attribute = value;
+        value = "";
+      }
+      else attribute = "";
+      //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
+      {
+        values.put(attribute, value);
+      }
+      pos++;
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -206,23 +210,22 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
         }
         jj_consume_token(15);
         value = getValue();
-                            if (value.startsWith("?"))
-                            {
-                                if (!schemaExists)
-                                        {
-                                          schema.add(value);
-                                        }
-                                attribute = value;
-                                value = "";
-
-                            }
-                                else
-                                        attribute = "";
-                                        //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
-                        {
-                          values.put(attribute, value);
-                        }
-                        pos++;
+          scheme.add(value);
+          if (value.startsWith("?"))
+          {
+            if (!schemaExists)
+            {
+              schema.add(value);
+            }
+            attribute = value;
+            value = "";
+          }
+          else attribute = "";
+          //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
+          {
+            values.put(attribute, value);
+          }
+          pos++;
       }
       break;
     default:
@@ -230,8 +233,9 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
       ;
     }
     jj_consume_token(17);
-    predicate = new Predicate(kind.toString() + schemaToken.toString(),values.size(), schema, values);
+    predicate = new Predicate(kind.toString() + schemaToken.toString(), values.size(), schema, values);
     if (isNot) predicate.setNot(true);
+    predicate.setScheme(scheme);
     {if (true) return predicate;}
     throw new Error("Missing return statement in function");
   }

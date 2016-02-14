@@ -1,57 +1,6 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */options{  static = false;}PARSER_BEGIN(ParserRuleToJava)package parserRuletoJava;import java.util.ArrayList;import datalog.Predicate;import datalog.Rule;import datalog.Condition;import datalog.RuleBody;
-import database.Database;
-import database.Schema;
-import java.util.SortedMap;
-import java.util.TreeMap;public class ParserRuleToJava{
-	  public ArrayList<String> getSchema(String kind, int schemaNumber)	  {	    Database db = new Database();	    ArrayList<String> currentSchema = db.getSchema(kind, schemaNumber);	    return currentSchema;	  }
-
-	  public String getAttributeName(String kind, int schemaNumber, int pos)	  {		Database db = new Database();
-		ArrayList<String> currentSchema = db.getSchema(kind, schemaNumber);
-		String value = currentSchema.get(pos);
-		return value;
-	}
-}PARSER_END(ParserRuleToJava)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* Zeichen */{  < variable :    "?" < kindValue > (< number >)?     (      "~"      (        < number >      | < string >      )    )? >| < string : "'" (~[ "'" ])* "'" >| < operators :    "<"  | ">"  | "!"  | "=" >| < number :    (< digit >)+    (      "." (< digit >)+    )? >| < digit : [ "0"-"9" ] >| < not : "not" >| < kindValue : < nameValue > (< nameValue >)* >| < nameValue :    [ "a"-"z" ]  | [ "A"-"Z" ]  | "-"  | "_" >}ArrayList < Rule > start() :{  ArrayList < Rule > querys = new ArrayList < Rule > ();  RuleBody p = null;  Predicate leftRelation = null;  Rule q = null;}{  (    leftRelation = getRelation() ":-" p = getRelationList()    {      q = new Rule(leftRelation, p);      //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);      querys.add(q);    }    "."    (      (        leftRelation = getRelation() ":-" p = getRelationList()        {          q = new Rule(leftRelation, p);          //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);          querys.add(q);        }        "."      )    )*  )?  < EOF >  {    return querys;  }}RuleBody getRelationList() :{  ArrayList < Predicate > values = new ArrayList < Predicate > ();  ArrayList < Condition > conditions = new ArrayList < Condition > ();  Predicate predicate = null;  Condition condition = null;}{  (    (      (        predicate = getRelation()        {          values.add(predicate);        }      )    |      (        condition = getCondition()        {          conditions.add(condition);        }      )    )    (      ","      (        (          predicate = getRelation()          {            values.add(predicate);          }        )      |        (          condition = getCondition()          {            conditions.add(condition);          }        )      )    )*  )?  {    return new RuleBody(values, conditions);  }}Predicate getRelation() :{  Token kind = null;  Token schemaToken = null;  String value = null;
-  String attribute = null;
-  SortedMap <String, String > values = null;  Predicate predicate = null;
-  ArrayList<String> schema = null;  boolean isNot = false;
-  boolean schemaExists = true;}{{
-	values = new TreeMap <String, String > ();
-  	int pos = 0;	}  (< not >  {    isNot = true;  }  )? (kind = < kindValue >) (schemaToken = < number >)?  {	schema = getSchema(kind.toString(), Integer.parseInt(schemaToken.toString()));
-	if (schema == null)	{
-	  schema = new ArrayList<String >();	  schemaExists = false;
-	}
-	  
-  }"("  (    		    value = getValue()
-	    {		      
-		    if (value.startsWith("?"))		    {
-			    if (!schemaExists)
-				{
-					schema.add(value);
-				}
-			    attribute = value;
-			    value = "";
-		    }
-		    else
-		    	attribute = "";
-		    	//attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);		    {		      values.put(attribute, value);		    }
-		    pos++;
-	  	}	    (              	      ","	      (	                  
-	        value = getValue()
-	        {	          
-			    if (value.startsWith("?"))
-			    {
-			      	if (!schemaExists)
-					{
-					  schema.add(value);
-					}
-			      	attribute = value;
-			      	value = "";
-
-			    }
-				else
-					attribute = "";
-					//attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);		        {		          values.put(attribute, value);		        }
-		        pos++;
-		    }	      	      )    	    )*	  )?  ")"  {    predicate = new Predicate(kind.toString() + schemaToken.toString(),values.size(), schema, values);    if (isNot) predicate.setNot(true);    return predicate;  }}Condition getCondition() :{  String right = null;  String left = null;  Token operator = null;}{  left = getValue() operator = < operators > right = getValue()  {    Condition con = new Condition(left, right, operator.toString());    return con;  }}String getValue() :{  Token valueOfToken = null;}{  (    valueOfToken = < variable >  | valueOfToken = < number >  | valueOfToken = < string >  )  {    return valueOfToken.toString();  }}
+ */options{  static = false;}PARSER_BEGIN(ParserRuleToJava)package parserRuletoJava;import java.util.ArrayList;import datalog.Predicate;import datalog.Rule;import datalog.Condition;import datalog.RuleBody;import database.Database;import database.Schema;//import java.util.SortedMap;//import java.util.TreeMap;
+import java.util.LinkedHashMap;public class ParserRuleToJava{  public ArrayList < String > getSchema(String kind, int schemaNumber)  {    Database db = new Database();    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);    return currentSchema;  }  public String getAttributeName(String kind, int schemaNumber, int pos)  {    Database db = new Database();    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);    String value = currentSchema.get(pos);    return value;  }}PARSER_END(ParserRuleToJava)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* Zeichen */{  < variable :    "?" < kindValue > (< number >)?    (      "~"      (        < number >      | < string >      )    )? >| < string : "'" (~[ "'" ])* "'" >| < operators :    "<"  | ">"  | "!"  | "=" >| < number :    (< digit >)+    (      "." (< digit >)+    )? >| < digit : [ "0"-"9" ] >| < not : "not" >| < kindValue : < nameValue > (< nameValue >)* >| < nameValue :    [ "a"-"z" ]  | [ "A"-"Z" ]  | "-"  | "_" >}ArrayList < Rule > start() :{  ArrayList < Rule > querys = new ArrayList < Rule > ();  RuleBody p = null;  Predicate leftRelation = null;  Rule q = null;}{  (    leftRelation = getRelation() ":-" p = getRelationList()    {      q = new Rule(leftRelation, p);      //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);      querys.add(q);    }    "."    (      (        leftRelation = getRelation() ":-" p = getRelationList()        {          q = new Rule(leftRelation, p);          //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);          querys.add(q);        }        "."      )    )*  )?  < EOF >  {    return querys;  }}RuleBody getRelationList() :{  ArrayList < Predicate > values = new ArrayList < Predicate > ();  ArrayList < Condition > conditions = new ArrayList < Condition > ();  Predicate predicate = null;  Condition condition = null;}{  (    (      (        predicate = getRelation()        {          values.add(predicate);        }      )    |      (        condition = getCondition()        {          conditions.add(condition);        }      )    )    (      ","      (        (          predicate = getRelation()          {            values.add(predicate);          }        )      |        (          condition = getCondition()          {            conditions.add(condition);          }        )      )    )*  )?  {    return new RuleBody(values, conditions);  }}Predicate getRelation() :{  Token kind = null;  Token schemaToken = null;  String value = null;  String attribute = null;  ArrayList < String > scheme = null;  //SortedMap <String, String > values = null;
+  LinkedHashMap < String, String > values = null;  Predicate predicate = null;  ArrayList < String > schema = null;  boolean isNot = false;  boolean schemaExists = true;}{  {    //values = new TreeMap <String, String > ();
+    values = new LinkedHashMap < String, String > ();    scheme = new ArrayList < String > ();    int pos = 0;  }  (< not >  {    isNot = true;  }  )? (kind = < kindValue >) (schemaToken = < number >)?  {    schema = getSchema(kind.toString(), Integer.parseInt(schemaToken.toString()));    if (schema == null)    {      schema = new ArrayList < String > ();      schemaExists = false;    }  }  "("  (    value = getValue()    {      scheme.add(value);      if (value.startsWith("?"))      {        if (!schemaExists)        {          schema.add(value);        }        attribute = value;        value = "";      }      else attribute = "";      //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);      {        values.put(attribute, value);      }      pos++;    }    (      ","      (        value = getValue()        {          scheme.add(value);          if (value.startsWith("?"))          {            if (!schemaExists)            {              schema.add(value);            }            attribute = value;            value = "";          }          else attribute = "";          //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);          {            values.put(attribute, value);          }          pos++;        }      )    )*  )?  ")"  {    predicate = new Predicate(kind.toString() + schemaToken.toString(), values.size(), schema, values);    if (isNot) predicate.setNot(true);    predicate.setScheme(scheme);    return predicate;  }}Condition getCondition() :{  String right = null;  String left = null;  Token operator = null;}{  left = getValue() operator = < operators > right = getValue()  {    Condition con = new Condition(left, right, operator.toString());    return con;  }}String getValue() :{  Token valueOfToken = null;}{  (    valueOfToken = < variable >  | valueOfToken = < number >  | valueOfToken = < string >  )  {    return valueOfToken.toString();  }}

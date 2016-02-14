@@ -10,9 +10,9 @@ import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 
-public class TestBottomUp {
+public class TestBottomUpNew {
 	public static void main(String[] args) throws ParseException,
-			 parserRuletoJava.ParseException {
+			parserRuletoJava.ParseException {
 		/*
 		 * Fact f1 = new ParserforDatalogToJava(new StringReader(
 		 * "Player(1,'Lisa',40).")).start(); Fact fr1 = new
@@ -53,49 +53,34 @@ public class TestBottomUp {
 		 */
 
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
-				"Player1(1,'Lisa',20,'2015-11-22 18:29:50.589').")).start();
+				"Player1(1,'Lisa',20).")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player1(1,'Homer',20,'2015-12-02 18:29:50.589').")).start();
+				"Player1(2,'Homer',20).")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
-				"Mission1(1,'find the ring',1,'2015-11-26 18:29:50.589')."))
-				.start();
+				"Mission1(1,'find the ring',1).")).start();
 		Fact ff4 = new ParserforDatalogToJava(new StringReader(
-				"Mission1(2,'find the ring2',2,'2015-12-01 18:29:50.589')."))
-				.start();
+				"Mission1(2,2,2).")).start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
 		ff.add(ff2);
 		ff.add(ff3);
 		ff.add(ff4);
 		ArrayList<Rule> qq = new ParserRuleToJava(
-				new StringReader("latestPlayer1(?id,?title,?ts):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?id,?ts1)."))
-						/*"Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player1(?id2, ?name,?score,?ts2), latestPlayer1(?id2, ?ts2),?id2 = ?pid." 
-						+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player1(?id2, ?name,?score,?ts2),?id2 = ?pid."
-						+ "legacyPlayer1(?id,?ts):-Player1(?id, ?name,?score, ?ts),Player1(?id, ?name2,?score2,?nts), ?ts < ?nts." 
-						+ "latestPlayer1(?id,?ts):-Player1(?id, ?name,?score,?ts), not legacyPlayer1(?id,?ts)."
-						+ "legacyMission1(?id,?ts):-Mission1(?id, ?title,?pid, ?ts),Mission1(?id, ?title2,?pid2,?nts), ?ts < ?nts."
-						+ "latestMission1(?id,?ts):-Mission1(?id, ?title,?pid,?ts), not legacyMission1(?id,?ts)."))
-//						"legacyPlayer(?id,?ts):-Player(?id, ?name,?score, ?ts),Player(?id, ?name2,?score2,?nts), ?ts < ?nts." 
-*///								+ "latestPlayer(?id,?ts):-Player(?id, ?name,?score,?ts), not legacyPlayer(?id,?ts)."
-//								+ "legacyMission(?id,?ts):-Mission(?id, ?title,?pid, ?ts),Mission(?id, ?title2,?pid2,?nts), ?ts < ?nts."
-//								+ "latestMission(?id,?ts):-Mission(?id, ?title,?pid,?ts), not legacyMission(?id,?ts)."
-//								+ "Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1),Player(?id2, ?name,?score,?ts2), latestPlayer(?id2, ?ts2),?id2 = ?pid."
-//								+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission(?id1, ?title,?pid,?ts1),latestMission(?id1, ?ts1), not Player(?id2, ?name,?score,?ts2),?id2 = ?pid."))
-				.start();
-		/*ArrayList<Rule> qq = new ParserRuleToJava(
 				new StringReader(
-						"ll(?id,?name):-Player(?id, ?name,?score, ?ts),not Mission(?aa, ?ss,?pid,?nts),?id=?pid."))
-				.start();*/
-		BottomUpExecution mmm = new BottomUpExecution(ff);
-		mmm.generateAllRules(qq);
-		
-		System.out.println(mmm.getFact("latestPlayer1", 3));
-		for (Rule qqq : qq) {
-		System.out.print(qqq.getHead().getWerte()+":-");
-		for(Predicate p:qqq.getPredicates())
-			System.out.print(" "+p.getWerte());
-		System.out.println();
+						"latestPlayer1(2,?name,2):-Player1(2, ?name,?score),Mission1(?id1, 2,?id)."))
+				.start();
+
+		BottomUpExecutionNew mmm = new BottomUpExecutionNew(ff);
+		for (Rule r : qq) {
+			System.out.println(r.toString());
+			System.out.println(r.getHead().getKind() + " "
+					+ r.getHead().getScheme());
+			for (Predicate p : r.getPredicates())
+				System.out.println(p.getKind() + " " + p.getScheme());
 		}
+		mmm.generateAllRules(qq);
+
+		System.out.println(mmm.getFact("latestPlayer1", 3));
 
 	}
 
