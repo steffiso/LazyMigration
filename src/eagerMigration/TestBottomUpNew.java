@@ -53,21 +53,21 @@ public class TestBottomUpNew {
 		 */
 
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
-				"Player1(1,'Lisa',20).")).start();
+				"Player1(1,'Lisa',20,1).")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player1(2,'Homer',20).")).start();
+				"Player1(2,'Homer',20,1).")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
-				"Mission1(1,'find the ring',1).")).start();
+				"Mission1(1,'find the ring',1,1).")).start();
 		Fact ff4 = new ParserforDatalogToJava(new StringReader(
-				"Mission1(2,2,2).")).start();
+				"Mission1(2,'ddd',2,1).")).start();
 		ArrayList<Fact> ff = new ArrayList<Fact>();
 		ff.add(ff1);
 		ff.add(ff2);
 		ff.add(ff3);
 		ff.add(ff4);
 		ArrayList<Rule> qq = new ParserRuleToJava(
-				new StringReader(
-						"latestPlayer1(2,?name,2):-Player1(2, ?name,?score),Mission1(?id1, 2,?id)."))
+				new StringReader("latestPlayer1(?id,?title,22):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?pid,?ts1),?id=?pid."))
+				//new StringReader("latestPlayer1(2,?name,2):-Player1(2, ?name,?score),Mission1(?id1, 2,?id)."))
 				.start();
 
 		BottomUpExecutionNew mmm = new BottomUpExecutionNew(ff);

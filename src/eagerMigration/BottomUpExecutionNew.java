@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import datalog.Condition;
 import datalog.Fact;
 import datalog.Predicate;
@@ -129,10 +130,9 @@ public class BottomUpExecutionNew {
 
 	private void renameVariablesOfPredicate(Predicate predicate, String left,
 			String right) {
-		if (predicate.getWerte().containsKey(right)) {
-			String value = predicate.getWerte().get(right);
-			predicate.getWerte().remove(right);
-			predicate.getWerte().put(left, value);
+		if (predicate.getScheme().contains(right)) {
+			predicate.getScheme().set(predicate.getScheme().indexOf(right),
+					left);
 		}
 	}
 
@@ -198,19 +198,31 @@ public class BottomUpExecutionNew {
 			boolean condPredicate = false;
 			switch (operator) {
 			case "=":
-				if (left.equals(right))
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) == Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.equals(right))
 					condPredicate = true;
 				break;
 			case "!":
-				if (!left.equals(right))
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) != Integer.parseInt(right))
+						condPredicate = true;
+				} else if (!left.equals(right))
 					condPredicate = true;
 				break;
 			case "<":
-				if (left.compareTo(right) < 0)
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) < Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) < 0)
 					condPredicate = true;
 				break;
 			case ">":
-				if (left.compareTo(right) > 0)
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) > Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) > 0)
 					condPredicate = true;
 				break;
 			}
@@ -495,4 +507,15 @@ public class BottomUpExecutionNew {
 		}
 	}
 
+	public static boolean isInteger(String s) {
+		try {
+			Integer.parseInt(s);
+		} catch (NumberFormatException e) {
+			return false;
+		} catch (NullPointerException e) {
+			return false;
+		}
+		// only got here if we didn't return false
+		return true;
+	}
 }

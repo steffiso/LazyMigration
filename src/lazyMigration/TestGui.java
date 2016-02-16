@@ -41,7 +41,7 @@ public class TestGui {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		JButton startBottomUp = new JButton("BottomUp Ausführung");
+		JButton startBottomUp = new JButton("TopDown Ausführung");
 		JButton generateDatalog = new JButton("Generate IDB");
 		JTextArea edbTextArea = new JTextArea();
 		JTextArea queryTextArea = new JTextArea();
@@ -68,6 +68,9 @@ public class TestGui {
 			String edb = datalogGenerator.getEDBFacts();
 			
 			edbTextArea.setText(edb);	
+			idbTextArea.setText("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts.\n" + 
+							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts).\n" +
+							"getPlayer1(?id,?name,?score,?ts):-Player1(?id, ?name,?score,?ts), latestPlayer1(?id,?ts).\n");
 			
 			add(scroll);
 			add(scroll2);		
@@ -165,18 +168,19 @@ public class TestGui {
 				e.printStackTrace();
 			}
 			
+			//test für get
 			SortedMap <String, String> attributeMap = new TreeMap<String, String>();
 			attributeMap.put("?id", "1");
-			attributeMap.put("?name", null);
-			attributeMap.put("?score", null);
-			attributeMap.put("?ts", null);
+			attributeMap.put("?name", "");
+			attributeMap.put("?score", "");
+			attributeMap.put("?ts", "");
 			
 			ArrayList<String> schema = new ArrayList<String>();
 			schema.add("?id");
 			schema.add("?name");
 			schema.add("?score");
+			Predicate goal = new Predicate("getPlayer1", 4, schema, attributeMap);
 			
-			Predicate goal = new Predicate("getPlayer1", 3, schema, attributeMap);	
 				
 			TopDownExecution migrate = new TopDownExecution(facts, rules, goal);
 			ArrayList<Fact> answerString = migrate.getAnswers();

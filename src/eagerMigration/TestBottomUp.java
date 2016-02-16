@@ -68,7 +68,7 @@ public class TestBottomUp {
 		ff.add(ff3);
 		ff.add(ff4);
 		ArrayList<Rule> qq = new ParserRuleToJava(
-				new StringReader("latestPlayer1(?id,?title,?ts):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?id,?ts1)."))
+				new StringReader("latestPlayer1(?id,?title,22):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?pid,?ts1),?id=?pid."))
 						/*"Mission2(?id1, ?title,?pid,?score,'2016-01-08 01:49:14.608'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player1(?id2, ?name,?score,?ts2), latestPlayer1(?id2, ?ts2),?id2 = ?pid." 
 						+ "Mission2(?id1, ?title,?pid,'','2016-01-08 01:49:14.62'):-Mission1(?id1, ?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player1(?id2, ?name,?score,?ts2),?id2 = ?pid."
 						+ "legacyPlayer1(?id,?ts):-Player1(?id, ?name,?score, ?ts),Player1(?id, ?name2,?score2,?nts), ?ts < ?nts." 

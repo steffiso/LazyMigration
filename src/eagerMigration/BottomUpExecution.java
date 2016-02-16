@@ -71,8 +71,8 @@ public class BottomUpExecution {
 				rulesBodyUnificationandReorder(rule);
 				mapList = generateRule(rule.getPredicates());
 
-			}
-			else mapList=getMap(predicates.get(0));
+			} else
+				mapList = getMap(predicates.get(0));
 		}
 		if (mapList != null) {
 			if (rule.getConditions() != null) {
@@ -84,8 +84,8 @@ public class BottomUpExecution {
 				for (String wert : werte.keySet())
 					if (wert.startsWith("?"))
 						oneAnswer.add(oneMap.get(wert));
-					else
-						oneAnswer.add(wert);
+					else if (wert.isEmpty())
+						oneAnswer.add(werte.get(""));
 				boolean alreadyExist = false;
 				for (ArrayList<String> iterateAnswer : answer)
 					if (oneAnswer.containsAll(iterateAnswer)
@@ -196,19 +196,31 @@ public class BottomUpExecution {
 			boolean condPredicate = false;
 			switch (operator) {
 			case "=":
-				if (left.equals(right))
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) == Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.equals(right))
 					condPredicate = true;
 				break;
 			case "!":
-				if (!left.equals(right))
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) != Integer.parseInt(right))
+						condPredicate = true;
+				} else if (!left.equals(right))
 					condPredicate = true;
 				break;
 			case "<":
-				if (left.compareTo(right) < 0)
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) < Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) < 0)
 					condPredicate = true;
 				break;
 			case ">":
-				if (left.compareTo(right) > 0)
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) > Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) > 0)
 					condPredicate = true;
 				break;
 			}
@@ -484,4 +496,15 @@ public class BottomUpExecution {
 		}
 	}
 
+	public static boolean isInteger(String s) {
+		try {
+			Integer.parseInt(s);
+		} catch (NumberFormatException e) {
+			return false;
+		} catch (NullPointerException e) {
+			return false;
+		}
+		// only got here if we didn't return false
+		return true;
+	}
 }

@@ -8,29 +8,26 @@ import database.Database;
 import java.util.ArrayList;
 
 public class ParserForPut implements ParserForPutConstants {
-  private static int zaehler = - 1;
+  private static int zaehler = 0;
 
   private static int laenge = 0;
 
-  private static ArrayList<String > attributes = null;
+  private static ArrayList < String > attributes = null;
 
   private static int lastTS = 0;
 
   private static void getSchema(String kind, int schemaversion)
   {
-    ArrayList<String > schema = null;
-
-        Database db = new Database();
-        attributes = db.getSchema(kind,schemaversion);
-
+    ArrayList < String > schema = null;
+    Database db = new Database();
+    attributes = db.getSchema(kind, schemaversion);
     laenge = attributes.size();
-
     lastTS = db.getLastTimestamp();
   }
 
   final public String start() throws ParseException {
   String value = null;
-  zaehler=-1;
+  zaehler =0;
     value = getJSONString();
     jj_consume_token(0);
     {if (true) return value;}
@@ -59,8 +56,8 @@ public class ParserForPut implements ParserForPutConstants {
     }
     jj_consume_token(15);
     ts = lastTS + 1;
-        String jsonString = "{\u005c"kind\u005c":\u005c"" + kind + "\u005c",\u005cn" + "\u005c"schemaversion\u005c":" + schemaVersion  + ",\u005cn" + "\u005c"attributes\u005c":{" + value + "},\u005cn\u005c"ts\u005c":" + Integer.toString(ts) + "}";
-        {if (true) return jsonString;}
+    String jsonString = "{\u005c"kind\u005c":\u005c"" + kind + "\u005c",\u005cn" + "\u005c"schemaversion\u005c":" + schemaVersion + ",\u005cn" + "\u005c"attributes\u005c":{" + value + "},\u005cn\u005c"ts\u005c":" + Integer.toString(ts) + "}";
+    {if (true) return jsonString;}
     throw new Error("Missing return statement in function");
   }
 
@@ -68,6 +65,7 @@ public class ParserForPut implements ParserForPutConstants {
   Token valueOfToken = null;
   String valueOfOtherToken = null;
   String valueOne = "";
+  boolean isTS=false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case string:
       valueOfToken = jj_consume_token(string);
@@ -87,20 +85,18 @@ public class ParserForPut implements ParserForPutConstants {
       name = name.substring(1, name.length() - 1);
       name = "\u005c"" + name + "\u005c"";
     }
-    else name = "\u005c"" + valueOfToken.toString()+ "\u005c"";
-
+    else name = "\u005c"" + valueOfToken.toString() + "\u005c"";
     if (zaehler < laenge)
     {
-      zaehler++;
       String attributename = attributes.get(zaehler);
-      valueOne = "\u005c"" + attributename.substring(1,attributename.length()) + "\u005c":" + name;
+      valueOne = "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name;
+      zaehler++;
     }
     else if (zaehler == laenge)
     {
-      valueOne = "\u005c"ts\u005c":" + name;
+      isTS=true;
       zaehler++;
     }
-
     else
     {
       zaehler++;
@@ -118,7 +114,7 @@ public class ParserForPut implements ParserForPutConstants {
       jj_consume_token(16);
       valueOfOtherToken = listOfValues(value);
     }
-    //if (isTS) return null;
+    if (isTS) {if (true) return null;}
     if (valueOfOtherToken != null) {if (true) return value + valueOne + ", " + valueOfOtherToken;}
     else {if (true) return value + valueOne;}
     throw new Error("Missing return statement in function");

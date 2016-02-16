@@ -127,6 +127,7 @@ public class Database {
 		String json=null;
 			try {
 				json = new ParserForPut(new StringReader(datalogFact)).start();
+				System.out.println(json);
 				writeInJsonFile(filenameEDB, json);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block

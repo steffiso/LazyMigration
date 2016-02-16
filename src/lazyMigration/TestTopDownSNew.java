@@ -16,23 +16,20 @@ import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 
-public class TestTopDownS {
+public class TestTopDownSNew {
 	public static void main(String[] args) throws ParseException,
 	 parserRuletoJava.ParseException {
 	
 		
 	Fact ff1 = new ParserforDatalogToJava(new StringReader(
-			"Player1(1,'Lisa',20, 1).")).start();
+			"Player1(1,'Lisa',20, '0').")).start();
 	Fact ff2 = new ParserforDatalogToJava(new StringReader(
-			"Player1(2,'Homer',20, 1).")).start();
+			"Player1(2,'Homer',20, '1').")).start();
 	Fact ff3 = new ParserforDatalogToJava(new StringReader(
-			"Player1(1,'LisaS',20, 2)."))
+			"Player1(1,'LisaS',20, '2')."))
 			.start();
 	Fact ff4 = new ParserforDatalogToJava(new StringReader(
-			"Mission1(2,'find the ring2',2,3)."))
-			.start();
-	Fact ff5 = new ParserforDatalogToJava(new StringReader(
-			"Player1(1,'LisaS',20,10)."))
+			"Mission1(2,'find the ring2',2,'2015-12-01 18:29:50.589')."))
 			.start();
 	
 	ArrayList<Fact> facts = new ArrayList<Fact>();
@@ -40,7 +37,6 @@ public class TestTopDownS {
 	facts.add(ff2);
 	facts.add(ff3);
 	facts.add(ff4);
-	facts.add(ff5);
 
 	
 	//test für add
@@ -89,8 +85,8 @@ public class TestTopDownS {
 							"getPlayer1(?id,?name,?score,?ts):-Player1(?id, ?name,?score,?ts), latestPlayer1(?id,?ts),?id=1."))
 			
 			.start();
-
-	TopDownExecution lazy = new TopDownExecution(facts, rules, goal);
+	
+	TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal);
 	ArrayList<Fact> answers = lazy.getAnswers();
 	System.out.println(answers.toString());
 	}

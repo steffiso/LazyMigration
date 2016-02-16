@@ -1,6 +1,7 @@
 package database;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -14,7 +15,7 @@ public class Entity {
 	@JsonProperty("schemaversion")
 	private int schemaversion;
 	@JsonProperty("attributes")
-	SortedMap<String,String> attributes;
+	LinkedHashMap<String,String> attributes;
 	@JsonProperty("ts")
 	int timestamp;
 
@@ -31,11 +32,11 @@ public class Entity {
 		this.schemaversion = schemaversion;
 	}
 	
-	public SortedMap<String, String> getAttributes(){
+	public LinkedHashMap<String, String> getAttributes(){
 		return attributes;
 	}
 	
-	public void setAttributes(SortedMap<String, String> attributes){
+	public void setAttributes(LinkedHashMap<String, String> attributes){
 		this.attributes = attributes;
 	}
 	
