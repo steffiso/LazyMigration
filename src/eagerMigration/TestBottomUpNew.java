@@ -66,7 +66,7 @@ public class TestBottomUpNew {
 		ff.add(ff3);
 		ff.add(ff4);
 		ArrayList<Rule> qq = new ParserRuleToJava(
-				new StringReader("latestPlayer1(?id,?title,22):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?pid,?ts1),?id=?pid."))
+				new StringReader("Player1(?id, ?name,?score, ?ts):-Player1(?id, ?name,?score, ?ts)."))
 				//new StringReader("latestPlayer1(2,?name,2):-Player1(2, ?name,?score),Mission1(?id1, 2,?id)."))
 				.start();
 
@@ -80,7 +80,7 @@ public class TestBottomUpNew {
 		}
 		mmm.generateAllRules(qq);
 
-		System.out.println(mmm.getFact("latestPlayer1", 3));
+		System.out.println(mmm.getFact("Player1", 4));
 
 	}
 

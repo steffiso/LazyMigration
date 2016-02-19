@@ -20,11 +20,11 @@ public class TestTopDownKNew {
 		Fact ff1 = new ParserforDatalogToJava(new StringReader(
 				"Player1(1,'Lisa',1).")).start();
 		Fact ff2 = new ParserforDatalogToJava(new StringReader(
-				"Player1(1,'Lisa',2).")).start();
+				"Player1(1,'Lisa.s',2).")).start();
 		Fact ff3 = new ParserforDatalogToJava(new StringReader(
 				"Player1(2,'Homer',2).")).start();
 		Fact ff4 = new ParserforDatalogToJava(new StringReader(
-				"M1(3,2).")).start();
+				"M1(2,2).")).start();
 		Fact ff5 = new ParserforDatalogToJava(new StringReader(
 				"M1(3,55).")).start();
 		Fact ff6 = new ParserforDatalogToJava(new StringReader(
@@ -46,7 +46,7 @@ public class TestTopDownKNew {
 
 		ArrayList<Rule> qq = new ParserRuleToJava(
 				new StringReader(
-						"Player2(?id, ?name,?score,?ts):-Player1(?id, ?name,?ts),  A1(?id,?points), not M1(?name,?score),Player1(?id,?j,?k), ?ts=2."))
+						"Player2(?id, ?name,?points,?ts,?j):-Player1(?id, ?name,?ts),  A1(?id,?points), not M1(?id,?score),Player1(?id,?j,?k), ?ts=2."))
 				.start();
 		TopDownExecutionNew tp = new TopDownExecutionNew(ff);
 		List<ArrayList<String>> maps = tp.getAnswer(qq.get(0));

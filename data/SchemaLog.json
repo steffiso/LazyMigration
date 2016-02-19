@@ -6,13 +6,5 @@
 {"kind":"Mission",
 "schemaversion":1,
 "attributes":["?id","?title","?pid"],
-"ts":4},
-{"kind":"Player",
-"schemaversion":2,
-"attributes":["?id2","?name"],
-"ts":11},
-{"kind":"Mission",
-"schemaversion":2,
-"attributes":["?id1","?title","?pid","?score"],
-"ts":12}
+"ts":4}
 ]

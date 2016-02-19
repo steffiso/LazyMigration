@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import datalog.Condition;
 import datalog.Fact;
 import datalog.Predicate;
@@ -67,20 +65,20 @@ public class BottomUpExecutionNew {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		if (!predicates.isEmpty()) {
 			if (predicates.size() > 1) {
-				rulesBodyUnificationandReorder(rule);
+				rulesRenameandReorder(rule);
 				factList = generateRule(rule.getPredicates());
 
 			} else {
-				getMap(predicates.get(0));
+				getFacts(predicates.get(0));
 				factList = predicates.get(0);
 			}
 		}
 		if (factList != null) {
-			if (rule.getConditions() != null) {
+			if (rule.getConditions() != null || !rule.getConditions().isEmpty()) {
 				factList = generateConditions(factList, rule.getConditions());
 			}
 			ArrayList<String> werte = rule.getHead().getScheme();
-			for (ArrayList<String> oneMap : factList.getResultMap2()) {
+			for (ArrayList<String> oneMap : factList.getRelation()) {
 				ArrayList<String> oneAnswer = new ArrayList<String>();
 				for (String wert : werte)
 					if (wert.startsWith("?"))
@@ -103,7 +101,7 @@ public class BottomUpExecutionNew {
 
 	}
 
-	public void rulesBodyUnificationandReorder(Rule rule) {
+	public void rulesRenameandReorder(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {
@@ -138,18 +136,19 @@ public class BottomUpExecutionNew {
 
 	private Predicate generateRule(ArrayList<Predicate> predicates) {
 		Predicate temp = null;
-		ArrayList<ArrayList<String>> map = getMap(predicates.get(0));
-		if (!map.isEmpty())
+		ArrayList<ArrayList<String>> predicateFacts = getFacts(predicates
+				.get(0));
+		if (!predicateFacts.isEmpty())
 			if (predicates.get(1).isNot())
 				temp = getTempNotResult(predicates.get(0), predicates.get(1));
 			else
 				temp = getTempJoinResult(predicates.get(0), predicates.get(1));
-		Predicate mapList = null;
+		Predicate predResult = null;
 		if (temp != null) {
-			if (!temp.getResultMap2().isEmpty()) {
+			if (!temp.getRelation().isEmpty()) {
 				int iAnz = predicates.size();
 				for (int i = 2; i < iAnz; i++) {
-					if (temp.getResultMap2().isEmpty())
+					if (temp.getRelation().isEmpty())
 						break;
 					Predicate newTemp = null;
 					if (predicates.get(i).isNot())
@@ -158,21 +157,21 @@ public class BottomUpExecutionNew {
 						newTemp = getTempJoinResult(temp, predicates.get(i));
 					temp = newTemp;
 				}
-				mapList = temp;
+				predResult = temp;
 			}
 
 		} else
-			mapList = temp;
+			predResult = temp;
 
-		return mapList;
+		return predResult;
 	}
 
-	private Predicate generateConditions(Predicate mapList,
+	private Predicate generateConditions(Predicate predResult,
 			ArrayList<Condition> conditions) {
 		for (Condition cond : conditions) {
-			mapList = getTempCondResult(mapList, cond);
+			predResult = getTempCondResult(predResult, cond);
 		}
-		return mapList;
+		return predResult;
 	}
 
 	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
@@ -183,16 +182,16 @@ public class BottomUpExecutionNew {
 		String rightOperand = cond.getRightOperand();
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
-		List<ArrayList<String>> mapList = p.getResultMap2();
-		for (ArrayList<String> mapOfMapList : mapList) {
+		List<ArrayList<String>> factList = p.getRelation();
+		for (ArrayList<String> factOfFactList : factList) {
 			String left = "";
 			String right = "";
 			if (leftOperand.startsWith("?"))
-				left = mapOfMapList.get(p.getScheme().indexOf(leftOperand));
+				left = factOfFactList.get(p.getScheme().indexOf(leftOperand));
 			else
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
-				right = mapOfMapList.get(p.getScheme().indexOf(rightOperand));
+				right = factOfFactList.get(p.getScheme().indexOf(rightOperand));
 			else
 				right = rightOperand;
 			boolean condPredicate = false;
@@ -227,7 +226,7 @@ public class BottomUpExecutionNew {
 				break;
 			}
 			if (condPredicate == true) {
-				facts.add(mapOfMapList);
+				facts.add(factOfFactList);
 			}
 		}
 		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
@@ -240,36 +239,36 @@ public class BottomUpExecutionNew {
 	private Predicate getTempJoinResult(Predicate predicate1,
 			Predicate predicate2) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
-		ArrayList<ArrayList<String>> fact2 = getMap(predicate2);
-		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
-				predicate2.getScheme());
+		ArrayList<ArrayList<String>> fact1 = predicate1.getRelation();
+		ArrayList<ArrayList<String>> fact2 = getFacts(predicate2);
+		ArrayList<PairofInteger> equalList = getEqualList(
+				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
-		for (Integer[] wert : equalList)
-			liste.add(wert[1]);
-		for (ArrayList<String> mapOfFact1 : fact1) {
-			for (ArrayList<String> mapOfFact2 : fact2) {
+		for (PairofInteger wert : equalList)
+			liste.add(wert.p2);
+		for (ArrayList<String> oneOfFact1 : fact1) {
+			for (ArrayList<String> oneOfFact2 : fact2) {
 				boolean joinPredicate = true;
-				for (Integer[] wert : equalList) {
-					if (!mapOfFact1.get(wert[0])
-							.equals(mapOfFact2.get(wert[1])))
+				for (PairofInteger wert : equalList) {
+					if (!oneOfFact1.get(wert.p1)
+							.equals(oneOfFact2.get(wert.p2)))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
 					ArrayList<String> temp = new ArrayList<String>();
-					for (String e : mapOfFact1) {
-						temp.add(e);
-					}
 
-					for (int i = 0; i < mapOfFact2.size(); i++) {
+					temp.addAll(oneOfFact1);
+
+					for (int i = 0; i < oneOfFact2.size(); i++) {
 						if (!liste.contains(i))
-							temp.add(mapOfFact2.get(i));
+							temp.add(oneOfFact2.get(i));
 					}
 					facts.add(temp);
 				}
 			}
 		}
-		ArrayList<String> newSchema = predicate1.getScheme();
+		ArrayList<String> newSchema = new ArrayList<String>();
+		newSchema.addAll(predicate1.getScheme());
 		for (int i = 0; i < predicate2.getScheme().size(); i++)
 			if (!liste.contains(i))
 				newSchema.add(predicate2.getScheme().get(i));
@@ -283,21 +282,21 @@ public class BottomUpExecutionNew {
 	private Predicate getTempNotResult(Predicate predicate1,
 			Predicate predicate2) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
-		ArrayList<ArrayList<String>> fact2 = getMap(predicate2);
-		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
-				predicate2.getScheme());
+		ArrayList<ArrayList<String>> fact1 = predicate1.getRelation();
+		ArrayList<ArrayList<String>> fact2 = getFacts(predicate2);
+		ArrayList<PairofInteger> equalList = getEqualList(
+				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
-		for (Integer[] wert : equalList)
-			liste.add(wert[1]);
+		for (PairofInteger wert : equalList)
+			liste.add(wert.p2);
 		int pos = 0;
 		ArrayList<Integer> positionen = new ArrayList<Integer>();
-		for (ArrayList<String> mapOfFact1 : fact1) {
-			for (ArrayList<String> mapOfFact2 : fact2) {
+		for (ArrayList<String> oneOfFact1 : fact1) {
+			for (ArrayList<String> oneOfFact2 : fact2) {
 				boolean joinPredicate = true;
-				for (Integer[] wert : equalList) {
-					if (!mapOfFact1.get(wert[0])
-							.equals(mapOfFact2.get(wert[1])))
+				for (PairofInteger wert : equalList) {
+					if (!oneOfFact1.get(wert.p1)
+							.equals(oneOfFact2.get(wert.p2)))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
@@ -318,37 +317,24 @@ public class BottomUpExecutionNew {
 
 	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
 	// ist Join Prädikat
-	private ArrayList<Integer[]> getEqualList(ArrayList<String> strings,
+	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
 			ArrayList<String> strings2) {
-		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
+		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
 		for (int i = 0; i < strings.size(); i++)
 			for (int j = 0; j < strings2.size(); j++)
 				if (strings.get(i).startsWith("?"))
 					if (strings.get(i).equals(strings2.get(j)))
-						list.add(new Integer[] { i, j });
-		return list;
-	}
-
-	// generiere die Join Prädikate, d.h. die Variablen, die gleich heißen, Bsp:
-	// A(?x,?y),B(?x,?z). --> ?x
-	// ist Join Prädikat
-	private ArrayList<String> getEqualList(Set<String> keySet,
-			Set<String> keySet2) {
-		ArrayList<String> list = new ArrayList<String>();
-		for (String wert1 : keySet)
-			for (String wert2 : keySet2)
-				if (wert1.equals(wert2))
-					list.add(wert1);
+						list.add(new PairofInteger(i, j));
 		return list;
 	}
 
 	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
 	// neue Map für A: "?x" : 1, "?y" : 2
-	private ArrayList<ArrayList<String>> getMap(Predicate predicate) {
+	private ArrayList<ArrayList<String>> getFacts(Predicate predicate) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
-		int anz = predicate.getAnz();
+		int anz = predicate.getScheme().size();
 		for (Fact value : values) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
@@ -366,7 +352,7 @@ public class BottomUpExecutionNew {
 					facts.add(value.getListOfValues());
 			}
 		}
-		predicate.setResultMap2(facts);
+		predicate.setRelation(facts);
 		return facts;
 
 	}
@@ -515,7 +501,15 @@ public class BottomUpExecutionNew {
 		} catch (NullPointerException e) {
 			return false;
 		}
-		// only got here if we didn't return false
 		return true;
+	}
+
+	private class PairofInteger {
+		int p1, p2;
+
+		PairofInteger(int p1, int p2) {
+			this.p1 = p1;
+			this.p2 = p2;
+		}
 	}
 }

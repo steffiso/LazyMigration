@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="iris/demo/DemoGUI.java|lazyMigration/JsonToObject.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="UnitTest"/>
 	<classpathentry kind="lib" path="lib/iris-0.60.jar"/>
 	<classpathentry kind="lib" path="lib/iris-app-0.60.jar"/>
 	<classpathentry kind="lib" path="lib/iris-parser-0.60.jar"/>
@@ -9,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/jackson-core-2.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

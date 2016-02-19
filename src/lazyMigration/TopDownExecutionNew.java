@@ -1,13 +1,10 @@
 package lazyMigration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.Map.Entry;
 
 import database.Database;
 import datalog.Condition;
@@ -23,7 +20,8 @@ public class TopDownExecutionNew {
 	private Predicate goal;
 	private RuleGoalTree tree;
 	private Map<String, String> unificationMap;
-	private ArrayList<ArrayList<Map<String, String>>> resultMap;
+
+	// private ArrayList<ArrayList<Map<String, String>>> resultMap;
 
 	// Setze EDB-Fakten
 	public TopDownExecutionNew(ArrayList<Fact> facts) {
@@ -38,6 +36,15 @@ public class TopDownExecutionNew {
 		this.goal = goal;
 	}
 
+	// wir setzen die UnificationMap gleich am Anfang
+	public TopDownExecutionNew(ArrayList<Fact> facts, ArrayList<Rule> rules,
+			Predicate goal, SortedMap<String, String> attributeMap) {
+		this.facts = facts;
+		this.rules = rules;
+		this.goal = goal;
+		this.unificationMap = attributeMap;
+	}
+
 	public ArrayList<Fact> getValues() {
 		return facts;
 	}
@@ -48,27 +55,41 @@ public class TopDownExecutionNew {
 
 	// Testgenerierung einer Rule mit Top Down
 	public ArrayList<ArrayList<String>> getAnswer(Rule rule) {
-		// ArrayList<ArrayList<Map<String, String>>> maps = new
-		// ArrayList<ArrayList<Map<String, String>>>();
+
+		rulesRenameandReorder(rule);
 		for (Predicate p : rule.getPredicates()) {
-			getMap(p);
-			// maps.add(getMap(p));
+			getFacts(p);
 		}
 
-		// List<Map<String, String>> temp = join(rule.getPredicates(), maps);
 		Predicate temp = join(rule.getPredicates());
 		if (rule.getConditions() != null)
 			temp = generateConditions(temp, rule.getConditions());
-		return temp.getResultMap2();
+
+		ArrayList<String> werte = rule.getHead().getScheme();
+		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
+		for (ArrayList<String> oneMap : temp.getRelation()) {
+			ArrayList<String> oneAnswer = new ArrayList<String>();
+			for (String wert : werte)
+				if (wert.startsWith("?"))
+					oneAnswer.add(oneMap.get(temp.getScheme().indexOf(wert)));
+				else
+					oneAnswer.add(wert);
+			answer.add(oneAnswer);
+		}
+
+		return answer;
 	}
 
 	public ArrayList<Fact> getAnswers() {
-		resultMap = new ArrayList<ArrayList<Map<String, String>>>();
+
+		// toDo bevor wir anfangen müssen wir noch die Rules umbennnen
+		//for (Rule rule : rules) rulesRenameandReorder(rule);
+		 
+		// resultMap = new ArrayList<ArrayList<Map<String, String>>>();
 		ArrayList<Fact> answer = new ArrayList<Fact>();
-		unificationMap = new HashMap<String, String>();
 
 		// check if a mapping for predicate goal exists
-		if (getMap(goal) == 0) {
+		if (getFacts(goal) == 0) {
 			ArrayList<Rule> childrenRules = new ArrayList<Rule>();
 			for (Rule r : rules) {
 				// look for corresponding rules
@@ -83,94 +104,141 @@ public class TopDownExecutionNew {
 			if (childrenRules.size() == 0) {
 				System.out.println("No matching rules found!");
 			} else {
-				// no mapping found -> children rules exist
+				// vorläufige toString Methode muss angepasst werden
+				System.out.println("Unifizierte Regeln: ");
+				for (Rule rr : childrenRules) {
+					System.out
+							.print(rr.getHead().getScheme().toString() + ":-");
+					for (Predicate pr : rr.getPredicates())
+						System.out.print(pr.getScheme().toString());
+				}
+				System.out.println();
+
 				// compute the answers of corresponding rule goal tree
-				System.out.println("Unifizierte Regeln: "
-						+ childrenRules.toString());
 				tree = new RuleGoalTree(childrenRules);
-				goal = getAnswersForSubtree(tree);
-
-				// join head predicates of all rule bodies (children of goal)
-				// ArrayList<Predicate> childrenHeads = new
-				// ArrayList<Predicate>();
-				// for (Rule r: childrenRules){
-				// childrenHeads.add(r.getHead());
-				// }
-				// goal.setResultMap(join(childrenHeads));
+				goal.setRelation(getAnswersForSubtree(tree, goal.getScheme()));
 			}
-
 		}
 
 		else
 			System.out.println("Mapping gefunden:" + goal.toString() + " "
-					+ goal.getResultMap2().toString());
+					+ goal.getRelation().toString());
 
-		System.out.println("Ergebnis: " + goal.getResultMap2());
+		System.out.println("Ergebnis: " + goal.getRelation().toString());
 		// toDo: goal.getResultMap() to Facts !!!
+		for (ArrayList<String> str : goal.getRelation()) {
+			answer.add(new Fact(goal.getKind(), str));
+		}
 		return answer;
 	}
 
-	public Predicate getAnswersForSubtree(RuleGoalTree tree) {
-		Predicate a = null;
-		for (Rule rulesChildren : tree.getChildren()) {
-			RuleBody body = rulesChildren.getRuleBody();
+	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree,
+			ArrayList<String> scheme) {
+		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
+
+		for (Rule childRule : tree.getChildren()) {
+			Predicate resultPredicate = null;
+			RuleBody body = childRule.getRuleBody();
 			for (Predicate subgoal : body.getPredicates()) {
 				// check if a mapping for predicate goal exists
-				if (getMap(subgoal) == 0) {
-					ArrayList<Rule> childrenRules = new ArrayList<Rule>();
+				if (getFacts(subgoal) == 0) {
+					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
 					for (Rule r : rules) {
 						// look for corresponding rules and unify
 						Predicate ruleHead = r.getHead();
 						if (ruleHead.getKind().equals(subgoal.getKind())
 								&& ruleHead.getAnz() == subgoal.getAnz()) {
 							Rule unifiedRule = unifyRule(subgoal, r);
-							childrenRules.add(unifiedRule);
+							unifiedChildrenRules.add(unifiedRule);
 						}
 					}
-					for (int i = 0; i < childrenRules.size(); i++) {
-						System.out.println(childrenRules.get(i).toString());
-					}
 
-					if (childrenRules.size() == 0) {
+					if (unifiedChildrenRules.size() == 0) {
 						System.out.println("Keine children rules!"
-								+ subgoal.toString());
-					} else
-						// no mapping found -> children rules exist
-						// compute the answers of corresponding rule goal tree
-						System.out.println("Unifizierte Regeln: "
-								+ childrenRules.toString());
-					RuleGoalTree subTree = new RuleGoalTree(childrenRules);
-
-					Map<String, String> attributeHead = subTree.getGoal()
-							.getWerte();
-					subgoal = getAnswersForSubtree(subTree);
-					for (Map.Entry<String, String> entryHead : attributeHead
-							.entrySet()) {
-						if (!entryHead.getValue().equals("")) {
-							// toDo: hier put ausführen mit ResultMap??
+								+ subgoal.getScheme().toString());
+					} else {
+						
+						// vorläufige toString Methode muss angepasst werden
+						System.out.println("Unifizierte Regeln: ");
+						for (Rule rr : unifiedChildrenRules) {
+							System.out.print(rr.getHead().getScheme()
+									.toString()
+									+ ":-");
+							for (Predicate pr : rr.getPredicates())
+								System.out.print(pr.getScheme().toString());
 						}
+						System.out.println();
+
+						// no mapping found + children rules exist
+						// compute the answers of corresponding rule goal tree
+						RuleGoalTree subTree = new RuleGoalTree(
+								unifiedChildrenRules);
+						subgoal.setRelation(getAnswersForSubtree(subTree,
+								subgoal.getScheme()));
+
+						/*
+						 * Map<String, String> attributeHead = subTree.getGoal()
+						 * .getWerte();
+						 * 
+						 * for (Map.Entry<String, String> entryHead :
+						 * attributeHead .entrySet()) { if
+						 * (!entryHead.getValue().equals("")) { // toDo: hier
+						 * put ausführen mit ResultMap?? //
+						 * System.out.println("hier put mit : " + //
+						 * subgoal.getResultMap()); } }
+						 */
 					}
 				} else
 					System.out.println("Mapping gefunden!"
-							+ subgoal.getResultMap2().toString());
+							+ subgoal.getRelation().toString());
 			}
-			a = join(body.getPredicates());
+			// join of rule body (with conditions)
+			if (body.getPredicates().size() > 1)
+				resultPredicate = join(body.getPredicates());
+			else if (!body.getPredicates().isEmpty())
+				resultPredicate = body.getPredicates().get(0);
 			if (body.getConditions() != null)
-				a = generateConditions(a, body.getConditions());
-			System.out.println("Join: " + a.toString());
+				resultPredicate = generateConditions(resultPredicate,
+						body.getConditions());
 
+			childRule.getHead()
+					.setRelation(
+							getResults(resultPredicate, childRule.getHead()
+									.getScheme()));
+			System.out.println("Join: "
+					+ childRule.getHead().getRelation().toString());
+
+			result.addAll(getResults(resultPredicate, scheme));
 		}
 
-		// join head predicates of all rule bodies (children of goal)
-		// ArrayList<Predicate> childrenHeads = new ArrayList<Predicate>();
-		// for (Rule r: tree.getChildren()){
-		// childrenHeads.add(r.getHead());
-		// }
-		// goal.setResultMap(join(childrenHeads));
-		return a;
+		return result;
+	}
+
+	private ArrayList<ArrayList<String>> getResults(Predicate results,
+			ArrayList<String> scheme) {
+		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
+		for (ArrayList<String> oneMap : results.getRelation()) {
+			ArrayList<String> oneAnswer = new ArrayList<String>();
+			for (String wert : scheme)
+				if (wert.startsWith("?"))
+					oneAnswer
+							.add(oneMap.get(results.getScheme().indexOf(wert)));
+				else
+					oneAnswer.add(wert);
+			boolean alreadyExist = false;
+			for (ArrayList<String> iterateAnswer : answer)
+				if (oneAnswer.containsAll(iterateAnswer)
+						&& iterateAnswer.containsAll(oneAnswer))
+					alreadyExist = true;
+			if (!alreadyExist) {
+				answer.add(oneAnswer);
+			}
+		}
+		return answer;
 	}
 
 	public Rule unifyRule(Predicate goal, Rule childrenRule) {
+		// Unifizierung geht über unificationMap
 		// nur Prädikate im RuleBody
 		Predicate head = childrenRule.getHead();
 		RuleBody body = childrenRule.getRuleBody();
@@ -179,44 +247,25 @@ public class TopDownExecutionNew {
 			System.out.println("Unifizierung nicht möglich:goal "
 					+ goal.toString() + ",head " + head.toString());
 		} else {
-			// create unification Map
-			Map<String, String> valuesGoal = goal.getWerte();
-			Map<String, String> valuesHead = head.getWerte();
-
-			for (Map.Entry<String, String> entryGoal : valuesGoal.entrySet()) {
-				boolean containsKey = valuesHead
-						.containsKey(entryGoal.getKey());
-				String headValue = valuesHead.get(entryGoal.getKey());
-				String goalValue = entryGoal.getValue();
-				if (containsKey && !headValue.equals(goalValue)) {
-					unificationMap
-							.put(entryGoal.getKey(), entryGoal.getValue());
-				}
-			}
 
 			for (Map.Entry<String, String> unificationMapEntry : unificationMap
 					.entrySet()) {
-				Map<String, String> attributesRuleHead = childrenRule.getHead()
-						.getWerte();
+				ArrayList<String> attributesRuleHead = head
+						.getScheme();
 				// unify head
-				if (attributesRuleHead
-						.containsKey(unificationMapEntry.getKey())) { // &&
-																		// !attributesRuleHead.get(unificationMapEntry.getKey()).equals("")){
-					attributesRuleHead.put(unificationMapEntry.getKey(),
+				if (attributesRuleHead.contains(unificationMapEntry.getKey())) { // &&
+																					// !attributesRuleHead.get(unificationMapEntry.getKey()).equals("")){
+					attributesRuleHead.set(attributesRuleHead
+							.indexOf(unificationMapEntry.getKey()),
 							unificationMapEntry.getValue());
-					int i = childrenRule.getHead().getScheme()
-							.indexOf(unificationMapEntry.getKey());
-					childrenRule.getHead().getScheme()
-							.set(i, unificationMapEntry.getValue());
 				}
 				// unify body
 				for (Predicate p : body.getPredicates()) {
-					if (p.getWerte().containsKey(unificationMapEntry.getKey())) {
-						p.getWerte().put(unificationMapEntry.getKey(),
+					if (p.getScheme().contains(unificationMapEntry.getKey())) {
+						p.getScheme().set(
+								p.getScheme().indexOf(
+										unificationMapEntry.getKey()),
 								unificationMapEntry.getValue());
-						int i = p.getScheme().indexOf(
-								unificationMapEntry.getKey());
-						p.getScheme().set(i, unificationMapEntry.getValue());
 					}
 				}
 			}
@@ -227,6 +276,7 @@ public class TopDownExecutionNew {
 
 	public void putNewFact(String newFact) {
 		Database db = new Database();
+		// newFact sowas wie ; "Player2(4,'Lisa',40)" (ohne timestamp)
 		db.putToDatabase(newFact);
 	}
 
@@ -241,13 +291,211 @@ public class TopDownExecutionNew {
 		return rule;
 	}
 
+	// generiere Zwischenergebnisse zu allen Joins einer Rule nacheinander
+	public Predicate join(ArrayList<Predicate> predicates) {
+		Predicate temp = null;
+		if (predicates.size() > 0) {
+			temp = predicates.get(0);
+			if (temp != null) {
+				if (!temp.getRelation().isEmpty()) {
+					ArrayList<ArrayList<String>> facts2;
+					for (int i = 1; i < predicates.size(); i++) {
+						Predicate p2 = predicates.get(i);
+						ArrayList<PairofInteger> equalList = getEqualList(
+								temp.getScheme(), p2.getScheme());
+						ArrayList<ArrayList<String>> restemp = new ArrayList<ArrayList<String>>();
+						facts2 = p2.getRelation();
+
+						if (predicates.get(i).isNot()) {
+							for (ArrayList<String> fact1 : temp.getRelation()) {
+								if (facts2 == null
+										|| getTempNotResult(fact1, equalList,
+												facts2)) {
+									restemp.add(fact1);
+								}
+							}
+							temp = new Predicate("temp", temp.getScheme().size(),
+									temp.getScheme(), restemp);
+						}
+
+						else {
+							if (facts2 != null) {
+								for (ArrayList<String> fact1 : temp
+										.getRelation()) {
+									ArrayList<ArrayList<String>> results = getTempJoinResult(
+											fact1, equalList, facts2);
+									if (results != null)
+										restemp.addAll(results);
+								}
+							}
+							ArrayList<Integer> liste = new ArrayList<Integer>();
+							for (PairofInteger wert : equalList)
+								liste.add(wert.p2);
+							ArrayList<String> newSchema = new ArrayList<String>();
+							newSchema.addAll(temp.getScheme());
+							for (int j = 0; j < p2.getScheme().size(); j++)
+								if (!liste.contains(j))
+									newSchema.add(p2.getScheme().get(j));
+							temp = new Predicate("temp", newSchema.size(),
+									newSchema, restemp);
+						}
+
+					}
+				}
+			}
+		}
+		return temp;
+
+	}
+
+	private Predicate generateConditions(Predicate predResult,
+			ArrayList<Condition> conditions) {
+		for (Condition cond : conditions) {
+			predResult = getTempCondResult(predResult, cond);
+		}
+		return predResult;
+	}
+
+	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
+	// A(?x,?y),B(?x,?z),?y=?z.
+	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
+	private Predicate getTempCondResult(Predicate p, Condition cond) {
+		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
+		String rightOperand = cond.getRightOperand();
+		String leftOperand = cond.getLeftOperand();
+		String operator = cond.getOperator();
+		List<ArrayList<String>> mapList = p.getRelation();
+		for (ArrayList<String> mapOfMapList : mapList) {
+			String left = "";
+			String right = "";
+			if (leftOperand.startsWith("?"))
+				left = mapOfMapList.get(p.getScheme().indexOf(leftOperand));
+			else
+				left = leftOperand;
+			if (rightOperand.startsWith("?"))
+				right = mapOfMapList.get(p.getScheme().indexOf(rightOperand));
+			else
+				right = rightOperand;
+			boolean condPredicate = false;
+			switch (operator) {
+			case "=":
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) == Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.equals(right))
+					condPredicate = true;
+				break;
+			case "!":
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) != Integer.parseInt(right))
+						condPredicate = true;
+				} else if (!left.equals(right))
+					condPredicate = true;
+				break;
+			case "<":
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) < Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) < 0)
+					condPredicate = true;
+				break;
+			case ">":
+				if (isInteger(left) && isInteger(right)) {
+					if (Integer.parseInt(left) > Integer.parseInt(right))
+						condPredicate = true;
+				} else if (left.compareTo(right) > 0)
+					condPredicate = true;
+				break;
+			}
+			if (condPredicate == true) {
+				facts.add(mapOfMapList);
+			}
+		}
+		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
+
+	}
+
+	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
+	// A(?x,?y),B(?x,?z).
+	// Joine die Werte von A und B nach ?x
+	private ArrayList<ArrayList<String>> getTempJoinResult(
+			ArrayList<String> fact1, ArrayList<PairofInteger> equalList,
+			ArrayList<ArrayList<String>> fact2) {
+		ArrayList<ArrayList<String>> result = null;
+		ArrayList<Integer> liste = new ArrayList<Integer>();
+		for (PairofInteger wert : equalList)
+			liste.add(wert.p2);
+
+		for (ArrayList<String> oneOfFact2 : fact2) {
+			boolean joinPredicate = true;
+			for (PairofInteger wert : equalList) {
+				if (!fact1.get(wert.p1).equals(oneOfFact2.get(wert.p2)))
+					joinPredicate = false;
+			}
+			if (joinPredicate == true) {
+				ArrayList<String> temp = new ArrayList<String>();
+				temp.addAll(fact1);
+
+				for (int i = 0; i < oneOfFact2.size(); i++) {
+					if (!liste.contains(i))
+						temp.add(oneOfFact2.get(i));
+				}
+
+				if (result == null)
+					result = new ArrayList<ArrayList<String>>();
+				result.add(temp);
+			}
+		}
+
+		return result;
+
+	}
+
+	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
+	// not B(?x,?z).
+	// Alle ?x Werte von A die nicht in ?x Werte von B sind
+	private boolean getTempNotResult(ArrayList<String> fact1,
+			ArrayList<PairofInteger> equalList,
+			ArrayList<ArrayList<String>> fact2) {
+		ArrayList<Integer> liste = new ArrayList<Integer>();
+		for (PairofInteger wert : equalList)
+			liste.add(wert.p2);
+
+		for (ArrayList<String> oneOfFact1 : fact2) {
+			boolean joinPredicate = true;
+			for (PairofInteger wert : equalList) {
+				if (!fact1.get(wert.p1).equals(oneOfFact1.get(wert.p2)))
+					joinPredicate = false;
+			}
+
+			if (joinPredicate == true) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
+	// ist Join Prädikat
+	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
+			ArrayList<String> strings2) {
+		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
+		for (int i = 0; i < strings.size(); i++)
+			for (int j = 0; j < strings2.size(); j++)
+				if (strings.get(i).startsWith("?"))
+					if (strings.get(i).equals(strings2.get(j)))
+						list.add(new PairofInteger(i, j));
+		return list;
+	}
+
 	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
 	// A(1,2)
 	// neue Map für A: "?x" : 1, "?y" : 2
-	private int getMap(Predicate predicate) {
+	private int getFacts(Predicate predicate) {
 		ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
-		int anz = predicate.getAnz();
+		int anz = predicate.getScheme().size();
 		for (Fact value : facts) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
@@ -265,7 +513,7 @@ public class TopDownExecutionNew {
 					values.add(value.getListOfValues());
 			}
 		}
-		predicate.setResultMap2(values);
+		predicate.setRelation(values);
 		if (values.isEmpty())
 			return 0;
 		else
@@ -273,34 +521,19 @@ public class TopDownExecutionNew {
 
 	}
 
-	// generiere Zwischenergebnisse zu allen Joins einer Rule nacheinander
-	public Predicate join(ArrayList<Predicate> predicates) {
-		// ArrayList<ArrayList<Map<String, String>>> map) {
-		// ArrayList<Map<String, String>> temp = map.get(0);
-
-		Predicate temp = predicates.get(0);
-		if (temp != null) {
-			if (!temp.getResultMap2().isEmpty()) {
-				Predicate facts2;
-				for (int i = 1; i < predicates.size(); i++) {
-					facts2 = predicates.get(i);
-
-					if (facts2.isNot()) {
-						temp = getTempNotResult(temp, facts2);
-					}
-
-					else {
-						temp = getTempJoinResult(temp, facts2);
-
-					}
-				}
-			}
+	public static boolean isInteger(String s) {
+		try {
+			Integer.parseInt(s);
+		} catch (NumberFormatException e) {
+			return false;
+		} catch (NullPointerException e) {
+			return false;
 		}
-		return temp;
-
+		// only got here if we didn't return false
+		return true;
 	}
 
-	public void rulesBodyUnificationandReorder(Rule rule) {
+	public void rulesRenameandReorder(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {
@@ -327,161 +560,19 @@ public class TopDownExecutionNew {
 
 	private void renameVariablesOfPredicate(Predicate predicate, String left,
 			String right) {
-		if (predicate.getWerte().containsKey(right)) {
-			String value = predicate.getWerte().get(right);
-			predicate.getWerte().remove(right);
-			predicate.getWerte().put(left, value);
+		if (predicate.getScheme().contains(right)) {
+			predicate.getScheme().set(predicate.getScheme().indexOf(right),
+					left);
 		}
 	}
 
-	private Predicate generateConditions(Predicate mapList,
-			ArrayList<Condition> conditions) {
-		for (Condition cond : conditions) {
-			mapList = getTempCondResult(mapList, cond);
+	private class PairofInteger {
+		int p1, p2;
+
+		PairofInteger(int p1, int p2) {
+			this.p1 = p1;
+			this.p2 = p2;
 		}
-		return mapList;
-	}
-
-	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z),?y=?z.
-	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
-	private Predicate getTempCondResult(Predicate p, Condition cond) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		String rightOperand = cond.getRightOperand();
-		String leftOperand = cond.getLeftOperand();
-		String operator = cond.getOperator();
-		List<ArrayList<String>> mapList = p.getResultMap2();
-		for (ArrayList<String> mapOfMapList : mapList) {
-			String left = "";
-			String right = "";
-			if (leftOperand.startsWith("?"))
-				left = mapOfMapList.get(p.getScheme().indexOf(leftOperand));
-			else
-				left = leftOperand;
-			if (rightOperand.startsWith("?"))
-				right = mapOfMapList.get(p.getScheme().indexOf(rightOperand));
-			else
-				right = rightOperand;
-			boolean condPredicate = false;
-			switch (operator) {
-			case "=":
-				if (left.equals(right))
-					condPredicate = true;
-				break;
-			case "!":
-				if (!left.equals(right))
-					condPredicate = true;
-				break;
-			case "<":
-				if (left.compareTo(right) < 0)
-					condPredicate = true;
-				break;
-			case ">":
-				if (left.compareTo(right) > 0)
-					condPredicate = true;
-				break;
-			}
-			if (condPredicate == true) {
-				facts.add(mapOfMapList);
-			}
-		}
-		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
-
-	}
-
-	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z).
-	// Joine die Werte von A und B nach ?x
-	private Predicate getTempJoinResult(Predicate predicate1,
-			Predicate predicate2) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
-		ArrayList<ArrayList<String>> fact2 = predicate2.getResultMap2();
-		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
-				predicate2.getScheme());
-		ArrayList<Integer> liste = new ArrayList<Integer>();
-		for (Integer[] wert : equalList)
-			liste.add(wert[1]);
-		for (ArrayList<String> mapOfFact1 : fact1) {
-			for (ArrayList<String> mapOfFact2 : fact2) {
-				boolean joinPredicate = true;
-				for (Integer[] wert : equalList) {
-					if (!mapOfFact1.get(wert[0])
-							.equals(mapOfFact2.get(wert[1])))
-						joinPredicate = false;
-				}
-				if (joinPredicate == true) {
-					ArrayList<String> temp = new ArrayList<String>();
-					for (String e : mapOfFact1) {
-						temp.add(e);
-					}
-
-					for (int i = 0; i < mapOfFact2.size(); i++) {
-						if (!liste.contains(i))
-							temp.add(mapOfFact2.get(i));
-					}
-					facts.add(temp);
-				}
-			}
-		}
-		ArrayList<String> newSchema = predicate1.getScheme();
-		for (int i = 0; i < predicate2.getScheme().size(); i++)
-			if (!liste.contains(i))
-				newSchema.add(predicate2.getScheme().get(i));
-		return new Predicate("temp", newSchema.size(), newSchema, facts);
-
-	}
-
-	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
-	// not B(?x,?z).
-	// Alle ?x Werte von A die nicht in ?x Werte von B sind
-	private Predicate getTempNotResult(Predicate predicate1,
-			Predicate predicate2) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		ArrayList<ArrayList<String>> fact1 = predicate1.getResultMap2();
-		ArrayList<ArrayList<String>> fact2 = predicate2.getResultMap2();
-		ArrayList<Integer[]> equalList = getEqualList(predicate1.getScheme(),
-				predicate2.getScheme());
-		ArrayList<Integer> liste = new ArrayList<Integer>();
-		for (Integer[] wert : equalList)
-			liste.add(wert[1]);
-		int pos = 0;
-		ArrayList<Integer> positionen = new ArrayList<Integer>();
-		for (ArrayList<String> mapOfFact1 : fact1) {
-			for (ArrayList<String> mapOfFact2 : fact2) {
-				boolean joinPredicate = true;
-				for (Integer[] wert : equalList) {
-					if (!mapOfFact1.get(wert[0])
-							.equals(mapOfFact2.get(wert[1])))
-						joinPredicate = false;
-				}
-				if (joinPredicate == true) {
-					positionen.add(pos);
-				}
-			}
-			pos++;
-		}
-
-		for (int i = 0; i < fact1.size(); i++) {
-			if (!positionen.contains(i))
-				facts.add(fact1.get(i));
-		}
-		return new Predicate("temp", predicate1.getScheme().size(),
-				predicate1.getScheme(), facts);
-
-	}
-
-	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
-	// ist Join Prädikat
-	private ArrayList<Integer[]> getEqualList(ArrayList<String> strings,
-			ArrayList<String> strings2) {
-		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
-		for (int i = 0; i < strings.size(); i++)
-			for (int j = 0; j < strings2.size(); j++)
-				if (strings.get(i).startsWith("?"))
-					if (strings.get(i).equals(strings2.get(j)))
-						list.add(new Integer[] { i, j });
-		return list;
 	}
 
 }
