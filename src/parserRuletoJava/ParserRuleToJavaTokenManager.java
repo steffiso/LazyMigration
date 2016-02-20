@@ -7,7 +7,8 @@ import datalog.Condition;
 import datalog.RuleBody;
 import database.Database;
 import database.Schema;
-//import java.util.SortedMap;//import java.util.TreeMap;
+//import java.util.SortedMap;
+//import java.util.TreeMap;
 import java.util.LinkedHashMap;
 
 /** Token Manager. */

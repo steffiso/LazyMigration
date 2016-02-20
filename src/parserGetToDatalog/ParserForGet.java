@@ -6,14 +6,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import database.Database;
+import database.Schema;
 
 public class ParserForGet implements ParserForGetConstants {
   private static ArrayList<String > getCurrentSchema(String kind)
   {
     Database db = new Database();
-    ArrayList<String > currentSchema = db.getLatestSchema(kind);
+    Schema currentSchema = db.getLatestSchema(kind);
+    ArrayList<String > attributes = currentSchema.getAttributes();
 
-        return currentSchema;
+        return attributes;
 
   }
   private static String schemaToString(ArrayList<String > schema)

@@ -7,23 +7,34 @@ import datalog.Condition;
 import datalog.RuleBody;
 import database.Database;
 import database.Schema;
-//import java.util.SortedMap;//import java.util.TreeMap;
+//import java.util.SortedMap;
+//import java.util.TreeMap;
 import java.util.LinkedHashMap;
 
 public class ParserRuleToJava implements ParserRuleToJavaConstants {
   public ArrayList < String > getSchema(String kind, int schemaNumber)
   {
     Database db = new Database();
-    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);
-    return currentSchema;
+    Schema currentSchema = db.getSchema(kind, schemaNumber);
+    if (currentSchema != null)
+        return currentSchema.getAttributes();
+    else
+        return null;
   }
 
   public String getAttributeName(String kind, int schemaNumber, int pos)
   {
     Database db = new Database();
-    ArrayList < String > currentSchema = db.getSchema(kind, schemaNumber);
-    String value = currentSchema.get(pos);
-    return value;
+    Schema currentSchema = db.getSchema(kind, schemaNumber);
+    if (currentSchema != null)
+    {
+        ArrayList<String > attributes = currentSchema.getAttributes();
+        String value = attributes.get(pos);
+        return value;
+   }
+    else
+        return null;
+
   }
 
   final public ArrayList < Rule > start() throws ParseException {
@@ -183,21 +194,22 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
     case number:
       value = getValue();
       scheme.add(value);
-      if (value.startsWith("?"))
-      {
-        if (!schemaExists)
-        {
-          schema.add(value);
-        }
-        attribute = value;
-        value = "";
-      }
-      else attribute = "";
-      //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
-      {
-        values.put(attribute, value);
-      }
-      pos++;
+//      if (value.startsWith("?"))
+//      {
+//        if (!schemaExists)
+//        {
+//          schema.add(value);
+//        }
+//        attribute = value;
+//        value = "";
+//      }
+//      else attribute = "";
+//      //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
+//      {
+//        values.put(attribute, value);
+//      }
+//      pos++;
+
       label_3:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -211,21 +223,22 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
         jj_consume_token(15);
         value = getValue();
           scheme.add(value);
-          if (value.startsWith("?"))
-          {
-            if (!schemaExists)
-            {
-              schema.add(value);
-            }
-            attribute = value;
-            value = "";
-          }
-          else attribute = "";
-          //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
-          {
-            values.put(attribute, value);
-          }
-          pos++;
+//          if (value.startsWith("?"))
+//          {
+//            if (!schemaExists)
+//            {
+//              schema.add(value);
+//            }
+//            attribute = value;
+//            value = "";
+//          }
+//          else attribute = "";
+//          //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);
+//          {
+//            values.put(attribute, value);
+//          }
+//          pos++;
+
       }
       break;
     default:
@@ -233,9 +246,9 @@ public class ParserRuleToJava implements ParserRuleToJavaConstants {
       ;
     }
     jj_consume_token(17);
-    predicate = new Predicate(kind.toString() + schemaToken.toString(), values.size(), schema, values);
+    predicate = new Predicate(kind.toString() + schemaToken.toString(), scheme.size(), scheme);
     if (isNot) predicate.setNot(true);
-    predicate.setScheme(scheme);
+    //predicate.setScheme(scheme);
     {if (true) return predicate;}
     throw new Error("Missing return statement in function");
   }

@@ -1,4 +1,161 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */options{  static = false;}PARSER_BEGIN(ParserForPut)package parserPutToDatalog;import java.io.BufferedReader;import java.io.File;import java.io.FileReader;import java.io.IOException;import database.Database;import java.util.ArrayList;public class ParserForPut{  private static int zaehler = 0;  private static int laenge = 0;  private static ArrayList < String > attributes = null;  private static int lastTS = 0;  private static void getSchema(String kind, int schemaversion)  {    ArrayList < String > schema = null;    Database db = new Database();    attributes = db.getSchema(kind, schemaversion);    laenge = attributes.size();    lastTS = db.getLastTimestamp();  }}PARSER_END(ParserForPut)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : /* Zeichen */{  < marks : "\"" >| < open : "{" >| < end : "}" >| < punkt : ":" >| < string : "'" (~[ "'" ])* "'" >| < number :    (< digit >)+    (      "." (< digit >)+    )? >| < digit : [ "0"-"9" ] >| < kindValue : < nameValue > (< nameValue >)* >| < nameValue :    [ "a"-"z" ]  | [ "A"-"Z" ]  | "_" >}String start() :{  String value = null;  zaehler =0;}{  value = getJSONString() < EOF >  {    return value;  }}String getJSONString() :{  Token kind = null;  Token schemaToken = null;  String schemaVersion = null;  String value = null;  int ts;}{  (kind = < kindValue >) (schemaToken = < number >)  {    schemaVersion = schemaToken.toString();    getSchema(kind.toString(), Integer.parseInt(schemaVersion));  }  "("  (    value = listOfValues("")  )?  ")"  {    ts = lastTS + 1;    String jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + schemaVersion + ",\n" + "\"attributes\":{" + value + "},\n\"ts\":" + Integer.toString(ts) + "}";    return jsonString;  }}String listOfValues(String value) :{  Token valueOfToken = null;  String valueOfOtherToken = null;  String valueOne = "";
-  boolean isTS=false;}{  (    valueOfToken = < string >  | valueOfToken = < number >  )  {    String name = null;    if (valueOfToken.kind == string)    {      name = valueOfToken.toString();      name = name.substring(1, name.length() - 1);      name = "\"" + name + "\"";    }    else name = "\"" + valueOfToken.toString() + "\"";    if (zaehler < laenge)    {      String attributename = attributes.get(zaehler);      valueOne = "\"" + attributename.substring(1, attributename.length()) + "\":" + name;      zaehler++;    }    else if (zaehler == laenge)    {      isTS=true;      zaehler++;    }    else    {      zaehler++;    }  }  (    ","    (      valueOfOtherToken = listOfValues(value)    )  )*  {    if (isTS) return null;    if (valueOfOtherToken != null) return value + valueOne + ", " + valueOfOtherToken;    else return value + valueOne;  }}
+ */
+options
+{
+  static = false;
+}
+
+PARSER_BEGIN(ParserForPut)
+package parserPutToDatalog;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import database.Database;
+import java.util.ArrayList;
+import database.Schema;
+
+public class ParserForPut
+{  
+  private static int schemaVersion = 0;
+  
+  private static int lastTS = 0;
+
+  private static ArrayList < String > attributes = null;
+  
+  private static int zaehler = 0;
+
+  private static int laenge = 0;
+
+  private static void getLatestSchema(String kind)
+  {
+    Schema schema = null;
+    Database db = new Database();
+    schema = db.getLatestSchema(kind);
+    attributes = schema.getAttributes();
+    laenge = attributes.size();
+    lastTS = db.getLastTimestamp();
+    schemaVersion = schema.getSchemaversion();
+  }
+}
+
+PARSER_END(ParserForPut)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : /* Zeichen */
+{
+  < marks : "\"" >
+| < put : "put" >
+| < open : "{" >
+| < end : "}" >
+| < punkt : ":" >
+| < string : "'" (~[ "'" ])* "'" >
+| < number :
+    (< digit >)+
+    (
+      "." (< digit >)+
+    )? >
+| < digit : [ "0"-"9" ] >
+| < kindValue : < nameValue > (< nameValue >)* >
+| < nameValue :
+    [ "a"-"z" ]
+  | [ "A"-"Z" ]
+  | "_" >
+}
+
+String start() :
+{
+  String value = null;
+  zaehler =0;
+}
+{
+  value = getJSONString() < EOF >
+  {
+    return value;
+  }
+}
+
+String getJSONString() :
+{
+  Token kind = null;
+  Token schemaToken = null;
+  String value = null;
+  int ts;
+}
+{
+  (< put >)? (kind = < kindValue >) (schemaToken = < number >)?
+  {
+    getLatestSchema(kind.toString());
+    if (schemaToken != null)
+    	schemaVersion = Integer.parseInt(schemaToken.toString());
+  }
+  "("
+  (
+    value = listOfValues("")
+  )?
+  ")."
+  {
+    ts = lastTS + 1;
+    String jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + schemaVersion + ",\n" + "\"attributes\":{" + value + "},\n\"ts\":" + Integer.toString(ts) + "}";
+    return jsonString;
+  }
+}
+
+String listOfValues(String value) :
+{
+  Token valueOfToken = null;
+  String valueOfOtherToken = null;
+  String valueOne = "";
+  boolean isTS=false;
+}
+{
+  (
+    valueOfToken = < string >
+  | valueOfToken = < number >
+  )
+  {
+    String name = null;
+    if (valueOfToken.kind == string)
+    {
+      name = valueOfToken.toString();
+      name = name.substring(1, name.length() - 1);
+      name = "\"" + name + "\"";
+    }
+    else name = "\"" + valueOfToken.toString() + "\"";
+    if (zaehler < laenge)
+    {
+      String attributename = attributes.get(zaehler);
+      valueOne = "\"" + attributename.substring(1, attributename.length()) + "\":" + name;
+      zaehler++;
+    }
+    else if (zaehler == laenge)
+    {
+      isTS=true;
+      zaehler++;
+    }
+    else
+    {
+      //Exception werfen ???
+      zaehler++;
+    }
+  }
+  (
+    ","
+    (
+      valueOfOtherToken = listOfValues(value)
+    )
+  )*
+  {
+    if (isTS) return null;
+    if (valueOfOtherToken != null) return value + valueOne + ", " + valueOfOtherToken;
+    else return value + valueOne;
+  }
+}

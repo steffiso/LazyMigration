@@ -13,21 +13,23 @@ public interface ParserForPutConstants {
   /** RegularExpression Id. */
   int marks = 5;
   /** RegularExpression Id. */
-  int open = 6;
+  int put = 6;
   /** RegularExpression Id. */
-  int end = 7;
+  int open = 7;
   /** RegularExpression Id. */
-  int punkt = 8;
+  int end = 8;
   /** RegularExpression Id. */
-  int string = 9;
+  int punkt = 9;
   /** RegularExpression Id. */
-  int number = 10;
+  int string = 10;
   /** RegularExpression Id. */
-  int digit = 11;
+  int number = 11;
   /** RegularExpression Id. */
-  int kindValue = 12;
+  int digit = 12;
   /** RegularExpression Id. */
-  int nameValue = 13;
+  int kindValue = 13;
+  /** RegularExpression Id. */
+  int nameValue = 14;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -40,6 +42,7 @@ public interface ParserForPutConstants {
     "\"\\t\"",
     "\"\\n\"",
     "\"\\\"\"",
+    "\"put\"",
     "\"{\"",
     "\"}\"",
     "\":\"",
@@ -49,7 +52,7 @@ public interface ParserForPutConstants {
     "<kindValue>",
     "<nameValue>",
     "\"(\"",
-    "\")\"",
+    "\").\"",
     "\",\"",
   };
 

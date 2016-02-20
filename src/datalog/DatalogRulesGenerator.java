@@ -1,11 +1,10 @@
 package datalog;
 
 import java.io.StringReader;
-import java.sql.Timestamp;
-import java.util.Date;
 import database.Database;
 import parserFunctionsToDatalog.ParserForFunctions;
 import parserGetToDatalog.ParserForGet;
+import parserPutToDatalog.ParseException;
 import parserPutToDatalog.ParserForPut;
 
 public class DatalogRulesGenerator {
@@ -83,6 +82,28 @@ public class DatalogRulesGenerator {
 
 		return rules;
 
+	}
+	
+	public String putFact(String input){
+		String fact = "";
+		String jsonString = "";
+		try {
+			jsonString = new ParserForPut(new StringReader(input))
+					.getJSONString();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//put to database
+		Database db = new Database();
+		db.writeInJsonFile("data/EDB.json", jsonString);
+		if (input.startsWith("put")){
+			fact = input.substring(4, input.length()) + ".";
+		}
+		else
+			fact = input + ".";
+		return fact;
 	}
 	
 	public String getEDBFacts() {

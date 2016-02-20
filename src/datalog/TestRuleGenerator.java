@@ -1,5 +1,7 @@
 package datalog;
 
+import java.util.ArrayList;
+
 public class TestRuleGenerator {
 
 	public static void main(String[] args) {		
@@ -16,7 +18,13 @@ public class TestRuleGenerator {
 		//datalogRules = edb.moveAttribute("move \"Player\".\"score\" to \"Mission\" where \"Player\".\"id\"=\"Mission\".\"pid\"");
 		//datalogRules = edb.moveAttribute("Mission", "Player", "title", "pid", "id");
 
-		System.out.println(datalogFacts + datalogRules);
+		//System.out.println(datalogFacts + datalogRules);
 
+		ArrayList<String> values = new ArrayList<String>();
+		values.add("1");
+		values.add("?name");
+		values.add("?ts");
+		Fact f = new Fact("Player1", values);
+		System.out.println(f.toString());
 	}
 }

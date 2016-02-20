@@ -1,4 +1,11 @@
-/eagerMigration
-/junitTests
-/lazyMigration
-/datalog
+/database/
+/datalog/
+/eagerMigration/
+/junitTests/
+/lazyMigration/
+/parserEDBFactToJava/
+/parserFunctionsToDatalog/
+/parserGetToDatalog/
+/parserJSONToEDBFacts/
+/parserPutToDatalog/
+/parserRuletoJava/

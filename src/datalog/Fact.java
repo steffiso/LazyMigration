@@ -32,7 +32,14 @@ public class Fact {
 	}
 	
 	public String toString(){
-		return kind + "(" + listOfValues.toString() + ").";
+		String fact = kind + "(";
+		for (String s: listOfValues){
+			fact = fact + s + ",";
+		}
+		fact = fact.substring(0, fact.length()-1);
+		fact = fact + ").";
+		return fact;
+		//return kind + "(" + listOfValues.toString() + ").";
 	}
 
 }

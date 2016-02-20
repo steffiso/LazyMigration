@@ -95,7 +95,7 @@ public class TopDownTest {
 				.start();
 		
 		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,attributeMap);
-		assertEquals("[getPlayer1([1, 'Lisa. M', 20, 5]).]",lazy.getAnswers().toString());
+		assertEquals("[getPlayer1(1,'Lisa. M',20,5).]",lazy.getAnswers().toString());
 		
 	}
 	
@@ -119,7 +119,7 @@ public class TopDownTest {
 				.start();
 		
 		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,attributeMap);
-		assertEquals("[getPlayer1([1, 5]).]",lazy.getAnswers().toString());
+		assertEquals("[getPlayer1(1,5).]",lazy.getAnswers().toString());
 		
 	}
 

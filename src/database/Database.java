@@ -61,9 +61,9 @@ public class Database {
 		
 	//returns the schema for one version and one kind
 	//something like "?id,?name,?score" (without ts)
-	public ArrayList<String> getSchema(String inputKind, int inputVersion){	
+	public Schema getSchema(String inputKind, int inputVersion){	
 		
-		ArrayList<String> schema = null;
+		Schema schema = null;
 		ArrayList<Schema> schemata;
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -72,7 +72,7 @@ public class Database {
 			
 			for (Schema s: schemata){
 				if (s.getKind().equals(inputKind) && s.getSchemaversion() == inputVersion){
-					schema = s.getAttributes();
+					schema = s;
 				}
 			}
 		} catch (JsonParseException e) {
@@ -127,7 +127,6 @@ public class Database {
 		String json=null;
 			try {
 				json = new ParserForPut(new StringReader(datalogFact)).start();
-				System.out.println(json);
 				writeInJsonFile(filenameEDB, json);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
@@ -138,9 +137,9 @@ public class Database {
 	
 	//returns the latest schema for input kind
 	//output: "?name,?score,?points"
-	public ArrayList<String> getLatestSchema(String kind){
+	public Schema getLatestSchema(String kind){
 		int currentSchemaVersion = 0;
-		ArrayList<String> currentSchema = null;
+		Schema currentSchema = null;
 
 		currentSchemaVersion = getLatestSchemaVersion(kind);
 		currentSchema = getSchema(kind, currentSchemaVersion);

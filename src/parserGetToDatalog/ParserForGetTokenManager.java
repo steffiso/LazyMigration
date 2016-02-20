@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import database.Database;
+import database.Schema;
 
 /** Token Manager. */
 public class ParserForGetTokenManager implements ParserForGetConstants

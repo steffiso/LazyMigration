@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import database.Database;
+import database.Schema;
 
 /** Token Manager. */
 public class ParserForFunctionsTokenManager implements ParserForFunctionsConstants
