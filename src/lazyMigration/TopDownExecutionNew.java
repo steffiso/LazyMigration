@@ -83,83 +83,83 @@ public class TopDownExecutionNew {
 
 	public ArrayList<Fact> getAnswers() {
 		// toDo bevor wir anfangen müssen wir noch die Rules umbenennen
-		// for (Rule rule : rules) rulesRenameandReorder(rule);
+		for (Rule rule : rules)
+			rulesRenameandReorder(rule);
 		putFacts = new ArrayList<Fact>();
 
 		ArrayList<Fact> answer = new ArrayList<Fact>();
 
-			ArrayList<Rule> childrenRules = new ArrayList<Rule>();
-			for (Rule r : rules) {
-				putFacts = new ArrayList<Fact>();
-				// durchsuche die Head Prädikate der Rules nach benötigtem Goal- Prädikat 
-				// unifiziere alle gefundenen Regeln
-				Predicate ruleHead = r.getHead();
-				if (ruleHead.getKind().equals(goal.getKind())
-						&& ruleHead.getAnz() == goal.getAnz()) {
-					Rule unifiedRule = unifyRule(goal, r);
-					childrenRules.add(unifiedRule);
+		ArrayList<Rule> childrenRules = new ArrayList<Rule>();
+		for (Rule r : rules) {
+			putFacts = new ArrayList<Fact>();
+			// durchsuche die Head Prädikate der Rules nach benötigtem Goal-
+			// Prädikat
+			// unifiziere alle gefundenen Regeln
+			Predicate ruleHead = r.getHead();
+			if (ruleHead.getKind().equals(goal.getKind())
+					&& ruleHead.getAnz() == goal.getAnz()) {
+				Rule unifiedRule = unifyRule(goal, r);
+				childrenRules.add(unifiedRule);
+			}
+		}
+
+		if (childrenRules.size() == 0) {
+			System.out.println("Keine children rules!" + goal.getKind()
+					+ goal.getScheme().toString());
+		} else {
+			// vorläufige toString Methode muss angepasst werden
+			System.out.println("Unifizierte Regeln: ");
+			for (Rule rr : childrenRules) {
+				System.out.print(rr.getHead().getKind());
+				System.out.print(rr.getHead().getScheme().toString() + ":-");
+				for (Predicate pr : rr.getPredicates()) {
+					System.out.print(pr.getKind());
+					System.out.print(pr.getScheme().toString());
 				}
 			}
+			System.out.println();
 
-			if (childrenRules.size() == 0) {
-				System.out.println("Keine children rules!"
-						+goal.getKind() + goal.getScheme().toString());
-			} else {
-				// vorläufige toString Methode muss angepasst werden
-				System.out.println("Unifizierte Regeln: ");
-				for (Rule rr : childrenRules) {
-					System.out.print(rr.getHead().getKind());
-					System.out
-							.print(rr.getHead().getScheme().toString() + ":-");
-					for (Predicate pr : rr.getPredicates()){
-						System.out.print(pr.getKind());
-						System.out.print(pr.getScheme().toString());
-					}
-				}
-				System.out.println();
+			// compute the answers of corresponding rule goal tree
+			tree = new RuleGoalTree(childrenRules);
+			goal.setRelation(getAnswersForSubtree(tree));
+		}
 
-				// compute the answers of corresponding rule goal tree
-				tree = new RuleGoalTree(childrenRules);
-				goal.setRelation(getAnswersForSubtree(tree));
-			}
-		
 		System.out.println("Ergebnis: " + goal.getRelation().toString());
-		
+
 		// speichert Result Map des Goal in Facts ab
 		for (ArrayList<String> str : goal.getRelation()) {
 			answer.add(new Fact(goal.getKind(), str));
 		}
-				
+
 		// put für result map von goal
-		for(Fact f: answer){
+		for (Fact f : answer) {
 			// getPlayer() wird auch in EDB geschrieben...
-			if (factExists(f)){
+			if (factExists(f)) {
 				putFactToDB(f);
 				putFacts.add(f);
 			}
 		}
-		
 
 		System.out.println("put in DB: " + putFacts.toString());
-		return answer;		
+		return answer;
 
 	}
-	
-	public boolean factExists(Fact putFact){
+
+	public boolean factExists(Fact putFact) {
 		boolean exists = false;
 		ArrayList<String> values = putFact.getListOfValues();
-		for (Fact f: facts){
-			ArrayList<String> values2 = f.getListOfValues();	
-			if (values2.size() != values.size()){
-				for (int i = 0; i < values.size() - 1; i++){
-					if (values2.get(i) != values.get(i)){
+		for (Fact f : facts) {
+			ArrayList<String> values2 = f.getListOfValues();
+			if (values2.size() != values.size()) {
+				for (int i = 0; i < values.size() - 1; i++) {
+					if (values2.get(i) != values.get(i)) {
 						exists = false;
 						break;
 					}
 					exists = true;
 				}
-			}	
-			
+			}
+
 		}
 		return exists;
 	}
@@ -172,14 +172,17 @@ public class TopDownExecutionNew {
 			RuleBody body = childRule.getRuleBody();
 
 			for (Predicate subgoal : body.getPredicates()) {
-				if (subgoal.getKind().equals("Player2")){
+				if (subgoal.getKind().equals("Player2")) {
 					System.out.println("Player2!!!");
 				}
+				if (subgoal.getKind().equals("latestPlayer1"))
+					System.out.println("lP");
 				// existiert ein Fact zu benötigtem Subgoal?
 				if (getFacts(subgoal) == 0) {
 					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
 					for (Rule r : rules) {
-						// durchsuche die Head Prädikate der Rules nach benötigtem Goal- Prädikat 
+						// durchsuche die Head Prädikate der Rules nach
+						// benötigtem Goal- Prädikat
 						// & unifiziere alle gefundenen Regeln
 						Predicate ruleHead = r.getHead();
 						if (ruleHead.getKind().equals(subgoal.getKind())
@@ -188,13 +191,14 @@ public class TopDownExecutionNew {
 							unifiedChildrenRules.add(unifiedRule);
 						}
 					}
-					
+
 					// temporär für Testzwecke
 					if (unifiedChildrenRules.size() == 0) {
 						System.out.println("Keine children rules!"
-								+subgoal.getKind() + subgoal.getScheme().toString());
+								+ subgoal.getKind()
+								+ subgoal.getScheme().toString());
 					} else {
-						
+
 						// vorläufige toString Methode muss angepasst werden
 						System.out.println("Unifizierte Regeln: ");
 						for (Rule rr : unifiedChildrenRules) {
@@ -202,43 +206,45 @@ public class TopDownExecutionNew {
 							System.out.print(rr.getHead().getScheme()
 									.toString()
 									+ ":-");
-							for (Predicate pr : rr.getPredicates()){
+							for (Predicate pr : rr.getPredicates()) {
 								System.out.print(pr.getKind());
 								System.out.print(pr.getScheme().toString());
 							}
 						}
-					
-					
+
 						System.out.println();
-	
-						// erzeuge für unifizierte Kinder (Rules) neuen RuleGoalTree
-						// und speichere ResultMap in Prädikat subgoal ab 
+
+						// erzeuge für unifizierte Kinder (Rules) neuen
+						// RuleGoalTree
+						// und speichere ResultMap in Prädikat subgoal ab
 						RuleGoalTree subTree = new RuleGoalTree(
 								unifiedChildrenRules);
 						subgoal.setRelation(getAnswersForSubtree(subTree));
-						
-						// füge neu erzeugte Facts zu temporärer Fact Liste hinzu						
+
+						// füge neu erzeugte Facts zu temporärer Fact Liste
+						// hinzu
 						for (ArrayList<String> str : subgoal.getRelation()) {
 							facts.add(new Fact(subgoal.getKind(), str));
-						}	
+						}
 					}
-				
-					
-				// temporär für Testzwecke
+
+					// temporär für Testzwecke
 				} else
 					System.out.println("Facts gefunden!"
 							+ subgoal.getRelation().toString());
 			}
-			
+
+			if (childRule.getHead().getKind().equals("Mission2"))
+				System.out.println("Kind: " + childRule.getHead().getKind());
 			// Berechnung des Rule Bodys: join der Prädikate + Bedingungen
 			if (body.getPredicates().size() > 1)
 				resultPredicate = join(body.getPredicates());
 			else if (!body.getPredicates().isEmpty())
 				resultPredicate = body.getPredicates().get(0);
-			if (body.getConditions() != null)
+			if (body.getConditions() != null || !body.getConditions().isEmpty())
 				resultPredicate = generateConditions(resultPredicate,
 						body.getConditions());
-
+			System.out.println("Kind: " + childRule.getHead().getKind());
 			// speichere Ergebnis in ResultMap des Head-Prädikates des Kindes ab
 			childRule.getHead()
 					.setRelation(
@@ -258,10 +264,18 @@ public class TopDownExecutionNew {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		for (ArrayList<String> oneMap : results.getRelation()) {
 			ArrayList<String> oneAnswer = new ArrayList<String>();
+			System.out.println("SchemaGoal:" + scheme.toString());
+			System.out.println("SchemaResults:"
+					+ results.getScheme().toString());
 			for (String wert : scheme)
 				if (wert.startsWith("?"))
-					oneAnswer
-							.add(oneMap.get(results.getScheme().indexOf(wert)));
+					if (results.getScheme().contains(wert))
+						oneAnswer.add(oneMap.get(results.getScheme().indexOf(
+								wert)));
+					else {
+						System.out.println(wert + " existiert nicht");
+						oneAnswer.add("");
+					}
 				else
 					oneAnswer.add(wert);
 			boolean alreadyExist = false;
@@ -288,10 +302,9 @@ public class TopDownExecutionNew {
 
 			for (Map.Entry<String, String> unificationMapEntry : unificationMap
 					.entrySet()) {
-				ArrayList<String> attributesRuleHead = head
-						.getScheme();
+				ArrayList<String> attributesRuleHead = head.getScheme();
 				// unifiziere Head-Prädikate
-				if (attributesRuleHead.contains(unificationMapEntry.getKey())) { 
+				if (attributesRuleHead.contains(unificationMapEntry.getKey())) {
 					attributesRuleHead.set(attributesRuleHead
 							.indexOf(unificationMapEntry.getKey()),
 							unificationMapEntry.getValue());
@@ -305,22 +318,27 @@ public class TopDownExecutionNew {
 								unificationMapEntry.getValue());
 					}
 				}
-				
-//				// unifiziere Head-Prädikate
-//				for (int i = 0; i < attributesRuleHead.size(); i++){
-//					if (attributesRuleHead.get(i).startsWith(unificationMapEntry.getKey())) { 
-//						attributesRuleHead.set(i, unificationMapEntry.getValue());
-//					}
-//				}
-//				// unifiziere Body-Prädikate
-//				for (Predicate p : body.getPredicates()) {
-//					ArrayList<String> attributesRuleBodyPred = p.getScheme();
-//					for (int i = 0; i < attributesRuleBodyPred.size(); i++){
-//						if (attributesRuleBodyPred.get(i).startsWith(unificationMapEntry.getKey())) { 
-//							attributesRuleBodyPred.set(i, unificationMapEntry.getValue());
-//						}
-//					}
-//				}
+
+				// // unifiziere Head-Prädikate
+				// for (int i = 0; i < attributesRuleHead.size(); i++){
+				// if
+				// (attributesRuleHead.get(i).startsWith(unificationMapEntry.getKey()))
+				// {
+				// attributesRuleHead.set(i, unificationMapEntry.getValue());
+				// }
+				// }
+				// // unifiziere Body-Prädikate
+				// for (Predicate p : body.getPredicates()) {
+				// ArrayList<String> attributesRuleBodyPred = p.getScheme();
+				// for (int i = 0; i < attributesRuleBodyPred.size(); i++){
+				// if
+				// (attributesRuleBodyPred.get(i).startsWith(unificationMapEntry.getKey()))
+				// {
+				// attributesRuleBodyPred.set(i,
+				// unificationMapEntry.getValue());
+				// }
+				// }
+				// }
 			}
 		}
 
@@ -367,8 +385,8 @@ public class TopDownExecutionNew {
 									restemp.add(fact1);
 								}
 							}
-							temp = new Predicate("temp", temp.getScheme().size(),
-									temp.getScheme(), restemp);
+							temp = new Predicate("temp", temp.getScheme()
+									.size(), temp.getScheme(), restemp);
 						}
 
 						else {
@@ -417,16 +435,29 @@ public class TopDownExecutionNew {
 		String rightOperand = cond.getRightOperand();
 		String leftOperand = cond.getLeftOperand();
 		String operator = cond.getOperator();
-		List<ArrayList<String>> mapList = p.getRelation();
-		for (ArrayList<String> mapOfMapList : mapList) {
+		List<ArrayList<String>> relation = p.getRelation();
+		for (ArrayList<String> oneResult : relation) {
 			String left = "";
 			String right = "";
 			if (leftOperand.startsWith("?"))
-				left = mapOfMapList.get(p.getScheme().indexOf(leftOperand));
+				if (p.getScheme().contains(leftOperand))
+					left = oneResult.get(p.getScheme().indexOf(leftOperand));
+				else {
+					System.out.println(leftOperand + " existiert nicht");
+					facts.add(oneResult);
+					continue;
+				}
 			else
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
-				right = mapOfMapList.get(p.getScheme().indexOf(rightOperand));
+				if (p.getScheme().contains(rightOperand))
+					right = oneResult.get(p.getScheme()
+							.indexOf(rightOperand));
+				else {
+					System.out.println(leftOperand + " existiert nicht");
+					facts.add(oneResult);
+					continue;
+				}
 			else
 				right = rightOperand;
 			boolean condPredicate = false;
@@ -461,7 +492,7 @@ public class TopDownExecutionNew {
 				break;
 			}
 			if (condPredicate == true) {
-				facts.add(mapOfMapList);
+				facts.add(oneResult);
 			}
 		}
 		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);

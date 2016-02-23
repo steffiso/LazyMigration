@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import datalog.Condition;
 import datalog.Fact;
 import datalog.Predicate;
@@ -78,12 +79,17 @@ public class BottomUpExecutionNew {
 				factList = generateConditions(factList, rule.getConditions());
 			}
 			ArrayList<String> werte = rule.getHead().getScheme();
-			for (ArrayList<String> oneMap : factList.getRelation()) {
+			for (ArrayList<String> oneResult : factList.getRelation()) {
 				ArrayList<String> oneAnswer = new ArrayList<String>();
 				for (String wert : werte)
 					if (wert.startsWith("?"))
-						oneAnswer.add(oneMap.get(factList.getScheme().indexOf(
-								wert)));
+						if (factList.getScheme().contains(wert))
+							oneAnswer.add(oneResult.get(factList.getScheme().indexOf(
+									wert)));
+						else {
+							System.out.println(wert + " existiert nicht");
+							oneAnswer.add("");
+						}
 					else
 						oneAnswer.add(wert);
 				boolean alreadyExist = false;
@@ -187,11 +193,24 @@ public class BottomUpExecutionNew {
 			String left = "";
 			String right = "";
 			if (leftOperand.startsWith("?"))
-				left = factOfFactList.get(p.getScheme().indexOf(leftOperand));
+				if (p.getScheme().contains(leftOperand))
+					left = factOfFactList.get(p.getScheme().indexOf(leftOperand));
+				else {
+					System.out.println(leftOperand + " existiert nicht");
+					facts.add(factOfFactList);
+					continue;
+				}
 			else
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
-				right = factOfFactList.get(p.getScheme().indexOf(rightOperand));
+				if (p.getScheme().contains(rightOperand))
+					right = factOfFactList.get(p.getScheme()
+							.indexOf(rightOperand));
+				else {
+					System.out.println(leftOperand + " existiert nicht");
+					facts.add(factOfFactList);
+					continue;
+				}
 			else
 				right = rightOperand;
 			boolean condPredicate = false;

@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import database.Database;
 import datalog.DatalogRulesGenerator;
 import datalog.Fact;
 import datalog.Predicate;
@@ -52,6 +53,7 @@ public class TestGui {
 		JScrollPane scroll3 = new JScrollPane(queryTextArea);
 		JScrollPane scroll4 = new JScrollPane(answerTextArea);
 		JPanel panel = new JPanel();
+		JPanel panel2 = new JPanel();
 		ArrayList<Fact> facts = null;
 		ArrayList<Rule> rules = null;
 		DatalogRulesGenerator datalogGenerator = new DatalogRulesGenerator();
@@ -68,10 +70,7 @@ public class TestGui {
 			String edb = datalogGenerator.getEDBFacts();
 			
 			edbTextArea.setText(edb);	
-			idbTextArea.setText("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts.\n" + 
-							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts).\n" +
-							"getPlayer1(?id,?name,?score,?ts):-Player1(?id, ?name,?score,?ts), latestPlayer1(?id,?ts).\n");
-			
+			idbTextArea.setText("");
 			add(scroll);
 			add(scroll2);		
 			panel.setLayout(new GridLayout(1,2));
@@ -91,7 +90,8 @@ public class TestGui {
 				public void actionPerformed(ActionEvent arg0) {
 					
 					if (!edbTextArea.getText().equals("") && !idbTextArea.getText().equals(""))
-						executeQuery();
+						//executeQuery()
+						;
 					else answerTextArea.setText("No EDB or IDB found!");
 				}
 			});
@@ -108,10 +108,12 @@ public class TestGui {
 					DatalogRulesGenerator drg = new DatalogRulesGenerator();
 					
 					if (uiInput.startsWith("get")){
-						rules = drg.get(uiInput);
+						String [] info = drg.getTD(uiInput);
+						rules=info[0];
 						idbTextArea.append("\n" + rules);
 						//start lazy migration
 						//goal = (new ParserRuleToJava(rules)).getRelation();
+						executeQuery(info[1],info[2]);
 					}					
 					else if (uiInput.startsWith("add")){
 						rules = drg.addAttribute(uiInput);
@@ -143,11 +145,10 @@ public class TestGui {
 		}
 
 
-		private void executeQuery() {
+		private void executeQuery(String kind, String id) {
 			//set edb-facts in gui
 			edbTextArea.setText(datalogGenerator.getEDBFacts());
 			String[] edbFacts = edbTextArea.getText().split("\n");
-			String query = queryTextArea.getText();
 			
 			facts = new ArrayList<Fact>();
 			for (String factString : edbFacts) {
@@ -168,24 +169,19 @@ public class TestGui {
 				e.printStackTrace();
 			}
 			
-			//test für get
+			Database db=new Database();
+			//test für add, copy and get
 			SortedMap <String, String> attributeMap = new TreeMap<String, String>();
-			attributeMap.put("?id", "1");
-			attributeMap.put("?name", "");
-			attributeMap.put("?score", "");
-			attributeMap.put("?ts", "");
+			attributeMap.put("?id", id);
 			
-			ArrayList<String> schema = new ArrayList<String>();
-			schema.add("?id");
-			schema.add("?name");
-			schema.add("?score");
-			Predicate goal = new Predicate("getPlayer1", 4, schema, attributeMap);
+			ArrayList<String> schema = db.getLatestSchema(kind).getAttributes();
+			schema.add("?ts");
 			
-				
-			TopDownExecution migrate = new TopDownExecution(facts, rules, goal);
-			ArrayList<Fact> answerString = migrate.getAnswers();
-
-			answerTextArea.setText(answerString.toString());
+			Predicate goal = new Predicate("get"+kind+db.getLatestSchemaVersion(kind), schema.size(), schema);		
+			
+			TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,attributeMap);
+			ArrayList<Fact> answers = lazy.getAnswers();
+			answerTextArea.setText(answers.toString());
 		}
 		
 	}

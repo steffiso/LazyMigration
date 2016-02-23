@@ -76,7 +76,7 @@ public class EagerMigration {
 					values = values.substring(0, values.length() - 2);
 					String tempKind = pair.ruleName;
 					// toDo:
-					String datalogFact = tempKind + "(" + values + ")";
+					String datalogFact = tempKind + "(" + values + ").";
 					db.putToDatabase(datalogFact);
 				}
 			}

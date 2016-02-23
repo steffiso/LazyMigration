@@ -65,6 +65,9 @@ public class ParserForGet
     schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
     return value;
   }
+
+  public String kindStr;
+  public String idStr;
 }
 
 PARSER_END(ParserForGet)
@@ -103,6 +106,8 @@ TOKEN : /* Zeichen */
     kind = kind.substring(1, kind.length() - 1);
     String id = idToken.toString();
     id = id.substring(1, id.length() - 1);
+    kindStr=kind;
+    idStr=id;
     ArrayList<String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
     String value = getKindRule(kind);

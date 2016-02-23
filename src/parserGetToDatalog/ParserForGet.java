@@ -57,6 +57,9 @@ public class ParserForGet implements ParserForGetConstants {
     return value;
   }
 
+  public String kindStr;
+  public String idStr;
+
   final public String getRule() throws ParseException {
   Token kindToken = null;
   Token idToken = null;
@@ -68,6 +71,8 @@ public class ParserForGet implements ParserForGetConstants {
     kind = kind.substring(1, kind.length() - 1);
     String id = idToken.toString();
     id = id.substring(1, id.length() - 1);
+    kindStr=kind;
+    idStr=id;
     ArrayList<String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
     String value = getKindRule(kind);

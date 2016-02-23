@@ -24,6 +24,22 @@ public class DatalogRulesGenerator {
 
 	}
 	
+	public String[] getTD(String input) {
+		String kind = "";
+		String id = "";
+		try {
+			ParserForGet parserget=	new ParserForGet(new StringReader(input));
+			rules=rules+parserget.getRule();
+			kind=parserget.kindStr;
+			id=parserget.idStr;
+		} catch (parserGetToDatalog.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new String[]{rules,kind,id};
+
+	}
+	
 	public String addAttribute(String input) {
 
 		try {

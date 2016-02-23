@@ -123,5 +123,42 @@ public class TopDownTest {
 		
 	}
 
+	@Test
+	public void testForAddandCopy() throws parserRuletoJava.ParseException {
+		
+		//test für add, copy and get
+		SortedMap <String, String> attributeMap = new TreeMap<String, String>();
+		attributeMap.put("?id1", "2");
+		
+		ArrayList<String> schema = new ArrayList<String>();
+		schema.add("?id1");
+		schema.add("?title");
+		schema.add("?pid");
+		schema.add("?points");
+		schema.add("?ts");
+		
+		Predicate goal = new Predicate("getMission2", 5, schema);		
+		
+		ArrayList<Rule> rules = new ParserRuleToJava(
+				new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." +
+								"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
+								"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)."+
+								"Player2(?id,?name,?score,100,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)."+
+								"legacyPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts),Player2(?id,?name2,?score2,?points,?nts), ?ts < ?nts." +
+								"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)." +
+								"legacyMission1(?id1,?ts):-Mission1(?id1,?title,?pid,?ts),Mission1(?id1,?title2,?pid2,?nts), ?ts < ?nts."+
+								"latestMission1(?id1,?ts):-Mission1(?id1,?title,?pid,?ts), not legacyMission1(?id1,?ts)."+
+								"Mission2(?id1,?title,?pid,?points,13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player2(?id,?name,?score,?points,?ts2), latestPlayer1(?id, ?ts2),?id = ?pid."+
+								"Mission2(?id1,?title,?pid,'',13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player2(?id,?name,?score,?points,?ts2),?id = ?pid."+							
+								"legacyMission2(?id1,?ts):-Mission2(?id1,?title,?pid,?points,?ts),Mission2(?id1,?title2,?pid2,?score2,?nts), ?ts < ?nts."+
+								"latestMission2(?id1,?ts):-Mission2(?id1,?title,?pid,?points,?ts), not legacyMission2(?id1,?ts)."+
+								"getMission2(?id1,?title,?pid,?points,?ts):-Mission2(?id1,?title,?pid,?points, ?ts), latestMission2(?id1,?ts)."))
+				
+				.start();
+		
+		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,attributeMap);
+		assertEquals("[getMission2(2,'collect',2,100,13).]",lazy.getAnswers().toString());
+		
+	}
 
 }

@@ -19,7 +19,7 @@ public class TestTopDownSNew {
 	Fact ff1 = new ParserforDatalogToJava(new StringReader(
 			"Player1(1,'Lisa',20, 1).")).start();
 	Fact ff2 = new ParserforDatalogToJava(new StringReader(
-			"Player1(2,'Homer',20, 2).")).start();
+			"Player1(2,'Homer',60, 2).")).start();
 	Fact ff3 = new ParserforDatalogToJava(new StringReader(
 			"Player1(1,'LisaS',20, 3)."))
 			.start();
@@ -64,7 +64,7 @@ public class TestTopDownSNew {
 //			.start();
 	
 	//test für add + get
-	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
+/*	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
 	attributeMap.put("?id", "2");
 	
 	ArrayList<String> schema = new ArrayList<String>();
@@ -84,36 +84,37 @@ public class TestTopDownSNew {
 							"getPlayer2(?id,?name,?score,?score2,?ts):-Player2(?id, ?name,?score,?score2, ?ts), latestPlayer2(?id,?ts)."))
 			
 			.start();
-	
+	*/
 
 	//test für add, copy and get
-//	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
-//	attributeMap.put("?id", "3");
-//	
-//	ArrayList<String> schema = new ArrayList<String>();
-//	schema.add("?id");
-//	schema.add("?title");
-//	schema.add("?pid");
-//	schema.add("?points");
-//	schema.add("?ts");
-//	
-//	Predicate goal = new Predicate("getMission2", 5, schema);		
-//	
-//	ArrayList<Rule> rules = new ParserRuleToJava(
-//			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." +
-//							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
-//							"Player2(?id,?name,?score,333,12):-Player1(?id,?name,?score,?ts), latestPlayer1(?id, ?ts)." +
-//							"legacyPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts),Player2(?id,?name2,?score2,?points2,?nts), ?ts < ?nts."+
-//							"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)."+
-//							"legacyMission1(?id,?ts):-Mission1(?id,?title,?pid,?ts),Mission1(?id,?title2,?pid2,?nts), ?ts < ?nts."+
-//							"latestMission1(?id,?ts):-Mission1(?id,?title,?pid,?ts), not legacyMission1(?id,?ts)."+
-//							"Mission2(?id,?title,?pid,?points,13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player2(?id2,?name,?score,?points,?ts2), latestPlayer2(?id2, ?ts2),?id2 = ?pid."+
-//							"Mission2(?id,?title,?pid,'',13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player2(?id2,?name,?score,?points,?ts2),?id2 = ?pid."+							
-//							"legacyMission2(?id,?ts):-Mission2(?id1,?title,?pid,?points,?ts),Mission2(?id12,?title2,?pid2,?points2,?nts), ?ts < ?nts."+
-//							"latestMission2(?id,?ts):-Mission2(?id1,?title,?pid,?points,?ts), not legacyMission2(?id,?ts)."+
-//							"getMission2(?id,?title,?pid,?points,?ts):-Mission2(?id,?title,?pid,?points, ?ts), latestMission2(?id,?ts)."))
-//			
-//			.start();
+	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
+	attributeMap.put("?id1", "3");
+	
+	ArrayList<String> schema = new ArrayList<String>();
+	schema.add("?id1");
+	schema.add("?title");
+	schema.add("?pid");
+	schema.add("?points");
+	schema.add("?ts");
+	
+	Predicate goal = new Predicate("getMission2", 5, schema);		
+	
+	ArrayList<Rule> rules = new ParserRuleToJava(
+			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." +
+							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
+							"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)."+
+							"Player2(?id,?name,?score,100,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)."+
+							"legacyPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts),Player2(?id,?name2,?score2,?points,?nts), ?ts < ?nts." +
+							"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)." +
+							"legacyMission1(?id1,?ts):-Mission1(?id1,?title,?pid,?ts),Mission1(?id1,?title2,?pid2,?nts), ?ts < ?nts."+
+							"latestMission1(?id1,?ts):-Mission1(?id1,?title,?pid,?ts), not legacyMission1(?id1,?ts)."+
+							"Mission2(?id1,?title,?pid,?points,13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player2(?id,?name,?score,?points,?ts2), latestPlayer1(?id, ?ts2),?id = ?pid."+
+							"Mission2(?id1,?title,?pid,'',13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player2(?id,?name,?score,?points,?ts2),?id = ?pid."+							
+							"legacyMission2(?id1,?ts):-Mission2(?id1,?title,?pid,?points,?ts),Mission2(?id1,?title2,?pid2,?score2,?nts), ?ts < ?nts."+
+							"latestMission2(?id1,?ts):-Mission2(?id1,?title,?pid,?points,?ts), not legacyMission2(?id1,?ts)."+
+							"getMission2(?id1,?title,?pid,?points,?ts):-Mission2(?id1,?title,?pid,?points, ?ts), latestMission2(?id1,?ts)."))
+			
+			.start();
 	
 	TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,attributeMap);
 	ArrayList<Fact> answers = lazy.getAnswers();
