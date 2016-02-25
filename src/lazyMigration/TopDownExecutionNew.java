@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-
 import database.Database;
 import datalog.Condition;
 import datalog.Fact;
@@ -19,7 +17,7 @@ public class TopDownExecutionNew {
 	private ArrayList<Rule> rules;
 	private Predicate goal;
 	private RuleGoalTree tree;
-	private Map<String, String> unificationMap;
+	private List<Map<String, String>> unificationMap;
 	private ArrayList<Fact> putFacts;
 
 	// private ArrayList<ArrayList<Map<String, String>>> resultMap;
@@ -39,7 +37,7 @@ public class TopDownExecutionNew {
 
 	// wir setzen die UnificationMap gleich am Anfang
 	public TopDownExecutionNew(ArrayList<Fact> facts, ArrayList<Rule> rules,
-			Predicate goal, SortedMap<String, String> attributeMap) {
+			Predicate goal, List<Map<String, String>> attributeMap) {
 		this.facts = facts;
 		this.rules = rules;
 		this.goal = goal;
@@ -82,9 +80,7 @@ public class TopDownExecutionNew {
 	}
 
 	public ArrayList<Fact> getAnswers() {
-		// toDo bevor wir anfangen müssen wir noch die Rules umbenennen
-		for (Rule rule : rules)
-			rulesRenameandReorder(rule);
+
 		putFacts = new ArrayList<Fact>();
 
 		ArrayList<Fact> answer = new ArrayList<Fact>();
@@ -124,12 +120,15 @@ public class TopDownExecutionNew {
 			goal.setRelation(getAnswersForSubtree(tree));
 		}
 
-		System.out.println("Ergebnis: " + goal.getRelation().toString());
+		if (goal.getRelation() != null) {
+			System.out.println("Ergebnis: " + goal.getRelation().toString());
 
-		// speichert Result Map des Goal in Facts ab
-		for (ArrayList<String> str : goal.getRelation()) {
-			answer.add(new Fact(goal.getKind(), str));
-		}
+			// speichert Result Map des Goal in Facts ab
+			for (ArrayList<String> str : goal.getRelation()) {
+				answer.add(new Fact(goal.getKind(), str));
+			}
+		} else
+			System.out.println("Ergebnis ist null");
 
 		// put für result map von goal
 		for (Fact f : answer) {
@@ -166,7 +165,7 @@ public class TopDownExecutionNew {
 
 	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		ArrayList<String> scheme = tree.getGoal().getScheme();
+		//ArrayList<String> scheme = tree.getGoal().getScheme();
 		for (Rule childRule : tree.getChildren()) {
 			Predicate resultPredicate = null;
 			RuleBody body = childRule.getRuleBody();
@@ -175,8 +174,6 @@ public class TopDownExecutionNew {
 				if (subgoal.getKind().equals("Player2")) {
 					System.out.println("Player2!!!");
 				}
-				if (subgoal.getKind().equals("latestPlayer1"))
-					System.out.println("lP");
 				// existiert ein Fact zu benötigtem Subgoal?
 				if (getFacts(subgoal) == 0) {
 					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
@@ -253,7 +250,7 @@ public class TopDownExecutionNew {
 			System.out.println("Join: "
 					+ childRule.getHead().getRelation().toString());
 
-			result.addAll(getResults(resultPredicate, scheme));
+			result.addAll(childRule.getHead().getRelation());
 		}
 
 		return result;
@@ -264,9 +261,6 @@ public class TopDownExecutionNew {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		for (ArrayList<String> oneMap : results.getRelation()) {
 			ArrayList<String> oneAnswer = new ArrayList<String>();
-			System.out.println("SchemaGoal:" + scheme.toString());
-			System.out.println("SchemaResults:"
-					+ results.getScheme().toString());
 			for (String wert : scheme)
 				if (wert.startsWith("?"))
 					if (results.getScheme().contains(wert))
@@ -292,53 +286,66 @@ public class TopDownExecutionNew {
 
 	public Rule unifyRule(Predicate goal, Rule childrenRule) {
 		// Unifizierung geht über unificationMap
+		// bevor wir anfangen müssen wir noch die Rules umbenennen
+		rulesRenameandReorder(childrenRule);
 		Predicate head = childrenRule.getHead();
 		RuleBody body = childrenRule.getRuleBody();
 		if (!goal.getKind().equals(head.getKind())
 				|| goal.getAnz() != head.getAnz()) {
 			System.out.println("Unifizierung nicht möglich:goal "
-					+ goal.toString() + ",head " + head.toString());
+					+ goal.getKind());
+			System.out.print(goal.getScheme().toString());
+			System.out.print(",head " + head.getKind());
+			System.out.print(head.getScheme().toString());
 		} else {
 
-			for (Map.Entry<String, String> unificationMapEntry : unificationMap
-					.entrySet()) {
-				ArrayList<String> attributesRuleHead = head.getScheme();
-				// unifiziere Head-Prädikate
-				if (attributesRuleHead.contains(unificationMapEntry.getKey())) {
-					attributesRuleHead.set(attributesRuleHead
-							.indexOf(unificationMapEntry.getKey()),
-							unificationMapEntry.getValue());
-				}
-				// unifiziere Body-Prädikate
-				for (Predicate p : body.getPredicates()) {
-					if (p.getScheme().contains(unificationMapEntry.getKey())) {
-						p.getScheme().set(
-								p.getScheme().indexOf(
-										unificationMapEntry.getKey()),
-								unificationMapEntry.getValue());
+			for (Map<String, String> unificationMapEntry : unificationMap) {
+				if (head.getKind().contains(unificationMapEntry.get("kind"))) {
+					ArrayList<String> attributesRuleHead = head.getScheme();
+					String idValue = attributesRuleHead.get(Integer
+							.parseInt(unificationMapEntry.get("position")));
+					// unifiziere Head-Prädikate die mit kind übereinstimmen
+					if (attributesRuleHead.contains(idValue)) {
+						attributesRuleHead.set(
+								attributesRuleHead.indexOf(idValue),
+								unificationMapEntry.get("value"));
 					}
 				}
+				// unifiziere Body-Prädikate die mit kind übereinstimmen
+				String id = null;
+				for (Predicate p : body.getPredicates()) {
+					if (p.getKind().contains(unificationMapEntry.get("kind"))) {
+						ArrayList<String> attributesRule = p.getScheme();
+						String idValue = attributesRule.get(Integer
+								.parseInt(unificationMapEntry.get("position")));
+						if (id == null)
+							id = idValue;
 
-				// // unifiziere Head-Prädikate
-				// for (int i = 0; i < attributesRuleHead.size(); i++){
-				// if
-				// (attributesRuleHead.get(i).startsWith(unificationMapEntry.getKey()))
-				// {
-				// attributesRuleHead.set(i, unificationMapEntry.getValue());
-				// }
-				// }
-				// // unifiziere Body-Prädikate
-				// for (Predicate p : body.getPredicates()) {
-				// ArrayList<String> attributesRuleBodyPred = p.getScheme();
-				// for (int i = 0; i < attributesRuleBodyPred.size(); i++){
-				// if
-				// (attributesRuleBodyPred.get(i).startsWith(unificationMapEntry.getKey()))
-				// {
-				// attributesRuleBodyPred.set(i,
-				// unificationMapEntry.getValue());
-				// }
-				// }
-				// }
+						if (p.getScheme().contains(idValue)) {
+							p.getScheme().set(p.getScheme().indexOf(idValue),
+									unificationMapEntry.get("value"));
+						}
+					}
+				}
+				if (id != null) {
+					if (!head.getKind().contains(
+							unificationMapEntry.get("kind"))) {
+						// unifiziere Head-Prädikate
+						if (head.getScheme().contains(id)) {
+							head.getScheme().set(head.getScheme().indexOf(id),
+									unificationMapEntry.get("value"));
+						}
+					}
+					for (Predicate p : body.getPredicates()) {
+						if (!p.getKind().contains(
+								unificationMapEntry.get("kind"))) {
+							if (p.getScheme().contains(id)) {
+								p.getScheme().set(p.getScheme().indexOf(id),
+										unificationMapEntry.get("value"));
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -451,8 +458,7 @@ public class TopDownExecutionNew {
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
 				if (p.getScheme().contains(rightOperand))
-					right = oneResult.get(p.getScheme()
-							.indexOf(rightOperand));
+					right = oneResult.get(p.getScheme().indexOf(rightOperand));
 				else {
 					System.out.println(leftOperand + " existiert nicht");
 					facts.add(oneResult);

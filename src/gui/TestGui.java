@@ -3,18 +3,17 @@ package gui;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 import javax.swing.JTabbedPane;
-import java.awt.BorderLayout;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JComboBox;
 
 public class TestGui {
 
@@ -93,12 +92,12 @@ public class TestGui {
 		panel_3.setLayout(null);
 		
 		textField = new JTextField();
-		textField.setBounds(10, 28, 322, 23);
+		textField.setBounds(138, 28, 289, 23);
 		panel_3.add(textField);
 		textField.setColumns(10);
 		
 		JLabel lblCommandoPrompt = new JLabel("Command Prompt");
-		lblCommandoPrompt.setBounds(10, 11, 133, 14);
+		lblCommandoPrompt.setBounds(138, 11, 133, 14);
 		panel_3.add(lblCommandoPrompt);
 		
 		JButton btnNewButton = new JButton("Execute Command");
@@ -106,7 +105,7 @@ public class TestGui {
 			public void actionPerformed(ActionEvent arg0) {
 			}
 		});
-		btnNewButton.setBounds(363, 28, 322, 23);
+		btnNewButton.setBounds(437, 28, 248, 23);
 		panel_3.add(btnNewButton);
 		
 		JTextArea textArea_4 = new JTextArea();
@@ -124,6 +123,15 @@ public class TestGui {
 		});
 		btnNewButton_1.setBounds(10, 150, 675, 35);
 		panel_3.add(btnNewButton_1);
+	
+		
+		JLabel lblGenerateCommand = new JLabel("Generate Command");
+		lblGenerateCommand.setBounds(10, 11, 118, 14);
+		panel_3.add(lblGenerateCommand);
+		
+		JComboBox comboBox = new JComboBox();
+		comboBox.setBounds(10, 29, 118, 20);
+		panel_3.add(comboBox);
 		JPanel panel2 = new JPanel();
 		tabbedPane.addTab("TopDown", null, panel2, null);
 		panel2.setLayout(null);
@@ -160,15 +168,15 @@ public class TestGui {
 		
 		textField_1 = new JTextField();
 		textField_1.setColumns(10);
-		textField_1.setBounds(10, 28, 322, 23);
+		textField_1.setBounds(138, 28, 289, 23);
 		panel_4.add(textField_1);
 		
 		JLabel label_2 = new JLabel("Command Prompt");
-		label_2.setBounds(10, 11, 133, 14);
+		label_2.setBounds(138, 11, 133, 14);
 		panel_4.add(label_2);
 		
 		JButton button = new JButton("Execute Command");
-		button.setBounds(363, 28, 322, 23);
+		button.setBounds(437, 28, 248, 23);
 		panel_4.add(button);
 		
 		JTextArea textArea_5 = new JTextArea();
@@ -183,7 +191,17 @@ public class TestGui {
 		button_1.setBounds(10, 150, 675, 35);
 		panel_4.add(button_1);
 		
+		JLabel label_4 = new JLabel("Generate Command");
+		label_4.setBounds(10, 11, 118, 14);
+		panel_4.add(label_4);
 		
+		JComboBox comboBox_1 = new JComboBox();
+		comboBox_1.setBounds(10, 29, 118, 20);
+		panel_4.add(comboBox_1);
+		
+		JPanel panel3 = new JPanel();
+		tabbedPane.addTab("Comparison", null, panel3, null);
+		panel3.setLayout(null);
 	
 	}
 }
