@@ -19,11 +19,15 @@ public class ParserForPut implements ParserForPutConstants {
 
   private static int laenge = 0;
 
-  private static void getLatestSchema(String kind)
+  private static void getSchema(String kind, int number)
   {
     Schema schema = null;
     Database db = new Database();
-    schema = db.getLatestSchema(kind);
+    if (number == 0)
+    {
+      schema = db.getLatestSchema(kind);
+    }
+    else schema = db.getSchema(kind, number);
     attributes = schema.getAttributes();
     laenge = attributes.size();
     lastTS = db.getLastTimestamp();
@@ -32,7 +36,7 @@ public class ParserForPut implements ParserForPutConstants {
 
   final public String start() throws ParseException {
   String value = null;
-  zaehler =0;
+  zaehler = 0;
     value = getJSONString();
     jj_consume_token(0);
     {if (true) return value;}
@@ -61,9 +65,13 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[1] = jj_gen;
       ;
     }
-    getLatestSchema(kind.toString());
     if (schemaToken != null)
-        schemaVersion = Integer.parseInt(schemaToken.toString());
+    {
+      schemaVersion = Integer.parseInt(schemaToken.toString());
+      getSchema(kind.toString(), schemaVersion);
+    }
+    else
+    getSchema(kind.toString(), 0);
     jj_consume_token(15);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case string:
@@ -75,6 +83,14 @@ public class ParserForPut implements ParserForPutConstants {
       ;
     }
     jj_consume_token(16);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 17:
+      jj_consume_token(17);
+      break;
+    default:
+      jj_la1[3] = jj_gen;
+      ;
+    }
     ts = lastTS + 1;
     String jsonString = "{\u005c"kind\u005c":\u005c"" + kind + "\u005c",\u005cn" + "\u005c"schemaversion\u005c":" + schemaVersion + ",\u005cn" + "\u005c"attributes\u005c":{" + value + "},\u005cn\u005c"ts\u005c":" + Integer.toString(ts) + "}";
     {if (true) return jsonString;}
@@ -85,7 +101,7 @@ public class ParserForPut implements ParserForPutConstants {
   Token valueOfToken = null;
   String valueOfOtherToken = null;
   String valueOne = "";
-  boolean isTS=false;
+  boolean isTS = false;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case string:
       valueOfToken = jj_consume_token(string);
@@ -94,7 +110,7 @@ public class ParserForPut implements ParserForPutConstants {
       valueOfToken = jj_consume_token(number);
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[4] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -114,7 +130,7 @@ public class ParserForPut implements ParserForPutConstants {
     }
     else if (zaehler == laenge)
     {
-      isTS=true;
+      isTS = true;
       zaehler++;
     }
     else
@@ -125,14 +141,14 @@ public class ParserForPut implements ParserForPutConstants {
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 17:
+      case 18:
         ;
         break;
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[5] = jj_gen;
         break label_1;
       }
-      jj_consume_token(17);
+      jj_consume_token(18);
       valueOfOtherToken = listOfValues(value);
     }
     if (isTS) {if (true) return null;}
@@ -150,13 +166,13 @@ public class ParserForPut implements ParserForPutConstants {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[5];
+  final private int[] jj_la1 = new int[6];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x800,0xc00,0xc00,0x20000,};
+      jj_la1_0 = new int[] {0x40,0x800,0xc00,0x20000,0xc00,0x40000,};
    }
 
   /** Constructor with InputStream. */
@@ -170,7 +186,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -184,7 +200,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -194,7 +210,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -204,7 +220,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -213,7 +229,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -222,7 +238,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -273,12 +289,12 @@ public class ParserForPut implements ParserForPutConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[18];
+    boolean[] la1tokens = new boolean[19];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 6; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -287,7 +303,7 @@ public class ParserForPut implements ParserForPutConstants {
         }
       }
     }
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 19; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

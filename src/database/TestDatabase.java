@@ -21,7 +21,7 @@ public class TestDatabase {
 //		newSchema.add("?test2");
 //		newSchema.add("?test3");
 		//db.saveCurrentSchema("Player", newSchema);
-		db.putToDatabase("Player1(3,'Maggie',23)");
+		db.putToDatabase("Player1(3,'Maggie',23,13)");
 	}
 
 }

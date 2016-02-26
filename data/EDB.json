@@ -38,5 +38,21 @@
 {"kind":"Player",
 "schemaversion":1,
 "attributes":{"id":"1","name":"Lisa M.","score":"20"},
-"ts":10}
+"ts":10},
+{"kind":"Player",
+"schemaversion":2,
+"attributes":{"id":"2", "name":"Bart", "score":"20", "points":"333"},
+"ts":13},
+{"kind":"Player",
+"schemaversion":2,
+"attributes":{"id":"3", "name":"Homer", "score":"20", "points":"333"},
+"ts":14},
+{"kind":"Player",
+"schemaversion":2,
+"attributes":{"id":"1", "name":"Lisa M.", "score":"20", "points":"333"},
+"ts":15},
+{"kind":"Mission",
+"schemaversion":2,
+"attributes":{"id":"1", "title":"find the ring", "pid":"1", "score":"20"},
+"ts":16}
 ]

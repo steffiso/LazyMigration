@@ -52,6 +52,19 @@ public class TopDownExecutionNew {
 		this.facts = facts;
 	}
 
+	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
+		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
+
+		for (Fact value : facts) {
+			if (value.getKind().equals(kind)
+					&& value.getListOfValues().size() == anz) {
+				answer.add(value.getListOfValues());
+			}
+		}
+		return answer;
+	}
+	
+	
 	// Testgenerierung einer Rule mit Top Down
 	public ArrayList<ArrayList<String>> getAnswer(Rule rule) {
 
@@ -132,8 +145,7 @@ public class TopDownExecutionNew {
 
 		// put für result map von goal
 		for (Fact f : answer) {
-			// getPlayer() wird auch in EDB geschrieben...
-			if (factExists(f)) {
+			if (!factExists(f) && !f.getKind().startsWith("get")) {
 				putFactToDB(f);
 				putFacts.add(f);
 			}
@@ -250,9 +262,25 @@ public class TopDownExecutionNew {
 			System.out.println("Join: "
 					+ childRule.getHead().getRelation().toString());
 
-			result.addAll(childRule.getHead().getRelation());
-		}
+			result.addAll(childRule.getHead().getRelation());			
 
+		
+		}
+		
+		if (tree.getGoal().isHead()){
+			ArrayList<Fact> putFact = new ArrayList<Fact>();
+			// put facts in database
+			for (ArrayList<String> str : result) {
+				putFact.add(new Fact(tree.getGoal().getKind(), str));
+			}
+			for (Fact f : putFact) {
+				if (!factExists(f) && !f.getKind().startsWith("get")) {
+					putFactToDB(f);
+					putFacts.add(f);
+				}
+			}
+			System.out.println("put in DB: " + putFact.toString());
+		}
 		return result;
 	}
 

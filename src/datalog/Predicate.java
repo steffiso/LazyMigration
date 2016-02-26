@@ -20,6 +20,7 @@ public class Predicate {
 	private Map<String, String> werte;
 	private int timestamp;
 	private boolean isNot = false;
+	private boolean isHead = false;
 	private int stratum = 0;
 	private int ranking = 0;
 	private ArrayList<Map<String, String>> resultMap;
@@ -152,6 +153,14 @@ public class Predicate {
 
 	public void setScheme(ArrayList<String> scheme) {
 		this.scheme = scheme;
+	}
+
+	public boolean isHead() {
+		return isHead;
+	}
+
+	public void setHead(boolean isHead) {
+		this.isHead = isHead;
 	}
 
 }

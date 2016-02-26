@@ -52,7 +52,8 @@ public interface ParserForPutConstants {
     "<kindValue>",
     "<nameValue>",
     "\"(\"",
-    "\").\"",
+    "\")\"",
+    "\".\"",
     "\",\"",
   };
 

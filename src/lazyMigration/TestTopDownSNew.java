@@ -124,14 +124,14 @@ public class TestTopDownSNew {
 	ArrayList<Rule> rules = new ParserRuleToJava(
 			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." +
 							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
-							"Player2(?id,?name,?score,100,?ts):-Player1(?id,?name,?score,?ts), latestPlayer1(?id,?ts)."+
+							"*Player2(?id,?name,?score,100,?ts):-Player1(?id,?name,?score,?ts), latestPlayer1(?id,?ts)."+
 							"legacyPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts),Player2(?id,?name2,?score2,?points2,?nts), ?ts < ?nts." +
 							"latestPlayer2(?id,?ts):-Player2(?id,?name,?score,?points,?ts), not legacyPlayer2(?id,?ts)." +
 							"legacyMission1(?id,?ts):-Mission1(?id,?title,?pid,?ts),Mission1(?id,?title2,?pid2,?nts), ?ts < ?nts."+
 							"latestMission1(?id,?ts):-Mission1(?id,?title,?pid,?ts), not legacyMission1(?id,?ts)."+
-							"Mission2(?id1,?title,?pid,?name,13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player2(?id2,?name,?score,?points,?ts2), latestPlayer1(?id2, ?ts2),?id2 = ?pid."+
-							"Mission2(?id1,?title,?pid,'',13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player2(?id2,?name,?score,?points,?ts2),?id2 = ?pid."+		
-							"Player3(?id,?score,?points,?ts):-Player2(?id,?name,?score,?points,?ts), latestPlayer2(?id,?ts)."+					
+							"*Mission2(?id1,?title,?pid,?name,13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1),Player2(?id2,?name,?score,?points,?ts2), latestPlayer1(?id2, ?ts2),?id2 = ?pid."+
+							"*Mission2(?id1,?title,?pid,'',13):-Mission1(?id1,?title,?pid,?ts1),latestMission1(?id1, ?ts1), not Player2(?id2,?name,?score,?points,?ts2),?id2 = ?pid."+		
+							"*Player3(?id,?score,?points,?ts):-Player2(?id,?name,?score,?points,?ts), latestPlayer2(?id,?ts)."+					
 							"legacyPlayer3(?id,?ts):-Player3(?id,?score,?points,?ts),Player3(?id,?score2,?points2,?nts), ?ts < ?nts."+
 							"latestPlayer3(?id,?ts):-Player3(?id,?score,?points,?ts), not legacyPlayer3(?id,?ts)."+
 							"getPlayer3(?id,?score,?points,?ts):-Player3(?id,?score,?points,?ts), latestPlayer3(?id,?ts)."+

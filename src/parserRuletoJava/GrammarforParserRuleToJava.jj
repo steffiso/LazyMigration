@@ -183,6 +183,7 @@ Predicate getRelation() :
   ArrayList < String > schema = null;
   boolean isNot = false;
   boolean schemaExists = true;
+  boolean isHead = false;
 }
 {
   {
@@ -191,6 +192,11 @@ Predicate getRelation() :
     scheme = new ArrayList < String > ();
     int pos = 0;
   }
+  ("*"
+  {
+    isHead = true;
+  }
+  )?
   (< not >
   {
     isNot = true;
@@ -223,7 +229,7 @@ Predicate getRelation() :
   {
     predicate = new Predicate(kind.toString() + schemaToken.toString(), scheme.size(), scheme);
     if (isNot) predicate.setNot(true);
-    //predicate.setScheme(scheme);
+    predicate.setHead(isHead);
     return predicate;
   }
 }
