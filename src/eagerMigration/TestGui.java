@@ -100,31 +100,32 @@ public class TestGui {
 					uiInput = queryTextArea.getText();
 					DatalogRulesGenerator drg = new DatalogRulesGenerator();
 					
-					if (uiInput.startsWith("get")){
-						rules = drg.get(uiInput);
-						idbTextArea.setText(rules);
-					}					
-					else if (uiInput.startsWith("add")){
-						rules = drg.addAttribute(uiInput);
-						idbTextArea.setText(rules);
-					}					
-					else if (uiInput.startsWith("delete")){
-						rules = drg.deleteAttribute(uiInput);
-						idbTextArea.setText(rules);
-					}
-					else if (uiInput.startsWith("move")){
-						rules = drg.moveAttribute(uiInput);
-						idbTextArea.setText(rules);
-					}
-					else if (uiInput.startsWith("copy")){
-						rules = drg.copyAttribute(uiInput);
-						idbTextArea.setText(rules);
-					}
-					else if (uiInput.startsWith("put")){
+//					if (uiInput.startsWith("get")){
+//						rules = drg.get(uiInput);
+//						idbTextArea.setText(rules);
+//					}					
+//					else if (uiInput.startsWith("add")){
+//						rules = drg.addAttribute(uiInput);
+//						idbTextArea.setText(rules);
+//					}					
+//					else if (uiInput.startsWith("delete")){
+//						rules = drg.deleteAttribute(uiInput);
+//						idbTextArea.setText(rules);
+//					}
+//					else if (uiInput.startsWith("move")){
+//						rules = drg.moveAttribute(uiInput);
+//						idbTextArea.setText(rules);
+//					}
+//					else if (uiInput.startsWith("copy")){
+//						rules = drg.copyAttribute(uiInput);
+//						idbTextArea.setText(rules);
+//					}
+					if (uiInput.startsWith("put")){
 						//To do : write in json file
 					}
 					else {
-						answerTextArea.setText("No valid query");
+						rules = drg.getRules(uiInput);
+						idbTextArea.setText(rules);
 					}
 						
 				}

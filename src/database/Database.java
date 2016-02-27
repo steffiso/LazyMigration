@@ -27,11 +27,11 @@ public class Database {
 	
 	public Database(){
 		filenameEDB = "data/EDB.json";
-		filenameSchema = "data/SchemaLog.json";
+		filenameSchema = "data/Schema.json";
 		filenameLegacy = "data/LegacyEntities.txt";
 	}
 
-	//returns all edb-facts from database in one string
+	//return all edb-facts from database in one string
 	public String getEDB(){
 		String edb = "";
 		ArrayList<Entity> entities;
@@ -59,7 +59,7 @@ public class Database {
 		return edb;			
 	}
 		
-	//returns the schema for one version and one kind
+	//return the schema for one version and one kind
 	//something like "?id,?name,?score" (without ts)
 	public Schema getSchema(String inputKind, int inputVersion){	
 		
@@ -119,7 +119,7 @@ public class Database {
 		return latestSchemaVersion;
 	}
 	
-	//writes the datalogFact in json-File
+	//write the datalogFact in json-File
 	//input: "Player2(4,'Lisa',40)"
 	//timestamp will be added automatically
 	public void putToDatabase(String datalogFact) {
@@ -147,7 +147,7 @@ public class Database {
 		return currentSchema;
 	}	
 	
-	//write a schema to file "SchemaLog.json"
+	//write a schema to file "Schema.json"
 	//input example: newSchema = "?a,?b,?c"
 	public void saveCurrentSchema(String kind, ArrayList<String> newSchemaList){
 		int latestSchemaVersion = getLatestSchemaVersion(kind);		
@@ -197,9 +197,8 @@ public class Database {
 	
 	
 	public void writeInJsonFile(String filename, String kind, int schemaVersion, String values){
-		String jsonString = "";
 		int newTS = getLastTimestamp() + 1;
-		jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + Integer.toString(schemaVersion) + ",\n" + "\"attributes\":" + values + ",\n\"ts\":" + newTS + "}";
+		String jsonString = "{\"kind\":\"" + kind + "\",\n" + "\"schemaversion\":" + Integer.toString(schemaVersion) + ",\n" + "\"attributes\":" + values + ",\n\"ts\":" + newTS + "}";
 		
 		writeInJsonFile(filename, jsonString);		
 	}

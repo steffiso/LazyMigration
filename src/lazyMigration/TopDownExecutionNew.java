@@ -100,7 +100,6 @@ public class TopDownExecutionNew {
 
 		ArrayList<Rule> childrenRules = new ArrayList<Rule>();
 		for (Rule r : rules) {
-			putFacts = new ArrayList<Fact>();
 			// durchsuche die Head Prädikate der Rules nach benötigtem Goal-
 			// Prädikat
 			// unifiziere alle gefundenen Regeln
@@ -143,32 +142,42 @@ public class TopDownExecutionNew {
 		} else
 			System.out.println("Ergebnis ist null");
 
-		// put für result map von goal
-		for (Fact f : answer) {
-			if (!factExists(f) && !f.getKind().startsWith("get")) {
-				putFactToDB(f);
-				putFacts.add(f);
-			}
+		
+		if (putFacts.size() != 0){
+			for (Fact f : putFacts) {
+					putFactToDB(f);
+					System.out.println("put in DB: " + f.toString());					
+			}			
+			
 		}
-
-		System.out.println("put in DB: " + putFacts.toString());
 		return answer;
 
 	}
 
-	public boolean factExists(Fact putFact) {
+	public boolean factExists(ArrayList<Fact> factList, Fact putFact) {
 		boolean exists = false;
-		ArrayList<String> values = putFact.getListOfValues();
-		for (Fact f : facts) {
-			ArrayList<String> values2 = f.getListOfValues();
-			if (values2.size() != values.size()) {
-				for (int i = 0; i < values.size() - 1; i++) {
-					if (values2.get(i) != values.get(i)) {
+		ArrayList<String> valuesPutFact = putFact.getListOfValues();
+		for (Fact f : factList) {
+			ArrayList<String> valuesFactList = f.getListOfValues();
+			if (valuesPutFact.size() + 1 == valuesFactList.size() ) {
+				for (int i = 0; i < valuesPutFact.size() - 1; i++) {
+					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
 						exists = false;
 						break;
 					}
 					exists = true;
 				}
+				if (exists == true) break;
+			}
+			if (valuesPutFact.size() == valuesFactList.size() ) {
+				for (int i = 0; i < valuesPutFact.size(); i++) {
+					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
+						exists = false;
+						break;
+					}
+					exists = true;
+				}
+				if (exists == true) break;
 			}
 
 		}
@@ -263,23 +272,18 @@ public class TopDownExecutionNew {
 					+ childRule.getHead().getRelation().toString());
 
 			result.addAll(childRule.getHead().getRelation());			
-
 		
 		}
 		
 		if (tree.getGoal().isHead()){
-			ArrayList<Fact> putFact = new ArrayList<Fact>();
-			// put facts in database
+			// add put facts to list
 			for (ArrayList<String> str : result) {
-				putFact.add(new Fact(tree.getGoal().getKind(), str));
+				Fact newFact = new Fact(tree.getGoal().getKind(), str);
+				if (!factExists(facts, newFact) 
+					&&!factExists(putFacts,newFact) 
+					&&!newFact.getKind().startsWith("get"))
+					putFacts.add(newFact);
 			}
-			for (Fact f : putFact) {
-				if (!factExists(f) && !f.getKind().startsWith("get")) {
-					putFactToDB(f);
-					putFacts.add(f);
-				}
-			}
-			System.out.println("put in DB: " + putFact.toString());
 		}
 		return result;
 	}

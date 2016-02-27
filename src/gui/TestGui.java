@@ -156,19 +156,19 @@ public class TestGui {
 				DatalogRulesGenerator drg = new DatalogRulesGenerator();
 
 				if (uiInput.startsWith("get")) {
-					rules = drg.get(uiInput);
+					rules = drg.getRules(uiInput);
 					rulesTextAreaBU.setText(rules);
 				} else if (uiInput.startsWith("add")) {
-					rules = drg.addAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulesTextAreaBU.setText(rules);
 				} else if (uiInput.startsWith("delete")) {
-					rules = drg.deleteAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulesTextAreaBU.setText(rules);
 				} else if (uiInput.startsWith("move")) {
-					rules = drg.moveAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulesTextAreaBU.setText(rules);
 				} else if (uiInput.startsWith("copy")) {
-					rules = drg.copyAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulesTextAreaBU.setText(rules);
 				} else if (uiInput.startsWith("put")) {
 					// To do : write in json file
@@ -294,16 +294,16 @@ public class TestGui {
 							+ db.getLatestSchemaVersion(kind), schema.size(),
 							schema);
 				} else if (uiInput.startsWith("add")) {
-					rules = drg.addAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulestextAreaTD.append("\n" + rules);
 				} else if (uiInput.startsWith("delete")) {
-					rules = drg.deleteAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulestextAreaTD.append("\n" + rules);
 				} else if (uiInput.startsWith("move")) {
-					rules = drg.moveAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulestextAreaTD.append("\n" + rules);
 				} else if (uiInput.startsWith("copy")) {
-					rules = drg.copyAttribute(uiInput);
+					rules = drg.getRules(uiInput);
 					rulestextAreaTD.append("\n" + rules);
 				} else if (uiInput.startsWith("put")) {
 					// To do : lazy migration

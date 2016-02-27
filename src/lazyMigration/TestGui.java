@@ -22,6 +22,7 @@ import datalog.Predicate;
 import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
+import parserQueryToDatalogToJava.ParserQueryToDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 
 public class TestGui {
@@ -55,7 +56,7 @@ public class TestGui {
 		JPanel panel = new JPanel();
 		JPanel panel2 = new JPanel();
 		ArrayList<Fact> facts = null;
-		ArrayList<Rule> rules = null;
+		ArrayList<Rule> rules = new ArrayList<Rule>();
 		DatalogRulesGenerator datalogGenerator = new DatalogRulesGenerator();
 		Predicate goal = null;
 
@@ -105,33 +106,31 @@ public class TestGui {
 					// TODO Auto-generated method stub
 
 					String uiInput = "";
-					String rules = "";
+					String rulesStr = "";
 					uiInput = queryTextArea.getText();
 					DatalogRulesGenerator drg = new DatalogRulesGenerator();
 
 					if (uiInput.startsWith("get")) {
 						String[] info = drg.getTD(uiInput);
-						rules = info[0];
-						idbTextArea.append("\n" + rules);
+						//rules = info[0];
+						idbTextArea.append(uiInput + "\n");
+						executeQuery(info[1], info[2]);
+						queryTextArea.setText("");
+						//idbTextArea.append("\n" + rules);
 						// start lazy migration
 						// goal = (new ParserRuleToJava(rules)).getRelation();
-						executeQuery(info[1], info[2]);
-					} else if (uiInput.startsWith("add")) {
-						rules = drg.addAttribute(uiInput);
-						idbTextArea.append("\n" + rules);
-					} else if (uiInput.startsWith("delete")) {
-						rules = drg.deleteAttribute(uiInput);
-						idbTextArea.append("\n" + rules);
-					} else if (uiInput.startsWith("move")) {
-						rules = drg.moveAttribute(uiInput);
-						idbTextArea.append("\n" + rules);
-					} else if (uiInput.startsWith("copy")) {
-						rules = drg.copyAttribute(uiInput);
-						idbTextArea.append("\n" + rules);
+						//executeQuery(info[1], info[2]);
+					} else if (uiInput.startsWith("add") || 
+							uiInput.startsWith("delete") || 
+							uiInput.startsWith("move") || 
+							uiInput.startsWith("copy")) {
+						idbTextArea.append(uiInput + "\n");
+						queryTextArea.setText("");
 					} else if (uiInput.startsWith("put")) {
 						// To do : lazy migration
 					} else {
 						answerTextArea.setText("No valid query");
+						queryTextArea.setText("");
 					}
 
 				}
@@ -156,12 +155,15 @@ public class TestGui {
 				}
 			}
 
-			try {
-				rules = new ParserRuleToJava(new StringReader(
-						idbTextArea.getText())).start();
-			} catch (parserRuletoJava.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			String[] queries = idbTextArea.getText().split("\n");
+			for (int i = 0; i< queries.length; i++){
+				try {
+					rules.addAll(new ParserQueryToDatalogToJava(new StringReader(
+							queries[i])).getJavaRules());
+				} catch (parserQueryToDatalogToJava.ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			Database db = new Database();
@@ -177,11 +179,12 @@ public class TestGui {
 
 			Predicate goal = new Predicate("get" + kind
 					+ db.getLatestSchemaVersion(kind), schema.size(), schema);
-
+			
 			TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules,
 					goal, uniMap);
 			ArrayList<Fact> answers = lazy.getAnswers();
 			answerTextArea.setText(answers.toString());
+			edbTextArea.setText(db.getEDB());
 		}
 
 	}

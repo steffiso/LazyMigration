@@ -5,18 +5,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
+import datalog.DatalogRulesGenerator;
 import datalog.Fact;
 import datalog.Predicate;
 import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
+import parserQueryToDatalogToJava.ParserQueryToDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 
 public class TestTopDownSNew {
 	public static void main(String[] args) throws ParseException,
-	 parserRuletoJava.ParseException {
+	 parserRuletoJava.ParseException, parserQueryToDatalogToJava.ParseException {
 	
 		
 	Fact ff1 = new ParserforDatalogToJava(new StringReader(
@@ -47,38 +50,31 @@ public class TestTopDownSNew {
 	facts.add(ff5);
 	facts.add(ff6);
 	facts.add(ff7);
-
-	//test für get
-//	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
-//	attributeMap.put("?id", "1");
-//	
-//	ArrayList<String> schema = new ArrayList<String>();
-//	schema.add("1");
-//	schema.add("?name");
-//	schema.add("?score");
-//	schema.add("?ts");
-//	Predicate goal = new Predicate("Player1", 4, schema);		
-//	
-//	ArrayList<Rule> rules = new ParserRuleToJava(
-//			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." + 
-//							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
-//							"Player1(?id,?name,?score,?ts):-Player1(?id, ?name,?score,?ts), latestPlayer1(?id,?ts)."))
-//			
-//			.start();
 	
 	//test für add + get
-/*	SortedMap <String, String> attributeMap = new TreeMap<String, String>();
-	attributeMap.put("?id", "2");
+	Map <String, String> attributeMapAdd = new TreeMap<String, String>();
+	attributeMapAdd.put("value", "1");
+	attributeMapAdd.put("position", "0");
+	attributeMapAdd.put("kind", "Player");
+	ArrayList<Map<String,String>> unificationMapAdd=new ArrayList<Map<String,String>>();
+	unificationMapAdd.add(attributeMapAdd);
 	
-	ArrayList<String> schema = new ArrayList<String>();
-	schema.add("?id");
-	schema.add("?name");
-	schema.add("?score");
-	schema.add("?score2");
+	ArrayList<String> schemaAdd = new ArrayList<String>();
+	schemaAdd.add("?id");
+	schemaAdd.add("?name");
+	schemaAdd.add("?score");
+	schemaAdd.add("?points");
 	
-	Predicate goal = new Predicate("getPlayer2", 5, schema);		
+	Predicate goalAdd = new Predicate("getPlayer2", 5, schemaAdd);		
 	
-	ArrayList<Rule> rules = new ParserRuleToJava(
+	String inputAdd = "add  \"Player\".\"points\" = \"4444\"\nget \"Player\".\"id\"=\"1\"";
+	
+	String [] inputSplitAdd = inputAdd.split("\n");
+	ArrayList<Rule> rulesAdd = new ArrayList<Rule>();
+
+	
+	//funktioniert so nicht mehr
+/*	ArrayList<Rule> rules = new ParserRuleToJava(
 			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id, ?name,?score, ?ts),Player1(?id, ?name2,?score2,?nts), ?ts < ?nts." + 
 							"latestPlayer1(?id,?ts):-Player1(?id, ?name,?score,?ts), not legacyPlayer1(?id,?ts)." + 
 							"Player2(?id,?name,?score,400,?ts):-Player1(?id,?name,?score,?ts), latestPlayer1(?id, ?ts)." + 
@@ -86,42 +82,32 @@ public class TestTopDownSNew {
 							"latestPlayer2(?id,?ts):-Player2(?id, ?name,?score,?score2,?ts), not legacyPlayer2(?id,?ts)." +
 							"getPlayer2(?id,?name,?score,?score2,?ts):-Player2(?id, ?name,?score,?score2, ?ts), latestPlayer2(?id,?ts)."))
 			
-			.start();
-	*/
+			.start();*/
+	
 
-	//test für add, copy and get
-	Map <String, String> attributeMap = new HashMap<String, String>();
-	attributeMap.put("value", "1");
-	attributeMap.put("position", "0");
-	attributeMap.put("kind", "Player");
-	List<Map<String,String>> unificationMap=new ArrayList<Map<String,String>>();
-	unificationMap.add(attributeMap);
+	//test für add, move und get	
+	Map <String, String> attributeMapAddMove = new TreeMap<String, String>();
+	attributeMapAddMove.put("value", "1");
+	attributeMapAddMove.put("position", "0");
+	attributeMapAddMove.put("kind", "Player");
+	ArrayList<Map<String,String>> unificationMapAddMove=new ArrayList<Map<String,String>>();
+	unificationMapAddMove.add(attributeMapAddMove);
 	
-	ArrayList<String> schema = new ArrayList<String>();
-	schema.add("?id");
-	schema.add("?score");
-	schema.add("?points");
-	schema.add("?ts");
+	ArrayList<String> schemaAddMove = new ArrayList<String>();
+	schemaAddMove.add("?id");
+	schemaAddMove.add("?score");
+	schemaAddMove.add("?points");
+	schemaAddMove.add("?ts");
 	
-	Predicate goal = new Predicate("getPlayer3", schema.size(), schema);	
+	Predicate goalAddMove = new Predicate("getPlayer3", schemaAddMove.size(), schemaAddMove);	
 	
-	Map <String, String> attributeMap2 = new TreeMap<String, String>();
-	attributeMap2.put("value", "1");
-	attributeMap2.put("position", "0");
-	attributeMap2.put("kind", "Player");
-	ArrayList<Map<String,String>> unificationMap2=new ArrayList<Map<String,String>>();
-	unificationMap2.add(attributeMap2);
+	String inputAddMove = "add \"Player\".\"points\"=\"4444\"\nmove \"Player\".\"name\" to \"Mission\" where \"Player\".\"id\"=\"Mission\".\"pid\"\nget \"Player\".\"id\"=\"1\"";
 	
-	ArrayList<String> schema2 = new ArrayList<String>();
-	schema2.add("?id");
-	schema2.add("?title");
-	schema2.add("?pid");
-	schema2.add("?name");
-	schema2.add("?ts");
+	String[] inputSplitAddMove = inputAddMove.split("\n");
+	ArrayList<Rule> rulesAddMove = new ArrayList<Rule>();	
 	
-	Predicate goal2 = new Predicate("getMission2", schema2.size(), schema2);	
-	
-	ArrayList<Rule> rules = new ParserRuleToJava(
+	//funktioniert so nicht mehr
+/*	ArrayList<Rule> rules = new ParserRuleToJava(
 			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." +
 							"latestPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts), not legacyPlayer1(?id,?ts)." +
 							"*Player2(?id,?name,?score,100,?ts):-Player1(?id,?name,?score,?ts), latestPlayer1(?id,?ts)."+
@@ -139,15 +125,27 @@ public class TestTopDownSNew {
 							"latestMission2(?id,?ts):-Mission2(?id,?title,?pid,?name,?ts), not legacyMission2(?id,?ts)."+
 							"getMission2(?id,?title,?pid,?name,?ts):-Mission2(?id,?title,?pid,?name,?ts), latestMission2(?id,?ts)."))
 			
-			.start();
+			.start();*/
 	
-	TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,unificationMap);
-	ArrayList<Fact> answers = lazy.getAnswers();
-	System.out.println(answers.toString());
 	
-	TopDownExecutionNew lazy2 = new TopDownExecutionNew(facts, rules, goal2,unificationMap2);
-	ArrayList<Fact> answers2 = lazy2.getAnswers();
-	System.out.println(answers2.toString());
+	// Durchlauf für Add points + Get Player 1
+/*	for (int i = 0; i< inputSplitAdd.length; i++){
+		rulesAdd.addAll((new ParserQueryToDatalogToJava(new StringReader(inputSplitAdd[i]))).getJavaRules());
+	}
+	
+	TopDownExecutionNew lazyAdd = new TopDownExecutionNew(facts, rulesAdd, goalAdd ,unificationMapAdd);
+	ArrayList<Fact> answersAdd = lazyAdd.getAnswers();
+	System.out.println(answersAdd.toString());*/
+	
+
+	// Durchlauf für Add points + Move name + get Player 1
+	for (int i = 0; i< inputSplitAddMove.length; i++){
+		rulesAddMove.addAll((new ParserQueryToDatalogToJava(new StringReader(inputSplitAddMove[i]))).getJavaRules());
+	}
+	
+	TopDownExecutionNew lazyAddMove = new TopDownExecutionNew(facts, rulesAddMove, goalAddMove,unificationMapAddMove);
+	ArrayList<Fact> answersAddMove = lazyAddMove.getAnswers();
+	System.out.println(answersAddMove.toString());
 	}
 	
 	

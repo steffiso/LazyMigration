@@ -15,8 +15,6 @@ import datalog.Condition;
 import datalog.RuleBody;
 import database.Database;
 import database.Schema;
-//import java.util.SortedMap;
-//import java.util.TreeMap;
 import java.util.LinkedHashMap;
 
 public class ParserRuleToJava
@@ -100,7 +98,6 @@ ArrayList < Rule > start() :
     leftRelation = getRelation() ":-" p = getRelationList()
     {
       q = new Rule(leftRelation, p);
-      //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
       querys.add(q);
     }
     "."
@@ -109,7 +106,40 @@ ArrayList < Rule > start() :
         leftRelation = getRelation() ":-" p = getRelationList()
         {
           q = new Rule(leftRelation, p);
-          //if (!p.conditions.isEmpty()) q.setConditions(p.conditions);
+          querys.add(q);
+        }
+        "."
+      )
+    )*
+  )?
+  < EOF >
+  {
+    return querys;
+  }
+}
+
+ArrayList < Rule > parseHeadRules() :
+{
+  ArrayList < Rule > querys = new ArrayList < Rule > ();
+  RuleBody p = null;
+  Predicate leftRelation = null;
+  Rule q = null;
+}
+{
+  (
+    leftRelation = getRelation() ":-" p = getRelationList()    
+    {
+      leftRelation.setHead(true);
+      q = new Rule(leftRelation, p);
+      querys.add(q);
+    }
+    "."
+    (
+      (
+        leftRelation = getRelation() ":-" p = getRelationList()        
+        {
+          leftRelation.setHead(true);
+          q = new Rule(leftRelation, p);
           querys.add(q);
         }
         "."
@@ -177,7 +207,6 @@ Predicate getRelation() :
   String value = null;
   String attribute = null;
   ArrayList < String > scheme = null;
-  //SortedMap <String, String > values = null;
   LinkedHashMap < String, String > values = null;
   Predicate predicate = null;
   ArrayList < String > schema = null;
@@ -187,7 +216,6 @@ Predicate getRelation() :
 }
 {
   {
-    //values = new TreeMap <String, String > ();
     values = new LinkedHashMap < String, String > ();
     scheme = new ArrayList < String > ();
     int pos = 0;
@@ -215,13 +243,12 @@ Predicate getRelation() :
     value = getValue()
     {
       scheme.add(value);
-//      if (value.startsWith("?"))//      {//        if (!schemaExists)//        {//          schema.add(value);//        }//        attribute = value;//        value = "";//      }//      else attribute = "";//      //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);//      {//        values.put(attribute, value);//      }//      pos++;
     }
     (
       ","
       (
         value = getValue()
-        {          scheme.add(value);//          if (value.startsWith("?"))//          {//            if (!schemaExists)//            {//              schema.add(value);//            }//            attribute = value;//            value = "";//          }//          else attribute = "";//          //attribute = getAttributeName(kind.toString(), Integer.parseInt(schemaToken.toString()), pos);//          {//            values.put(attribute, value);//          }//          pos++;        }
+        {          scheme.add(value);        }
       )
     )*
   )?

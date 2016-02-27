@@ -10,3 +10,7 @@
 /parserFunctionsToDatalog/
 /parserGetToDatalog/
 /parserJSONToEDBFacts/
+/parserQueriesToJava/
+/parserQueryToDatalog/
+/parserQueriesToDatalog/
+/parserQueryToDatalogToJava/
