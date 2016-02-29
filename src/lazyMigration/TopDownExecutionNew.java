@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import database.Database;
 import datalog.Condition;
 import datalog.Fact;
+import datalog.MagicCondition;
 import datalog.Predicate;
 import datalog.Rule;
 import datalog.RuleBody;
@@ -19,6 +21,7 @@ public class TopDownExecutionNew {
 	private RuleGoalTree tree;
 	private List<Map<String, String>> unificationMap;
 	private ArrayList<Fact> putFacts;
+	private List<MagicCondition> magicList = null;
 
 	// private ArrayList<ArrayList<Map<String, String>>> resultMap;
 
@@ -63,8 +66,7 @@ public class TopDownExecutionNew {
 		}
 		return answer;
 	}
-	
-	
+
 	// Testgenerierung einer Rule mit Top Down
 	public ArrayList<ArrayList<String>> getAnswer(Rule rule) {
 
@@ -106,6 +108,8 @@ public class TopDownExecutionNew {
 			Predicate ruleHead = r.getHead();
 			if (ruleHead.getKind().equals(goal.getKind())
 					&& ruleHead.getAnz() == goal.getAnz()) {
+				if (ruleHead.getKind().contains("Mission2"))
+					System.out.println("Mission2");
 				Rule unifiedRule = unifyRule(goal, r);
 				childrenRules.add(unifiedRule);
 			}
@@ -142,13 +146,12 @@ public class TopDownExecutionNew {
 		} else
 			System.out.println("Ergebnis ist null");
 
-		
-		if (putFacts.size() != 0){
+		if (putFacts.size() != 0) {
 			for (Fact f : putFacts) {
-					putFactToDB(f);
-					System.out.println("put in DB: " + f.toString());					
-			}			
-			
+				putFactToDB(f);
+				System.out.println("put in DB: " + f.toString());
+			}
+
 		}
 		return answer;
 
@@ -159,7 +162,7 @@ public class TopDownExecutionNew {
 		ArrayList<String> valuesPutFact = putFact.getListOfValues();
 		for (Fact f : factList) {
 			ArrayList<String> valuesFactList = f.getListOfValues();
-			if (valuesPutFact.size() + 1 == valuesFactList.size() ) {
+			if (valuesPutFact.size() + 1 == valuesFactList.size()) {
 				for (int i = 0; i < valuesPutFact.size() - 1; i++) {
 					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
 						exists = false;
@@ -167,9 +170,10 @@ public class TopDownExecutionNew {
 					}
 					exists = true;
 				}
-				if (exists == true) break;
+				if (exists == true)
+					break;
 			}
-			if (valuesPutFact.size() == valuesFactList.size() ) {
+			if (valuesPutFact.size() == valuesFactList.size()) {
 				for (int i = 0; i < valuesPutFact.size(); i++) {
 					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
 						exists = false;
@@ -177,7 +181,8 @@ public class TopDownExecutionNew {
 					}
 					exists = true;
 				}
-				if (exists == true) break;
+				if (exists == true)
+					break;
 			}
 
 		}
@@ -186,7 +191,7 @@ public class TopDownExecutionNew {
 
 	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		//ArrayList<String> scheme = tree.getGoal().getScheme();
+		// ArrayList<String> scheme = tree.getGoal().getScheme();
 		for (Rule childRule : tree.getChildren()) {
 			Predicate resultPredicate = null;
 			RuleBody body = childRule.getRuleBody();
@@ -264,24 +269,24 @@ public class TopDownExecutionNew {
 						body.getConditions());
 			System.out.println("Kind: " + childRule.getHead().getKind());
 			// speichere Ergebnis in ResultMap des Head-Prädikates des Kindes ab
-			childRule.getHead()
-					.setRelation(
-							getResults(resultPredicate, childRule.getHead()
-									.getScheme()));
+			childRule.getHead().setRelation(
+					getResults(resultPredicate,
+							childRule.getHead().getScheme(), childRule
+									.getHead().getKind()));
 			System.out.println("Join: "
 					+ childRule.getHead().getRelation().toString());
 
-			result.addAll(childRule.getHead().getRelation());			
-		
+			result.addAll(childRule.getHead().getRelation());
+
 		}
-		
-		if (tree.getGoal().isHead()){
+
+		if (tree.getGoal().isHead()) {
 			// add put facts to list
 			for (ArrayList<String> str : result) {
 				Fact newFact = new Fact(tree.getGoal().getKind(), str);
-				if (!factExists(facts, newFact) 
-					&&!factExists(putFacts,newFact) 
-					&&!newFact.getKind().startsWith("get"))
+				if (!factExists(facts, newFact)
+						&& !factExists(putFacts, newFact)
+						&& !newFact.getKind().startsWith("get"))
 					putFacts.add(newFact);
 			}
 		}
@@ -289,7 +294,7 @@ public class TopDownExecutionNew {
 	}
 
 	private ArrayList<ArrayList<String>> getResults(Predicate results,
-			ArrayList<String> scheme) {
+			ArrayList<String> scheme, String kind) {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		for (ArrayList<String> oneMap : results.getRelation()) {
 			ArrayList<String> oneAnswer = new ArrayList<String>();
@@ -313,6 +318,7 @@ public class TopDownExecutionNew {
 				answer.add(oneAnswer);
 			}
 		}
+		answer = generateMagicSet(answer, kind);
 		return answer;
 	}
 
@@ -368,6 +374,7 @@ public class TopDownExecutionNew {
 									unificationMapEntry.get("value"));
 						}
 					}
+					// unifiziere Body-Prädikate
 					for (Predicate p : body.getPredicates()) {
 						if (!p.getKind().contains(
 								unificationMapEntry.get("kind"))) {
@@ -630,17 +637,47 @@ public class TopDownExecutionNew {
 							break;
 						}
 					i++;
+
 				}
 				if (set)
 					values.add(value.getListOfValues());
 			}
 		}
+		values = generateMagicSet(values, predicate.getKind());
 		predicate.setRelation(values);
 		if (values.isEmpty())
 			return 0;
 		else
 			return 1;
 
+	}
+
+	private ArrayList<ArrayList<String>> generateMagicSet(
+			ArrayList<ArrayList<String>> values, String kind) {
+		if (kind.equals("Player2")||kind.equals("latestPlayer2"))
+			System.out.println("Gefunden");
+		if (magicList != null && !magicList.isEmpty())
+			for (MagicCondition m : magicList) {
+				if (m.getKindLeft().contains(kind)) {
+					List<String> results = new ArrayList<String>();
+					if (m.getResults() != null)
+						for (List<String> l : values)
+							results.add(l.get(m.getPositionLeft()));
+					m.setResults(results);
+				}
+				if (m.getKindRight().contains(kind))
+					if (m.getResults() != null) {
+						ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+						for (ArrayList<String> value : values) {
+							System.out.println(value.get(m.getPositionRight()));
+							if (m.getResults().contains(
+									value.get(m.getPositionRight())))
+								results.add(value);
+						}
+						return results;
+					}
+			}
+		return values;
 	}
 
 	public static boolean isInteger(String s) {
@@ -663,14 +700,45 @@ public class TopDownExecutionNew {
 				if (cond.getOperator().equals("=")
 						&& cond.getLeftOperand().startsWith("?")
 						&& cond.getRightOperand().startsWith("?")) {
+
 					String left = cond.getLeftOperand();
 					String right = cond.getRightOperand();
+					generateMagicCommand(rule.getRuleBody().getPredicates(),
+							left, right);
 					renameVariablesOfAllPredicates(rule, left, right);
 					iterator.remove();
 				}
 			}
 
 		// toDo: reordering of Predicates
+	}
+
+	private void generateMagicCommand(ArrayList<Predicate> predicates,
+			String left, String right) {
+		for (int i = 0; i < predicates.size(); i++) {
+			for (int j = i + 1; j < predicates.size(); j++) {
+				if (predicates.get(i).getScheme().contains(right)
+						&& predicates.get(j).getScheme().contains(left)) {
+
+					MagicCondition magicCond = new MagicCondition(predicates
+							.get(i).getKind(), predicates.get(j).getKind(),
+							predicates.get(i).getScheme().indexOf(right),
+							predicates.get(j).getScheme().indexOf(left));
+					if (magicList != null)
+						if (!magicList.isEmpty()) {
+							if (!magicList.contains(magicCond))
+								magicList.add(magicCond);
+						} else
+							magicList.add(magicCond);
+					else {
+						magicList = new ArrayList<MagicCondition>();
+						magicList.add(magicCond);
+					}
+
+				}
+			}
+
+		}
 	}
 
 	private void renameVariablesOfAllPredicates(Rule rule, String left,
