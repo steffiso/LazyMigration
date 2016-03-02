@@ -1,13 +1,13 @@
 package datalog;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class MagicCondition {
 	private String kindLeft;
 	private String kindRight;
 	private int positionLeft;
 	private int positionRight;
-	private List<String> results;
+	private ArrayList<ArrayList<String>> results;
 
 	public MagicCondition(String kindLeft, String kindRight, int positionLeft,
 			int positionRight) {
@@ -34,7 +34,7 @@ public class MagicCondition {
 		return positionRight;
 	}
 
-	public List<String> getResults() {
+	public ArrayList<ArrayList<String>> getResults() {
 		return results;
 	}
 
@@ -54,7 +54,7 @@ public class MagicCondition {
 		this.positionRight = positionRight;
 	}
 
-	public void setResults(List<String> results) {
+	public void setResults(ArrayList<ArrayList<String>> results) {
 		this.results = results;
 	}
 

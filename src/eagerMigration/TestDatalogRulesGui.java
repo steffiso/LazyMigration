@@ -117,7 +117,7 @@ public class TestDatalogRulesGui {
 				e.printStackTrace();
 			}
 
-			BottomUpExecution bottomup = new BottomUpExecution(facts);
+		/*	BottomUpExecution bottomup = new BottomUpExecution(facts);
 			bottomup.generateAllRules(rules);
 			for (Rule rule : rules) {
 				ArrayList<ArrayList<String>> answers = bottomup.getFact(rule
@@ -128,7 +128,7 @@ public class TestDatalogRulesGui {
 					answerString = answerString + answer.toString() + "\n";
 			}
 
-			answerTextArea.setText(answerString);
+		*/	answerTextArea.setText(answerString);
 		}
 
 	}

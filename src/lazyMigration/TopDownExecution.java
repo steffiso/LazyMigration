@@ -17,7 +17,7 @@ import datalog.RuleBody;
 
 public class TopDownExecution {
 	// Alle EDB-Fakten und generierten IDB-Fakten
-	private ArrayList<Fact> facts;
+	/*private ArrayList<Fact> facts;
 	private ArrayList<Rule> rules;
 	private Predicate goal;
 	private RuleGoalTree tree;
@@ -505,5 +505,5 @@ public class TopDownExecution {
 		// only got here if we didn't return false
 		return true;
 	}
-
+*/
 }

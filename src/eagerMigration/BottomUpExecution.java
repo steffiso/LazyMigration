@@ -16,7 +16,7 @@ import datalog.Predicate;
 import datalog.Rule;
 
 public class BottomUpExecution {
-
+/*
 	// Alle EDB-Fakten und generierten IDB-Fakten
 	private ArrayList<Fact> values;
 
@@ -507,4 +507,5 @@ public class BottomUpExecution {
 		// only got here if we didn't return false
 		return true;
 	}
+	*/
 }

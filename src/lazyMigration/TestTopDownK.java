@@ -33,14 +33,14 @@ public class TestTopDownK {
 				new StringReader(
 						"Player2(?id, ?name,?score,?ts):-Player1(?id, ?name,?ts), Player1(?id,?j,?nts), ?ts<?nts."))
 				.start();
-		TopDownExecution tp = new TopDownExecution(ff);
+	/*	TopDownExecution tp = new TopDownExecution(ff);
 		List<Map<String, String>> maps = tp.getAnswer(qq.get(0));
 		if (maps.isEmpty())
 			System.out.println("Empty");
 		else
 			for (Map<String, String> map : maps)
 				for (Entry<String, String> e : map.entrySet())
-					System.out.println(e.getKey() + " " + e.getValue());
+					System.out.println(e.getKey() + " " + e.getValue());*/
 	}
 	
 	}

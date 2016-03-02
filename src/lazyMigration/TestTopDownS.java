@@ -81,7 +81,7 @@ public class TestTopDownS {
 	schema.add("?id");
 	schema.add("?name");
 	schema.add("?score");
-	Predicate goal = new Predicate("getPlayer1", 4, schema, attributeMap);		
+	Predicate goal = new Predicate("getPlayer1", 4, schema);		
 	
 	ArrayList<Rule> rules = new ParserRuleToJava(
 			new StringReader("legacyPlayer1(?id,?ts):-Player1(?id,?name,?score,?ts),Player1(?id,?name2,?score2,?nts), ?ts < ?nts." + 
@@ -90,9 +90,9 @@ public class TestTopDownS {
 			
 			.start();
 
-	TopDownExecution lazy = new TopDownExecution(facts, rules, goal);
+	/*TopDownExecution lazy = new TopDownExecution(facts, rules, goal);
 	ArrayList<Fact> answers = lazy.getAnswers();
-	System.out.println(answers.toString());
+	System.out.println(answers.toString());*/
 	}
 	
 	

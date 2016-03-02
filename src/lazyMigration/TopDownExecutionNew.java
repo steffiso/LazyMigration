@@ -264,7 +264,7 @@ public class TopDownExecutionNew {
 				resultPredicate = join(body.getPredicates());
 			else if (!body.getPredicates().isEmpty())
 				resultPredicate = body.getPredicates().get(0);
-			if (body.getConditions() != null || !body.getConditions().isEmpty())
+			if (body.getConditions() != null && !body.getConditions().isEmpty())
 				resultPredicate = generateConditions(resultPredicate,
 						body.getConditions());
 			System.out.println("Kind: " + childRule.getHead().getKind());
@@ -318,7 +318,6 @@ public class TopDownExecutionNew {
 				answer.add(oneAnswer);
 			}
 		}
-		answer = generateMagicSet(answer, kind);
 		return answer;
 	}
 
@@ -643,7 +642,7 @@ public class TopDownExecutionNew {
 					values.add(value.getListOfValues());
 			}
 		}
-		values = generateMagicSet(values, predicate.getKind());
+		generateMagicSet(values, predicate.getKind());
 		predicate.setRelation(values);
 		if (values.isEmpty())
 			return 0;
@@ -654,30 +653,55 @@ public class TopDownExecutionNew {
 
 	private ArrayList<ArrayList<String>> generateMagicSet(
 			ArrayList<ArrayList<String>> values, String kind) {
-		if (kind.equals("Player2")||kind.equals("latestPlayer2"))
+		/*
+		 * if (kind.equals("Player2") || kind.equals("latestPlayer2"))
+		 * System.out.println("Gefunden");
+		 */
+		if (kind.equals("Mission1"))
 			System.out.println("Gefunden");
-		if (magicList != null && !magicList.isEmpty())
+		if (magicList != null && !magicList.isEmpty()) {
+			int i = 0;
 			for (MagicCondition m : magicList) {
 				if (m.getKindLeft().contains(kind)) {
-					List<String> results = new ArrayList<String>();
-					if (m.getResults() != null)
-						for (List<String> l : values)
-							results.add(l.get(m.getPositionLeft()));
-					m.setResults(results);
-				}
-				if (m.getKindRight().contains(kind))
-					if (m.getResults() != null) {
-						ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
-						for (ArrayList<String> value : values) {
-							System.out.println(value.get(m.getPositionRight()));
-							if (m.getResults().contains(
-									value.get(m.getPositionRight())))
-								results.add(value);
+					ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+					if (m.getResults() == null) {
+						String newViewName = "MGView" + i;
+						for (ArrayList<String> l : values) {
+							facts.add(new Fact(newViewName,
+									new ArrayList<String>(l.subList(
+											m.getPositionLeft(),
+											m.getPositionLeft() + 1))));
+							results.add(new ArrayList<String>(l.subList(
+									m.getPositionLeft(),
+									m.getPositionLeft() + 1)));
 						}
-						return results;
+						m.setResults(results);
+						setNewMagicPredicatetoCorrespondingRules(m, newViewName);
 					}
+				}
+				i++;
 			}
+			/*
+			 * if (m.getKindRight().contains(kind)) if (m.getResults() != null)
+			 * { ArrayList<ArrayList<String>> results = new
+			 * ArrayList<ArrayList<String>>(); for (ArrayList<String> value :
+			 * values) { if (m.getResults().contains(
+			 * value.get(m.getPositionRight()))) results.add(value); } return
+			 * results; }
+			 */
+		}
 		return values;
+	}
+
+	private void setNewMagicPredicatetoCorrespondingRules(MagicCondition m,
+			String newViewName) {
+		for (Rule rule : rules) {
+			if (rule.getHead().getKind().equals(m.getKindRight())) {
+				ArrayList<String> scheme = new ArrayList<String>();
+				scheme.add(rule.getHead().getScheme().get(m.getPositionRight()));
+				rule.getPredicates().add(new Predicate(newViewName, 1, scheme));
+			}
+		}
 	}
 
 	public static boolean isInteger(String s) {
@@ -703,7 +727,7 @@ public class TopDownExecutionNew {
 
 					String left = cond.getLeftOperand();
 					String right = cond.getRightOperand();
-					generateMagicCommand(rule.getRuleBody().getPredicates(),
+					generateMagicCondition(rule.getRuleBody().getPredicates(),
 							left, right);
 					renameVariablesOfAllPredicates(rule, left, right);
 					iterator.remove();
@@ -713,7 +737,7 @@ public class TopDownExecutionNew {
 		// toDo: reordering of Predicates
 	}
 
-	private void generateMagicCommand(ArrayList<Predicate> predicates,
+	private void generateMagicCondition(ArrayList<Predicate> predicates,
 			String left, String right) {
 		for (int i = 0; i < predicates.size(); i++) {
 			for (int j = i + 1; j < predicates.size(); j++) {

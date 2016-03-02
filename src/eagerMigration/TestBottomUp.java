@@ -86,7 +86,7 @@ public class TestBottomUp {
 				new StringReader(
 						"ll(?id,?name):-Player(?id, ?name,?score, ?ts),not Mission(?aa, ?ss,?pid,?nts),?id=?pid."))
 				.start();*/
-		BottomUpExecution mmm = new BottomUpExecution(ff);
+	/*	BottomUpExecution mmm = new BottomUpExecution(ff);
 		mmm.generateAllRules(qq);
 		
 		System.out.println(mmm.getFact("latestPlayer1", 3));
@@ -96,7 +96,7 @@ public class TestBottomUp {
 			System.out.print(" "+p.getWerte());
 		System.out.println();
 		}
-
+*/
 	}
 
 }
