@@ -14,7 +14,7 @@ import datalog.Rule;
 import datalog.RuleBody;
 
 public class TopDownExecutionNew {
-	// Alle EDB-Fakten und generierten IDB-Fakten
+	// All EDB-facts and generated IDB-facts
 	private ArrayList<Fact> facts;
 	private ArrayList<Rule> rules;
 	private Predicate goal;
@@ -77,7 +77,7 @@ public class TopDownExecutionNew {
 
 		Predicate temp = join(rule.getPredicates());
 		if (rule.getConditions() != null)
-			temp = generateConditions(temp, rule.getConditions());
+			temp = selection(temp, rule.getConditions());
 
 		ArrayList<String> werte = rule.getHead().getScheme();
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
@@ -265,14 +265,14 @@ public class TopDownExecutionNew {
 			else if (!body.getPredicates().isEmpty())
 				resultPredicate = body.getPredicates().get(0);
 			if (body.getConditions() != null && !body.getConditions().isEmpty())
-				resultPredicate = generateConditions(resultPredicate,
+				resultPredicate = selection(resultPredicate,
 						body.getConditions());
 			System.out.println("Kind: " + childRule.getHead().getKind());
 			// speichere Ergebnis in ResultMap des Head-Prädikates des Kindes ab
-			childRule.getHead().setRelation(
-					getResults(resultPredicate,
-							childRule.getHead().getScheme(), childRule
-									.getHead().getKind()));
+			childRule.getHead()
+					.setRelation(
+							getResults(resultPredicate, childRule.getHead()
+									.getScheme()));
 			System.out.println("Join: "
 					+ childRule.getHead().getRelation().toString());
 
@@ -293,8 +293,11 @@ public class TopDownExecutionNew {
 		return result;
 	}
 
+	// only get the result-attributes of predicate which are in the scheme of
+	// the head
+	// Example A(?x):-B(?x,?y)--> only extract the ?x attribute of B
 	private ArrayList<ArrayList<String>> getResults(Predicate results,
-			ArrayList<String> scheme, String kind) {
+			ArrayList<String> scheme) {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		for (ArrayList<String> oneMap : results.getRelation()) {
 			ArrayList<String> oneAnswer = new ArrayList<String>();
@@ -304,7 +307,7 @@ public class TopDownExecutionNew {
 						oneAnswer.add(oneMap.get(results.getScheme().indexOf(
 								wert)));
 					else {
-						System.out.println(wert + " existiert nicht");
+						// System.out.println(wert + " existiert nicht");
 						oneAnswer.add("");
 					}
 				else
@@ -321,66 +324,49 @@ public class TopDownExecutionNew {
 		return answer;
 	}
 
+	// unificate all attributes which are in the unificationMap
 	public Rule unifyRule(Predicate goal, Rule childrenRule) {
-		// Unifizierung geht über unificationMap
-		// bevor wir anfangen müssen wir noch die Rules umbenennen
+		// first rename all rules according to conditions
 		rulesRenameandReorder(childrenRule);
 		Predicate head = childrenRule.getHead();
 		RuleBody body = childrenRule.getRuleBody();
 		if (!goal.getKind().equals(head.getKind())
 				|| goal.getAnz() != head.getAnz()) {
-			System.out.println("Unifizierung nicht möglich:goal "
-					+ goal.getKind());
-			System.out.print(goal.getScheme().toString());
-			System.out.print(",head " + head.getKind());
-			System.out.print(head.getScheme().toString());
+			System.out.println("unification not possible:" + "goal"
+					+ goal.toString() + "head" + head.toString());
 		} else {
-
 			for (Map<String, String> unificationMapEntry : unificationMap) {
-				if (head.getKind().contains(unificationMapEntry.get("kind"))) {
+				String kind = unificationMapEntry.get("kind");
+				int positionValue = Integer.parseInt(unificationMapEntry
+						.get("position"));
+				String value = unificationMapEntry.get("value");
+				if (head.getKind().contains(kind)) {
 					ArrayList<String> attributesRuleHead = head.getScheme();
-					String idValue = attributesRuleHead.get(Integer
-							.parseInt(unificationMapEntry.get("position")));
-					// unifiziere Head-Prädikate die mit kind übereinstimmen
-					if (attributesRuleHead.contains(idValue)) {
-						attributesRuleHead.set(
-								attributesRuleHead.indexOf(idValue),
-								unificationMapEntry.get("value"));
-					}
+					String idValue = attributesRuleHead.get(positionValue);
+					// unificate head-predicates which match with kind
+					unificatePredicate(attributesRuleHead, idValue, value);
+
 				}
-				// unifiziere Body-Prädikate die mit kind übereinstimmen
+				// unificate body-predicates which match with kind
 				String id = null;
 				for (Predicate p : body.getPredicates()) {
-					if (p.getKind().contains(unificationMapEntry.get("kind"))) {
+					if (p.getKind().contains(kind)) {
 						ArrayList<String> attributesRule = p.getScheme();
-						String idValue = attributesRule.get(Integer
-								.parseInt(unificationMapEntry.get("position")));
+						String idValue = attributesRule.get(positionValue);
 						if (id == null)
 							id = idValue;
-
-						if (p.getScheme().contains(idValue)) {
-							p.getScheme().set(p.getScheme().indexOf(idValue),
-									unificationMapEntry.get("value"));
-						}
+						unificatePredicate(attributesRule, idValue, value);
 					}
 				}
 				if (id != null) {
-					if (!head.getKind().contains(
-							unificationMapEntry.get("kind"))) {
-						// unifiziere Head-Prädikate
-						if (head.getScheme().contains(id)) {
-							head.getScheme().set(head.getScheme().indexOf(id),
-									unificationMapEntry.get("value"));
-						}
+					if (!head.getKind().contains(kind)) {
+						// unificate head-predicates which don't match with kind
+						unificatePredicate(head.getScheme(), id, value);
 					}
-					// unifiziere Body-Prädikate
+					// unificate body-predicates which don't match with kind
 					for (Predicate p : body.getPredicates()) {
-						if (!p.getKind().contains(
-								unificationMapEntry.get("kind"))) {
-							if (p.getScheme().contains(id)) {
-								p.getScheme().set(p.getScheme().indexOf(id),
-										unificationMapEntry.get("value"));
-							}
+						if (!p.getKind().contains(kind)) {
+							unificatePredicate(p.getScheme(), id, value);
 						}
 					}
 				}
@@ -388,6 +374,16 @@ public class TopDownExecutionNew {
 		}
 
 		return childrenRule;
+	}
+
+	// unification of Rule: e.g. A(?x,?y) and method call
+	// unificatePredicate(["?x","?y"],"?x","1") --> A(1,?y)
+	private void unificatePredicate(ArrayList<String> attributesRule,
+			String idValue, String value) {
+		if (attributesRule.contains(idValue)) {
+			attributesRule.set(attributesRule.indexOf(idValue), value);
+		}
+
 	}
 
 	public void putFactToDB(Fact newFact) {
@@ -407,12 +403,12 @@ public class TopDownExecutionNew {
 		return rule;
 	}
 
-	// generiere Zwischenergebnisse zu allen Joins einer Rule nacheinander
+	// generate temporary results of all joins of a rule step by step
 	public Predicate join(ArrayList<Predicate> predicates) {
 		Predicate temp = null;
 		if (predicates.size() > 0) {
 			temp = predicates.get(0);
-			if (temp != null) {
+			if (temp.getRelation() != null) {
 				if (!temp.getRelation().isEmpty()) {
 					ArrayList<ArrayList<String>> facts2;
 					for (int i = 1; i < predicates.size(); i++) {
@@ -464,7 +460,8 @@ public class TopDownExecutionNew {
 
 	}
 
-	private Predicate generateConditions(Predicate predResult,
+	// generate temporary results of all conditions of a rule step by step
+	private Predicate selection(Predicate predResult,
 			ArrayList<Condition> conditions) {
 		for (Condition cond : conditions) {
 			predResult = getTempCondResult(predResult, cond);
@@ -472,9 +469,9 @@ public class TopDownExecutionNew {
 		return predResult;
 	}
 
-	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
+	// generate temporary results of condition, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z),?y=?z.
-	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
+	// Only put values of A and B to end result which satisfies condition ?y=?z.
 	private Predicate getTempCondResult(Predicate p, Condition cond) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		String rightOperand = cond.getRightOperand();
@@ -488,7 +485,7 @@ public class TopDownExecutionNew {
 				if (p.getScheme().contains(leftOperand))
 					left = oneResult.get(p.getScheme().indexOf(leftOperand));
 				else {
-					System.out.println(leftOperand + " existiert nicht");
+					// System.out.println(leftOperand + " existiert nicht");
 					facts.add(oneResult);
 					continue;
 				}
@@ -498,7 +495,7 @@ public class TopDownExecutionNew {
 				if (p.getScheme().contains(rightOperand))
 					right = oneResult.get(p.getScheme().indexOf(rightOperand));
 				else {
-					System.out.println(leftOperand + " existiert nicht");
+					// System.out.println(leftOperand + " existiert nicht");
 					facts.add(oneResult);
 					continue;
 				}
@@ -543,9 +540,9 @@ public class TopDownExecutionNew {
 
 	}
 
-	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
+	// generate temporary results of join, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
-	// Joine die Werte von A und B nach ?x
+	// join values of A und B on attribute ?x
 	private ArrayList<ArrayList<String>> getTempJoinResult(
 			ArrayList<String> fact1, ArrayList<PairofInteger> equalList,
 			ArrayList<ArrayList<String>> fact2) {
@@ -579,9 +576,9 @@ public class TopDownExecutionNew {
 
 	}
 
-	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
+	// generate temporary results of not, e.g.: C(?y,?z) :- A(?x,?y),
 	// not B(?x,?z).
-	// Alle ?x Werte von A die nicht in ?x Werte von B sind
+	// Put all values of ?x from A which aren't in the ?x values of B
 	private boolean getTempNotResult(ArrayList<String> fact1,
 			ArrayList<PairofInteger> equalList,
 			ArrayList<ArrayList<String>> fact2) {
@@ -604,8 +601,10 @@ public class TopDownExecutionNew {
 		return true;
 	}
 
-	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
-	// ist Join Prädikat
+	// find all equal attributes of two predicates for a join, e.g.: C(?y,?z) :-
+	// A(?x,?y),B(?x,?z). -->
+	// ?x
+	// is a join attribute
 	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
 			ArrayList<String> strings2) {
 		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
@@ -617,9 +616,10 @@ public class TopDownExecutionNew {
 		return list;
 	}
 
-	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
+	// generate results of a predicate based on the facts, e.g. A(?x,?y) and
+	// edb-fact
 	// A(1,2)
-	// neue Map für A: "?x" : 1, "?y" : 2
+	// result is [1,2] and return is true if there are results
 	private int getFacts(Predicate predicate) {
 		ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
@@ -661,39 +661,32 @@ public class TopDownExecutionNew {
 			System.out.println("Gefunden");
 		if (magicList != null && !magicList.isEmpty()) {
 			int i = 0;
-			for (MagicCondition m : magicList) {
-				if (m.getKindLeft().contains(kind)) {
-					ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
-					if (m.getResults() == null) {
+			for (MagicCondition magicCondition : magicList) {
+				if (magicCondition.getKindLeft().contains(kind)) {
+					if (magicCondition.hasAlreadyResults() == false) {
 						String newViewName = "MGView" + i;
-						for (ArrayList<String> l : values) {
-							facts.add(new Fact(newViewName,
-									new ArrayList<String>(l.subList(
-											m.getPositionLeft(),
-											m.getPositionLeft() + 1))));
-							results.add(new ArrayList<String>(l.subList(
-									m.getPositionLeft(),
-									m.getPositionLeft() + 1)));
+						for (ArrayList<String> valueList : values) {
+							facts.add(new Fact(
+									newViewName,
+									new ArrayList<String>(
+											valueList.subList(
+													magicCondition
+															.getPositionLeft(),
+													magicCondition
+															.getPositionLeft() + 1))));
 						}
-						m.setResults(results);
-						setNewMagicPredicatetoCorrespondingRules(m, newViewName);
+						magicCondition.setAlreadyFoundResults(true);
+						setNewMagicPredicateToCorrespondingRules(
+								magicCondition, newViewName);
 					}
 				}
 				i++;
 			}
-			/*
-			 * if (m.getKindRight().contains(kind)) if (m.getResults() != null)
-			 * { ArrayList<ArrayList<String>> results = new
-			 * ArrayList<ArrayList<String>>(); for (ArrayList<String> value :
-			 * values) { if (m.getResults().contains(
-			 * value.get(m.getPositionRight()))) results.add(value); } return
-			 * results; }
-			 */
 		}
 		return values;
 	}
 
-	private void setNewMagicPredicatetoCorrespondingRules(MagicCondition m,
+	private void setNewMagicPredicateToCorrespondingRules(MagicCondition m,
 			String newViewName) {
 		for (Rule rule : rules) {
 			if (rule.getHead().getKind().equals(m.getKindRight())) {
@@ -709,10 +702,7 @@ public class TopDownExecutionNew {
 			Integer.parseInt(s);
 		} catch (NumberFormatException e) {
 			return false;
-		} catch (NullPointerException e) {
-			return false;
 		}
-		// only got here if we didn't return false
 		return true;
 	}
 

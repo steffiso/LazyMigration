@@ -16,26 +16,26 @@ import datalog.Rule;
 public class BottomUpExecutionNew {
 
 	// Alle EDB-Fakten und generierten IDB-Fakten
-	private ArrayList<Fact> values;
+	private ArrayList<Fact> facts;
 
 	// Setze EDB-Fakten
 	public BottomUpExecutionNew(ArrayList<Fact> values) {
 		super();
-		this.values = values;
+		this.facts = values;
 	}
 
 	public ArrayList<Fact> getValues() {
-		return values;
+		return facts;
 	}
 
 	public void setValues(ArrayList<Fact> values) {
-		this.values = values;
+		this.facts = values;
 	}
 
 	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 
-		for (Fact value : values) {
+		for (Fact value : facts) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
 				answer.add(value.getListOfValues());
@@ -57,8 +57,7 @@ public class BottomUpExecutionNew {
 		}
 	}
 
-	// Generiere alle Ergebnisse einer IDB Regel und speichere sie in den Fakten
-	// ab
+	// generate all results of a rule and save it to global variable values
 	public void getAnswer(Rule rule) {
 		Predicate factList = null;
 		String kind = rule.getHead().getKind();
@@ -76,7 +75,7 @@ public class BottomUpExecutionNew {
 		}
 		if (factList != null) {
 			if (rule.getConditions() != null || !rule.getConditions().isEmpty()) {
-				factList = generateConditions(factList, rule.getConditions());
+				factList = selection(factList, rule.getConditions());
 			}
 			ArrayList<String> werte = rule.getHead().getScheme();
 			for (ArrayList<String> oneResult : factList.getRelation()) {
@@ -84,10 +83,10 @@ public class BottomUpExecutionNew {
 				for (String wert : werte)
 					if (wert.startsWith("?"))
 						if (factList.getScheme().contains(wert))
-							oneAnswer.add(oneResult.get(factList.getScheme().indexOf(
-									wert)));
+							oneAnswer.add(oneResult.get(factList.getScheme()
+									.indexOf(wert)));
 						else {
-							System.out.println(wert + " existiert nicht");
+							// System.out.println(wert + " existiert nicht");
 							oneAnswer.add("");
 						}
 					else
@@ -99,7 +98,7 @@ public class BottomUpExecutionNew {
 						alreadyExist = true;
 				if (!alreadyExist) {
 					Fact factnew = new Fact(kind, oneAnswer);
-					values.add(factnew);
+					facts.add(factnew);
 					answer.add(oneAnswer);
 				}
 			}
@@ -140,15 +139,18 @@ public class BottomUpExecutionNew {
 		}
 	}
 
+	// generate results of a rule
 	private Predicate generateRule(ArrayList<Predicate> predicates) {
 		Predicate temp = null;
-		ArrayList<ArrayList<String>> predicateFacts = getFacts(predicates
-				.get(0));
+		Predicate startPredicate = predicates.get(0);
+		getFacts(startPredicate);
+		ArrayList<ArrayList<String>> predicateFacts = startPredicate
+				.getRelation();
 		if (!predicateFacts.isEmpty())
 			if (predicates.get(1).isNot())
-				temp = getTempNotResult(predicates.get(0), predicates.get(1));
+				temp = getTempNotResult(startPredicate, predicates.get(1));
 			else
-				temp = getTempJoinResult(predicates.get(0), predicates.get(1));
+				temp = getTempJoinResult(startPredicate, predicates.get(1));
 		Predicate predResult = null;
 		if (temp != null) {
 			if (!temp.getRelation().isEmpty()) {
@@ -172,7 +174,8 @@ public class BottomUpExecutionNew {
 		return predResult;
 	}
 
-	private Predicate generateConditions(Predicate predResult,
+	// generate temporary results of all conditions of a rule step by step
+	private Predicate selection(Predicate predResult,
 			ArrayList<Condition> conditions) {
 		for (Condition cond : conditions) {
 			predResult = getTempCondResult(predResult, cond);
@@ -180,9 +183,9 @@ public class BottomUpExecutionNew {
 		return predResult;
 	}
 
-	// generiere Zwischenergebnisse bei einer Bedingunge, Bsp: C(?y,?z) :-
+	// generate temporary results of condition, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z),?y=?z.
-	// Füge nur Werte von A und B mit der Bedingung ?y=?z ein.
+	// Only put values of A and B to end result which satisfies condition ?y=?z.
 	private Predicate getTempCondResult(Predicate p, Condition cond) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		String rightOperand = cond.getRightOperand();
@@ -194,7 +197,8 @@ public class BottomUpExecutionNew {
 			String right = "";
 			if (leftOperand.startsWith("?"))
 				if (p.getScheme().contains(leftOperand))
-					left = factOfFactList.get(p.getScheme().indexOf(leftOperand));
+					left = factOfFactList.get(p.getScheme()
+							.indexOf(leftOperand));
 				else {
 					System.out.println(leftOperand + " existiert nicht");
 					facts.add(factOfFactList);
@@ -204,8 +208,8 @@ public class BottomUpExecutionNew {
 				left = leftOperand;
 			if (rightOperand.startsWith("?"))
 				if (p.getScheme().contains(rightOperand))
-					right = factOfFactList.get(p.getScheme()
-							.indexOf(rightOperand));
+					right = factOfFactList.get(p.getScheme().indexOf(
+							rightOperand));
 				else {
 					System.out.println(leftOperand + " existiert nicht");
 					facts.add(factOfFactList);
@@ -252,14 +256,15 @@ public class BottomUpExecutionNew {
 
 	}
 
-	// generiere Zwischenergebnisse bei einem Join, Bsp: C(?y,?z) :-
+	// generate temporary results of join, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
-	// Joine die Werte von A und B nach ?x
+	// join values of A und B on attribute ?x
 	private Predicate getTempJoinResult(Predicate predicate1,
 			Predicate predicate2) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> fact1 = predicate1.getRelation();
-		ArrayList<ArrayList<String>> fact2 = getFacts(predicate2);
+		getFacts(predicate2);
+		ArrayList<ArrayList<String>> fact2 = predicate2.getRelation();
 		ArrayList<PairofInteger> equalList = getEqualList(
 				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
@@ -295,14 +300,15 @@ public class BottomUpExecutionNew {
 
 	}
 
-	// generiere Zwischenergebnisse bei einem Not, Bsp: C(?y,?z) :- A(?x,?y),
+	// /generate temporary results of not, e.g.: C(?y,?z) :- A(?x,?y),
 	// not B(?x,?z).
-	// Alle ?x Werte von A die nicht in ?x Werte von B sind
+	// Put all values of ?x from A which aren't in the ?x values of B
 	private Predicate getTempNotResult(Predicate predicate1,
 			Predicate predicate2) {
 		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
 		ArrayList<ArrayList<String>> fact1 = predicate1.getRelation();
-		ArrayList<ArrayList<String>> fact2 = getFacts(predicate2);
+		getFacts(predicate2);
+		ArrayList<ArrayList<String>> fact2 = predicate2.getRelation();
 		ArrayList<PairofInteger> equalList = getEqualList(
 				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
@@ -334,8 +340,10 @@ public class BottomUpExecutionNew {
 
 	}
 
-	// generiere die Join Prädikate, Bsp: C(?y,?z) :- A(?x,?y),B(?x,?z). --> ?x
-	// ist Join Prädikat
+	// find all equal attributes of two predicates for a join, e.g.: C(?y,?z) :-
+	// A(?x,?y),B(?x,?z). -->
+	// ?x
+	// is a join attribute
 	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
 			ArrayList<String> strings2) {
 		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
@@ -347,14 +355,15 @@ public class BottomUpExecutionNew {
 		return list;
 	}
 
-	// generiere eine Map zu einem Prädikat, Bsp. A(?x,?y) und dem EDB-Fakt
+	// generate results of a predicate based on the facts, e.g. A(?x,?y) and
+	// edb-fact
 	// A(1,2)
-	// neue Map für A: "?x" : 1, "?y" : 2
-	private ArrayList<ArrayList<String>> getFacts(Predicate predicate) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
+	// result is [1,2] and return true if there are results
+	private void getFacts(Predicate predicate) {
+		ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
 		int anz = predicate.getScheme().size();
-		for (Fact value : values) {
+		for (Fact value : facts) {
 			if (value.getKind().equals(kind)
 					&& value.getListOfValues().size() == anz) {
 				boolean set = true;
@@ -368,11 +377,10 @@ public class BottomUpExecutionNew {
 					i++;
 				}
 				if (set)
-					facts.add(value.getListOfValues());
+					values.add(value.getListOfValues());
 			}
 		}
-		predicate.setRelation(facts);
-		return facts;
+		predicate.setRelation(values);
 
 	}
 

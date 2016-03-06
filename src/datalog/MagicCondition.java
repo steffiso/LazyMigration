@@ -1,13 +1,11 @@
 package datalog;
 
-import java.util.ArrayList;
-
 public class MagicCondition {
 	private String kindLeft;
 	private String kindRight;
 	private int positionLeft;
 	private int positionRight;
-	private ArrayList<ArrayList<String>> results;
+	private boolean alreadyFoundResults;
 
 	public MagicCondition(String kindLeft, String kindRight, int positionLeft,
 			int positionRight) {
@@ -34,8 +32,8 @@ public class MagicCondition {
 		return positionRight;
 	}
 
-	public ArrayList<ArrayList<String>> getResults() {
-		return results;
+	public boolean hasAlreadyResults() {
+		return alreadyFoundResults;
 	}
 
 	public void setKindLeft(String kindLeft) {
@@ -54,23 +52,24 @@ public class MagicCondition {
 		this.positionRight = positionRight;
 	}
 
-	public void setResults(ArrayList<ArrayList<String>> results) {
-		this.results = results;
+	public void setAlreadyFoundResults(boolean results) {
+		this.alreadyFoundResults = results;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + (alreadyFoundResults ? 1231 : 1237);
 		result = prime * result
 				+ ((kindLeft == null) ? 0 : kindLeft.hashCode());
 		result = prime * result
 				+ ((kindRight == null) ? 0 : kindRight.hashCode());
 		result = prime * result + positionLeft;
 		result = prime * result + positionRight;
-		result = prime * result + ((results == null) ? 0 : results.hashCode());
 		return result;
 	}
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -98,11 +97,12 @@ public class MagicCondition {
 		return true;
 	}
 
+
 	@Override
 	public String toString() {
 		return "MagicCondition [kindLeft=" + kindLeft + ", kindRight="
 				+ kindRight + ", positionLeft=" + positionLeft
 				+ ", positionRight=" + positionRight + "]";
 	}
-	
+
 }
