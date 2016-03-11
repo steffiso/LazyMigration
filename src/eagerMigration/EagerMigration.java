@@ -11,6 +11,7 @@ public class EagerMigration {
 	private ArrayList<Fact> facts;
 	private ArrayList<Rule> rules;
 	private String query;
+	private int number;
 
 	public EagerMigration(ArrayList<Fact> facts, ArrayList<Rule> rules,
 			String query) {
@@ -21,13 +22,15 @@ public class EagerMigration {
 
 	public String writeAnswersInDatabase() {
 
-		Database db = new Database();
+		Database db = new Database("data/EDBEager.json", "data/Schema.json");
 		String answerString = "";
+		String answer2 = "";
 		BottomUpExecutionNew bottomUp = new BottomUpExecutionNew(facts);
 		bottomUp.generateAllRules(rules);
 		ArrayList<Pair> unicateRuleNames = new ArrayList<Pair>();
-		
-		//Alle RuleHead-Duplikate eliminieren, damit wir keine Duplikate in der DB erhalten
+
+		// Alle RuleHead-Duplikate eliminieren, damit wir keine Duplikate in der
+		// DB erhalten
 		for (Rule rule : rules) {
 			if (!unicateRuleNames.contains(new Pair(rule.getHead().getKind(),
 					rule.getHead().getScheme().size())))
@@ -78,8 +81,11 @@ public class EagerMigration {
 					// toDo:
 					String datalogFact = tempKind + "(" + values + ").";
 					db.putToDatabase(datalogFact);
+					setNumber(getNumber() + 1);
 				}
-			}
+			} else if (query.startsWith("get")
+					&& pair.ruleName.startsWith("get"))
+				answer2 = answers.toString();
 
 			for (ArrayList<String> answer : answers)
 				answerString = answerString + pair.ruleName + answer.toString()
@@ -87,7 +93,16 @@ public class EagerMigration {
 
 		}
 
-		return answerString;
+		//return answerString+answer2;
+		return answer2;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 
 	private class Pair {

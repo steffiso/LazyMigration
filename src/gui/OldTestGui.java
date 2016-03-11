@@ -35,7 +35,7 @@ import datalog.Predicate;
 import datalog.Rule;
 import eagerMigration.EagerMigration;
 
-public class TestGui {
+public class OldTestGui {
 
 	private JFrame frmBottomup;
 	private JTextField commandTextFieldBU;
@@ -70,7 +70,7 @@ public class TestGui {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					TestGui window = new TestGui();
+					OldTestGui window = new OldTestGui();
 					window.frmBottomup.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -82,7 +82,7 @@ public class TestGui {
 	/**
 	 * Create the application.
 	 */
-	public TestGui() {
+	public OldTestGui() {
 		initialize();
 	}
 

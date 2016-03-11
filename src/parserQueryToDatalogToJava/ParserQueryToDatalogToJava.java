@@ -17,10 +17,13 @@ import datalog.Rule;
 import parserRuletoJava.ParserRuleToJava;
 
 public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaConstants {
-
   public String kindStr;
+
   public String idStr;
-  private static ArrayList <Rule > rules = new ArrayList<Rule >();
+
+  public String rulesStr;
+
+  private static ArrayList < Rule > rules = new ArrayList < Rule > ();
 
   private static ArrayList < String > getCurrentSchema(String kind)
   {
@@ -91,18 +94,16 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
         secondSchema.set(i, s + "2");
       }
     }
-    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," +
-    kind + currentVersion + "(" + schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" +
-    "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
-
-        try
-        {
-        rules.addAll((new ParserRuleToJava(new StringReader(value))).start());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-
+    value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," + kind + currentVersion + "(" + schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
+    try
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(value))).start());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     return value;
   }
 
@@ -113,14 +114,12 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     return time + 1;
   }
 
-    public ArrayList < String > getSchema(String kind, int schemaNumber)
+  public ArrayList < String > getSchema(String kind, int schemaNumber)
   {
     Database db = new Database();
     Schema currentSchema = db.getSchema(kind, schemaNumber);
-    if (currentSchema != null)
-        return currentSchema.getAttributes();
-    else
-        return null;
+    if (currentSchema != null) return currentSchema.getAttributes();
+    else return null;
   }
 
   public String getAttributeName(String kind, int schemaNumber, int pos)
@@ -129,13 +128,11 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     Schema currentSchema = db.getSchema(kind, schemaNumber);
     if (currentSchema != null)
     {
-        ArrayList<String > attributes = currentSchema.getAttributes();
-        String value = attributes.get(pos);
-        return value;
-   }
-    else
-        return null;
-
+      ArrayList < String > attributes = currentSchema.getAttributes();
+      String value = attributes.get(pos);
+      return value;
+    }
+    else return null;
   }
 
   final public String getDatalogRules() throws ParseException {
@@ -146,10 +143,11 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     throw new Error("Missing return statement in function");
   }
 
-  final public ArrayList<Rule > getJavaRules() throws ParseException {
+  final public ArrayList < Rule > getJavaRules() throws ParseException {
   String value = null;
     value = start();
     jj_consume_token(0);
+    rulesStr=value;
     {if (true) return rules;}
     throw new Error("Missing return statement in function");
   }
@@ -186,31 +184,29 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token propertyToken = null;
   Token idToken = null;
     jj_consume_token(get);
-    kindToken = jj_consume_token(string);
-    jj_consume_token(11);
-    propertyToken = jj_consume_token(string);
-    jj_consume_token(12);
+    kindToken = jj_consume_token(name);
+    jj_consume_token(13);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(14);
     idToken = jj_consume_token(string);
     String kind = kindToken.toString();
-    kind = kind.substring(1, kind.length() - 1);
     String id = idToken.toString();
     id = id.substring(1, id.length() - 1);
-    kindStr=kind;
-    idStr=id;
-    ArrayList<String > schema = getCurrentSchema(kind);
+    kindStr = kind;
+    idStr = id;
+    ArrayList < String > schema = getCurrentSchema(kind);
     int currentVersion = getCurrentSchemaVersion(kind);
     String residualRules = getResidualRules(kind);
-
-    String headRule = "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts), latest" + kind + currentVersion +"(?id,?ts),?id="+id+".\u005cn";
-
-        try
-        {
-                rules.addAll((new ParserRuleToJava(new StringReader(headRule))).parseHeadRules());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-
+    String headRule = "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts), latest" + kind + currentVersion + "(?id,?ts),?id=" + id + ".\u005cn";
+    try
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(headRule))).parseHeadRules());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     {if (true) return residualRules + headRule;}
     throw new Error("Missing return statement in function");
   }
@@ -220,35 +216,32 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token propertyToken = null;
   Token valueToken = null;
     jj_consume_token(add);
-    kindToken = jj_consume_token(string);
-    jj_consume_token(11);
-    propertyToken = jj_consume_token(string);
-    jj_consume_token(12);
+    kindToken = jj_consume_token(name);
+    jj_consume_token(13);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(14);
     valueToken = jj_consume_token(string);
     String propertyName = propertyToken.toString();
-    propertyName = propertyName.substring(1, propertyName.length() - 1);
     String propertyValue = valueToken.toString();
     propertyValue = propertyValue.substring(1, propertyValue.length() - 1);
     String kind = kindToken.toString();
-    kind = kind.substring(1, kind.length() - 1);
     ArrayList < String > currentSchema = getCurrentSchema(kind);
     ArrayList < String > newSchema = getNewSchemaAdd(kind, "?" + propertyName);
     int currentSchemaVersion = getCurrentSchemaVersion(kind);
     int newSchemaVersion = currentSchemaVersion + 1;
     String residualRules = getResidualRules(kind);
-
-    String headRules = kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + "," + getTimestamp() + "):-" +
-    kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion + "(?id, ?ts).\u005cn";
+    String headRules = kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + "," + getTimestamp() + "):-" + kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion + "(?id, ?ts).\u005cn";
     saveCurrentSchema(kind, newSchema);
-
     try
-        {
-                rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-    {if (true) return headRules + residualRules;}
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    {if (true) return residualRules + headRules;}
     throw new Error("Missing return statement in function");
   }
 
@@ -256,30 +249,27 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token kindToken = null;
   Token propertyToken = null;
     jj_consume_token(delete);
-    kindToken = jj_consume_token(string);
-    jj_consume_token(11);
-    propertyToken = jj_consume_token(string);
+    kindToken = jj_consume_token(name);
+    jj_consume_token(13);
+    propertyToken = jj_consume_token(name);
     String propertyName = propertyToken.toString();
-    propertyName = propertyName.substring(1, propertyName.length() - 1);
     String kind = kindToken.toString();
-    kind = kind.substring(1, kind.length() - 1);
     ArrayList < String > schema = getCurrentSchema(kind);
     ArrayList < String > newSchema = getNewSchemaDelete(kind, propertyName);
     int currentVersion = getCurrentSchemaVersion(kind);
     int newVersion = currentVersion + 1;
     String residualRules = getResidualRules(kind);
-    String headRules = kind + newVersion + "(" + schemaToString(newSchema) + "," + getTimestamp() + "):-" +
-    kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id, ?ts).\u005cn";
+    String headRules = kind + newVersion + "(" + schemaToString(newSchema) + "," + getTimestamp() + "):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id, ?ts).\u005cn";
     saveCurrentSchema(kind, newSchema);
-
-        try
-        {
-                rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-
+    try
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     {if (true) return residualRules + headRules;}
     throw new Error("Missing return statement in function");
   }
@@ -291,29 +281,24 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token conditionFromToken = null;
   Token conditionToToken = null;
     jj_consume_token(copy);
-    kindFromToken = jj_consume_token(string);
-    jj_consume_token(11);
-    propertyToken = jj_consume_token(string);
+    kindFromToken = jj_consume_token(name);
     jj_consume_token(13);
-    kindToToken = jj_consume_token(string);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(15);
+    kindToToken = jj_consume_token(name);
+    jj_consume_token(16);
+    kindFromToken = jj_consume_token(name);
+    jj_consume_token(13);
+    conditionFromToken = jj_consume_token(name);
     jj_consume_token(14);
-    kindFromToken = jj_consume_token(string);
-    jj_consume_token(11);
-    conditionFromToken = jj_consume_token(string);
-    jj_consume_token(12);
-    kindToToken = jj_consume_token(string);
-    jj_consume_token(11);
-    conditionToToken = jj_consume_token(string);
+    kindToToken = jj_consume_token(name);
+    jj_consume_token(13);
+    conditionToToken = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
-    kindFrom = kindFrom.substring(1, kindFrom.length() - 1);
     String kindTo = kindToToken.toString();
-    kindTo = kindTo.substring(1, kindTo.length() - 1);
     String attribute = propertyToken.toString();
-    attribute = attribute.substring(1, attribute.length() - 1);
     String conditionFrom = conditionFromToken.toString();
-    conditionFrom = conditionFrom.substring(1, conditionFrom.length() - 1);
     String conditionTo = conditionToToken.toString();
-    conditionTo = conditionTo.substring(1, conditionTo.length() - 1);
     String residualRules = getResidualRules(kindFrom) + getResidualRules(kindTo);
     ArrayList < String > schemaFrom = getCurrentSchema(kindFrom);
     ArrayList < String > schemaTo = getCurrentSchema(kindTo);
@@ -330,23 +315,17 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
     if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
     String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
-    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-"
-    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2),"
-    + condition + ".\u005cn";
-    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-"
-    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1),"
-    + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2),"
-    + condition + ".\u005cn";
-
+    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1)," + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2)," + condition + ".\u005cn";
+    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
     try
-        {
-                rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     {if (true) return residualRules + headRules;}
     throw new Error("Missing return statement in function");
   }
@@ -358,29 +337,24 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token conditionFromToken = null;
   Token conditionToToken = null;
     jj_consume_token(move);
-    kindFromToken = jj_consume_token(string);
-    jj_consume_token(11);
-    propertyToken = jj_consume_token(string);
+    kindFromToken = jj_consume_token(name);
     jj_consume_token(13);
-    kindToToken = jj_consume_token(string);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(15);
+    kindToToken = jj_consume_token(name);
+    jj_consume_token(16);
+    kindFromToken = jj_consume_token(name);
+    jj_consume_token(13);
+    conditionFromToken = jj_consume_token(name);
     jj_consume_token(14);
-    kindFromToken = jj_consume_token(string);
-    jj_consume_token(11);
-    conditionFromToken = jj_consume_token(string);
-    jj_consume_token(12);
-    kindToToken = jj_consume_token(string);
-    jj_consume_token(11);
-    conditionToToken = jj_consume_token(string);
+    kindToToken = jj_consume_token(name);
+    jj_consume_token(13);
+    conditionToToken = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
-    kindFrom = kindFrom.substring(1, kindFrom.length() - 1);
     String kindTo = kindToToken.toString();
-    kindTo = kindTo.substring(1, kindTo.length() - 1);
     String attribute = propertyToken.toString();
-    attribute = attribute.substring(1, attribute.length() - 1);
     String conditionFrom = conditionFromToken.toString();
-    conditionFrom = conditionFrom.substring(1, conditionFrom.length() - 1);
     String conditionTo = conditionToToken.toString();
-    conditionTo = conditionTo.substring(1, conditionTo.length() - 1);
     String residualRules = getResidualRules(kindFrom) + getResidualRules(kindTo);
     ArrayList < String > schemaFrom = getCurrentSchema(kindFrom);
     ArrayList < String > schemaTo = getCurrentSchema(kindTo);
@@ -401,25 +375,18 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     schemaToNew.set(0, "?id1");
     schemaToNew2.set(0, "?id1");
     String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
-    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-"
-    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1),"
-    + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2),"
-    + condition + ".\u005cn";
-    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-"
-    + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1),"
-    + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2),"
-    + condition + ".\u005cn";
-    headRules = headRules + kindFrom + newSchemaVersionFrom + "(" + schemaToString(schemaFromNew) + "," + getTimestamp() + "):-"
-    + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2).\u005cn";
-
+    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2)," + condition + ".\u005cn";
+    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
+    headRules = headRules + kindFrom + newSchemaVersionFrom + "(" + schemaToString(schemaFromNew) + "," + getTimestamp() + "):-" + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2).\u005cn";
     try
-        {
-                rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
-        } catch (parserRuletoJava.ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-        }
-
+    {
+      rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
+    }
+    catch (parserRuletoJava.ParseException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     {if (true) return residualRules + headRules;}
     throw new Error("Missing return statement in function");
   }
@@ -556,7 +523,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[15];
+    boolean[] la1tokens = new boolean[17];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -570,7 +537,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
         }
       }
     }
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 17; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -22,10 +22,17 @@ public class TopDownExecutionNew {
 	private List<Map<String, String>> unificationMap;
 	private ArrayList<Fact> putFacts;
 	private List<MagicCondition> magicList = null;
+	private int number=0;
 
-	// private ArrayList<ArrayList<Map<String, String>>> resultMap;
+	public int getNumber() {
+		return number;
+	}
 
-	// Setze EDB-Fakten
+	public void setNumber(int number) {
+		this.number = number;
+	}
+
+	// set edb facts
 	public TopDownExecutionNew(ArrayList<Fact> facts) {
 		super();
 		this.facts = facts;
@@ -38,7 +45,6 @@ public class TopDownExecutionNew {
 		this.goal = goal;
 	}
 
-	// wir setzen die UnificationMap gleich am Anfang
 	public TopDownExecutionNew(ArrayList<Fact> facts, ArrayList<Rule> rules,
 			Predicate goal, List<Map<String, String>> attributeMap) {
 		this.facts = facts;
@@ -149,6 +155,7 @@ public class TopDownExecutionNew {
 		if (putFacts.size() != 0) {
 			for (Fact f : putFacts) {
 				putFactToDB(f);
+				number++;
 				System.out.println("put in DB: " + f.toString());
 			}
 
@@ -387,7 +394,7 @@ public class TopDownExecutionNew {
 	}
 
 	public void putFactToDB(Fact newFact) {
-		Database db = new Database();
+		Database db = new Database("data/EDBLazy.json","data/Schema.json");
 		// newFact sowas wie ; "Player2(4,'Lisa',40)" (ohne timestamp)
 		db.putToDatabase(newFact.toString());
 	}

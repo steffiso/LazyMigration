@@ -23,12 +23,19 @@ public class Database {
 
 	private String filenameEDB;
 	private String filenameSchema;
+	@SuppressWarnings("unused")
 	private String filenameLegacy;
 	
 	public Database(){
 		filenameEDB = "data/EDB.json";
 		filenameSchema = "data/Schema.json";
 		filenameLegacy = "data/LegacyEntities.txt";
+	}
+
+	public Database(String filenameEDB, String filenameSchema) {
+		super();
+		this.filenameEDB = filenameEDB;
+		this.filenameSchema = filenameSchema;
 	}
 
 	//return all edb-facts from database in one string
@@ -59,6 +66,35 @@ public class Database {
 		return edb;			
 	}
 		
+	//return all json-facts from database in one string
+		public String getJson(){
+			String edb = "";
+			ArrayList<Entity> entities;
+			
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+				entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
+				
+				for (Entity e: entities){
+					edb = edb + e.toJsonString();
+				}
+				
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return edb;			
+		}
+			
+	
 	//return the schema for one version and one kind
 	//something like "?id,?name,?score" (without ts)
 	public Schema getSchema(String inputKind, int inputVersion){	

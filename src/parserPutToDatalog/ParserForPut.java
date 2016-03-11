@@ -30,8 +30,7 @@ public class ParserForPut implements ParserForPutConstants {
     else schema = db.getSchema(kind, number);
     attributes = schema.getAttributes();
     laenge = attributes.size();
-    lastTS = db.getLastTimestamp();
-    schemaVersion = schema.getSchemaversion();
+    //lastTS = db.getLastTimestamp();    schemaVersion = schema.getSchemaversion();
   }
 
   final public String start() throws ParseException {
@@ -91,7 +90,7 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[3] = jj_gen;
       ;
     }
-    ts = lastTS + 1;
+    ts = lastTS;
     String jsonString = "{\u005c"kind\u005c":\u005c"" + kind + "\u005c",\u005cn" + "\u005c"schemaversion\u005c":" + schemaVersion + ",\u005cn" + "\u005c"attributes\u005c":{" + value + "},\u005cn\u005c"ts\u005c":" + Integer.toString(ts) + "}";
     {if (true) return jsonString;}
     throw new Error("Missing return statement in function");
@@ -131,6 +130,7 @@ public class ParserForPut implements ParserForPutConstants {
     else if (zaehler == laenge)
     {
       isTS = true;
+      lastTS=Integer.parseInt(valueOfToken.toString());
       zaehler++;
     }
     else
