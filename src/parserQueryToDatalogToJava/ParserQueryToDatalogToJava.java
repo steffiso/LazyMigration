@@ -95,15 +95,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
       }
     }
     value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," + kind + currentVersion + "(" + schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
-    try
-    {
-      rules.addAll((new ParserRuleToJava(new StringReader(value))).start());
-    }
-    catch (parserRuletoJava.ParseException e)
-    {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+
     return value;
   }
 
@@ -200,6 +192,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     String headRule = "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts), latest" + kind + currentVersion + "(?id,?ts),?id=" + id + ".\u005cn";
     try
     {
+      rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
       rules.addAll((new ParserRuleToJava(new StringReader(headRule))).parseHeadRules());
     }
     catch (parserRuletoJava.ParseException e)
@@ -234,6 +227,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     saveCurrentSchema(kind, newSchema);
     try
     {
+      rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
       rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     }
     catch (parserRuletoJava.ParseException e)
@@ -263,6 +257,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     saveCurrentSchema(kind, newSchema);
     try
     {
+      rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
       rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     }
     catch (parserRuletoJava.ParseException e)
@@ -319,6 +314,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
     try
     {
+      rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
       rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     }
     catch (parserRuletoJava.ParseException e)
@@ -380,6 +376,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     headRules = headRules + kindFrom + newSchemaVersionFrom + "(" + schemaToString(schemaFromNew) + "," + getTimestamp() + "):-" + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2).\u005cn";
     try
     {
+      rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
       rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     }
     catch (parserRuletoJava.ParseException e)

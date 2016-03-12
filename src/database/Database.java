@@ -67,32 +67,32 @@ public class Database {
 	}
 		
 	//return all json-facts from database in one string
-		public String getJson(){
-			String edb = "";
-			ArrayList<Entity> entities;
-			
-			ObjectMapper mapper = new ObjectMapper();
+	public String getJson(){
+		String edb = "";
+		ArrayList<Entity> entities;
+		
+		ObjectMapper mapper = new ObjectMapper();
 
-			try {
-				entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
-				
-				for (Entity e: entities){
-					edb = edb + e.toJsonString();
-				}
-				
-			} catch (JsonParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		try {
+			entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
+			
+			for (Entity e: entities){
+				edb = edb + e.toJsonString();
 			}
 			
-			return edb;			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		return edb;			
+	}
 			
 	
 	//return the schema for one version and one kind
@@ -276,4 +276,5 @@ public class Database {
 			System.out.println("Problem occurs while writing json files");
 		};
 	}
+	
 }

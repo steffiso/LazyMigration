@@ -22,14 +22,14 @@ public class TopDownExecutionNew {
 	private List<Map<String, String>> unificationMap;
 	private ArrayList<Fact> putFacts;
 	private List<MagicCondition> magicList = null;
-	private int number=0;
+	private int numberOfPuts=0;
 
-	public int getNumber() {
-		return number;
+	public int getNumberOfPuts() {
+		return numberOfPuts;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
+	public void setNumberOfPuts(int numberOfPuts) {
+		this.numberOfPuts = numberOfPuts;
 	}
 
 	// set edb facts
@@ -155,7 +155,7 @@ public class TopDownExecutionNew {
 		if (putFacts.size() != 0) {
 			for (Fact f : putFacts) {
 				putFactToDB(f);
-				number++;
+				numberOfPuts++;
 				System.out.println("put in DB: " + f.toString());
 			}
 

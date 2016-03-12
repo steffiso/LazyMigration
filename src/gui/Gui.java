@@ -56,17 +56,22 @@ public class Gui extends JFrame {
 	private JTextField commandTextField;
 	JTextArea rulesTextArea;
 	JPanel panelCommand;
-
+	JScrollPane scrollPane;
 	Database databaseBU = new Database("data/EDBEager.json",
 			"data/SchemaEager.json");
 	Database databaseTD = new Database("data/EDBLazy.json",
 			"data/SchemaLazy.json");
 	Predicate goal = null;
 	ArrayList<Map<String, String>> uniMap = null;
+	String factsBU = "";
+	String factsTD = "";
 	int totalNumberBU = 0;
 	int totalNumberTD = 0;
+	int totalDBEntriesBU = 0;
+	int totalDBEntriesTD = 0;
 	private JTextField textFieldNrDBEager;
 	private JTextField textFieldNrDBLazy;
+	JLabel lblRule;
 	JTextArea factsTextAreaTD;
 	JTextArea factsTextAreaBU;
 	JTabbedPane tabbedPane;
@@ -156,8 +161,9 @@ public class Gui extends JFrame {
 		JCheckBox chckbxNewCheckBox = new JCheckBox("view generated rules");
 		panelDatalogView.add(chckbxNewCheckBox);
 
-		JLabel lblRule = new JLabel("   Rules:");
+		lblRule = new JLabel("   Rules:");
 		lblRule.setEnabled(false);
+		lblRule.setVisible(false);
 		panelDatalogView.add(lblRule);
 
 		rulesTextArea = new JTextArea();
@@ -165,9 +171,23 @@ public class Gui extends JFrame {
 		rulesTextArea.setFont(new Font("Monospaced", Font.PLAIN, 10));
 		rulesTextArea.setRows(3);
 		rulesTextArea.setColumns(65);
-		JScrollPane scrollPane = new JScrollPane(rulesTextArea);
+		rulesTextArea.setVisible(false);
+		scrollPane = new JScrollPane(rulesTextArea);
 		panelDatalogView.add(scrollPane);
+		scrollPane.setVisible(false);
+		
+		chckbxNewCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				rulesTextArea.setVisible(!rulesTextArea.isVisible());
+				lblRule.setVisible(!lblRule.isVisible());
+				scrollPane.setVisible(!scrollPane.isVisible());
 
+			}
+
+		});
+
+		
 		JPanel panelEmpty = new JPanel();
 		panelEmpty.setBackground(SystemColor.controlHighlight);
 		panelEmpty.setForeground(Color.LIGHT_GRAY);
@@ -242,8 +262,11 @@ public class Gui extends JFrame {
 		scrollFactsTD.setBounds(368, 25, 330, 226);
 		splitPane.add(scrollFactsTD);
 
-		factsTextAreaBU.setText(databaseBU.getJson());
-		factsTextAreaTD.setText(databaseTD.getJson());
+		factsBU = databaseBU.getJson();
+		factsTD = databaseTD.getJson();
+		
+		factsTextAreaBU.setText(factsBU);
+		factsTextAreaTD.setText(factsTD);
 
 		JPanel panelComparison = new JPanel();
 		tabbedPane.addTab("Comparison", null, panelComparison, null);
@@ -263,7 +286,7 @@ public class Gui extends JFrame {
 		textFieldNrDBEager.setBounds(10, 125, 86, 20);
 		panelComparisonBU.add(textFieldNrDBEager);
 		textFieldNrDBEager.setColumns(10);
-
+		
 		JLabel lblNumberOfDb = new JLabel("Number of total DB puts");
 		lblNumberOfDb.setBounds(10, 100, 186, 14);
 		panelComparisonBU.add(lblNumberOfDb);
@@ -278,6 +301,7 @@ public class Gui extends JFrame {
 		textFieldNrPrevDBEager.setBounds(10, 180, 86, 20);
 		panelComparisonBU.add(textFieldNrPrevDBEager);
 		
+		
 		JLabel lblNumberOfDbBU = new JLabel("Number of DB entries");
 		lblNumberOfDbBU.setBounds(10, 44, 167, 14);
 		panelComparisonBU.add(lblNumberOfDbBU);
@@ -287,6 +311,9 @@ public class Gui extends JFrame {
 		textFieldNrDBEntriesBU.setColumns(10);
 		textFieldNrDBEntriesBU.setBounds(10, 69, 86, 20);
 		panelComparisonBU.add(textFieldNrDBEntriesBU);
+		
+		totalDBEntriesBU = factsBU.split("\n").length;
+		textFieldNrDBEntriesBU.setText(String.valueOf(totalDBEntriesBU));
 
 		JPanel panelComparisonTD = new JPanel();
 		panelComparisonTD.setLayout(null);
@@ -326,6 +353,9 @@ public class Gui extends JFrame {
 		textFieldNrDBEntriesTD.setColumns(10);
 		textFieldNrDBEntriesTD.setBounds(10, 68, 86, 20);
 		panelComparisonTD.add(textFieldNrDBEntriesTD);
+		
+		totalDBEntriesTD = factsTD.split("\n").length;		
+		textFieldNrDBEntriesTD.setText(String.valueOf(totalDBEntriesTD));
 	}
 
 	private void executeGetCommand(String uiInput) {
@@ -414,6 +444,7 @@ public class Gui extends JFrame {
 				JOptionPane.INFORMATION_MESSAGE);
 		rulesTextArea.setText(rulesStr);
 		textFieldNrPrevDBLazy.setText(String.valueOf(0));
+		textFieldNrDBLazy.setText(String.valueOf(totalNumberTD));
 		executeQueryBU(rulesStr);
 	}
 
@@ -445,14 +476,17 @@ public class Gui extends JFrame {
 		totalNumberBU = totalNumberBU + migrate.getNumber();
 	    textFieldResultsBU.setText(answerString);
 		textFieldNrDBEager.setText(String.valueOf(totalNumberBU));
-		factsTextAreaBU.setText(databaseBU.getJson());
+		totalDBEntriesBU = totalDBEntriesBU + totalNumberBU;
+		factsBU = databaseBU.getJson();
+		factsTextAreaBU.setText(factsBU);
+		
+		textFieldNrDBEntriesBU.setText(String.valueOf(factsBU.split("\n").length));
 
 	}
 
 	private void executeQueryTD(ArrayList<Rule> rulesTemp) {
 		// set edb-facts in gui
 		String[] edbFacts = databaseTD.getEDB().split("\n");
-
 		ArrayList<Fact> facts = new ArrayList<Fact>();
 		for (String factString : edbFacts) {
 			try {
@@ -466,11 +500,14 @@ public class Gui extends JFrame {
 		LazyMigration migrate = new LazyMigration(facts, rulesTemp, goal,
 				uniMap);
 		String answerString = migrate.writeAnswersInDatabase();
-		textFieldNrPrevDBLazy.setText(String.valueOf(migrate.getNumber()));
-		totalNumberTD = totalNumberTD + migrate.getNumber();
+		textFieldNrPrevDBLazy.setText(String.valueOf(migrate.getNumberOfPuts()));
+		totalNumberTD = totalNumberTD + migrate.getNumberOfPuts();
 	    textFieldResultsTD.setText(answerString);
 		textFieldNrDBLazy.setText(String.valueOf(totalNumberTD));
-		factsTextAreaTD.setText(databaseTD.getJson());
-
+		totalDBEntriesTD = totalDBEntriesTD + totalNumberTD;
+		
+		factsTD = databaseTD.getJson();
+		factsTextAreaTD.setText(factsTD);
+		textFieldNrDBEntriesTD.setText(String.valueOf(factsTD.split("\n").length));
 	}
 }

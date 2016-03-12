@@ -1,12 +1,14 @@
 package datalog;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 
 import database.Database;
 import parserGetToDatalog.ParserForGet;
 import parserPutToDatalog.ParseException;
 import parserPutToDatalog.ParserForPut;
 import parserQueryToDatalogToJava.ParserQueryToDatalogToJava;
+import datalog.Rule;
 
 public class DatalogRulesGenerator {
 
@@ -29,6 +31,24 @@ public class DatalogRulesGenerator {
 		return rules;
 	}
 
+	public ArrayList<Rule> getJavaRules(String input) {
+		ArrayList<Rule> rules = new ArrayList<Rule>();
+
+		String[] splitString = input.split("\n");
+		for (int i = 0; i < splitString.length; i++) {
+			try {
+				rules.addAll((new ParserQueryToDatalogToJava(
+						new StringReader(splitString[i]))).getJavaRules());
+			} catch (parserQueryToDatalogToJava.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+		return rules;
+	}
+	
 	// public String get(String input) {
 	// String rules = "";
 	// try {

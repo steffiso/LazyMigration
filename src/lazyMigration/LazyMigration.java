@@ -13,7 +13,7 @@ public class LazyMigration {
 	private ArrayList<Rule> rules;
 	private Predicate goal;
 	private List<Map<String, String>> unificationMap;
-	private int number;
+	private int numberOfPuts;
 
 	public LazyMigration(ArrayList<Fact> facts, ArrayList<Rule> rules,
 			Predicate goal, List<Map<String, String>> unificationMap) {
@@ -25,15 +25,13 @@ public class LazyMigration {
 
 	public String writeAnswersInDatabase() {
 
-		// Database db = new Database();
 		String answerString = "";
 		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,
 				unificationMap);
 		ArrayList<Fact> answers2 = lazy.getAnswers();
 		ArrayList<Pair> unicateRuleNames = new ArrayList<Pair>();
 
-		// Alle RuleHead-Duplikate eliminieren, damit wir keine Duplikate in der
-		// DB erhalten
+		// eliminate rule head duplicates
 		for (Rule rule : rules) {
 			if (!unicateRuleNames.contains(new Pair(rule.getHead().getKind(),
 					rule.getHead().getScheme().size())))
@@ -49,17 +47,17 @@ public class LazyMigration {
 						+ "\n";
 
 		}
-		setNumber(lazy.getNumber());
+		setNumberOfPuts(lazy.getNumberOfPuts());
 		//return answerString + "\n Answer Get: " + answers2;
 		return answers2.toString();
 	}
 
-	public int getNumber() {
-		return number;
+	public int getNumberOfPuts() {
+		return numberOfPuts;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
+	public void setNumberOfPuts(int numberOfPuts) {
+		this.numberOfPuts = numberOfPuts;
 	}
 
 	private class Pair {

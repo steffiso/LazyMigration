@@ -62,7 +62,7 @@ public class TestTopDownSNew {
 
 		Predicate goalAdd = new Predicate("getPlayer2", 5, schemaAdd);
 
-		String inputAdd = "add  \"Player\".\"points\" = \"4444\"\nget \"Player\".\"id\"=\"1\"";
+		String inputAdd = "add  Player.points=\"4444\"\nget Player.id=\"1\"";
 
 		String[] inputSplitAdd = inputAdd.split("\n");
 		ArrayList<Rule> rulesAdd = new ArrayList<Rule>();
@@ -122,7 +122,7 @@ public class TestTopDownSNew {
 				schemaAddMove.size(), schemaAddMove);
 		// String inputAddMove =
 		// "add \"Player\".\"points\"=\"4444\"\nmove \"Player\".\"name\" to \"Mission\" where \"Player\".\"id\"=\"Mission\".\"pid\"\nget \"Player\".\"id\"=\"1\"";
-		String inputAddMove = "add \"Player\".\"points\"=\"4444\"\nmove \"Player\".\"name\" to \"Mission\" where \"Player\".\"id\"=\"Mission\".\"pid\"\nget \"Mission\".\"id\"=\"1\"";
+		String inputAddMove = "add Player.points=\"4444\"\nmove Player.name to Mission where Player.id=Mission.pid\nget Mission.id=\"1\"";
 
 		String[] inputSplitAddMove = inputAddMove.split("\n");
 		ArrayList<Rule> rulesAddMove = new ArrayList<Rule>();
@@ -179,10 +179,14 @@ public class TestTopDownSNew {
 
 		// Durchlauf für Add points + Move name + get Player 1
 		for (int i = 0; i < inputSplitAddMove.length; i++) {
+			ArrayList<Rule> tempRules = (new ParserQueryToDatalogToJava(
+					new StringReader(inputSplitAddMove[i]))).getJavaRules();
+			System.out.println(tempRules.size() + " " + tempRules.toString());
 			rulesAddMove.addAll((new ParserQueryToDatalogToJava(
 					new StringReader(inputSplitAddMove[i]))).getJavaRules());
 		}
-
+		System.out.println(rulesAddMove.toString());
+		
 		TopDownExecutionNew lazyAddMove = new TopDownExecutionNew(facts,
 				rulesAddMove, goalAddMove, unificationMapAddMove);
 		ArrayList<Fact> answersAddMove = lazyAddMove.getAnswers();

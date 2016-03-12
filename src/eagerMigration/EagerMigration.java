@@ -29,14 +29,14 @@ public class EagerMigration {
 		bottomUp.generateAllRules(rules);
 		ArrayList<Pair> unicateRuleNames = new ArrayList<Pair>();
 
-		// Alle RuleHead-Duplikate eliminieren, damit wir keine Duplikate in der
-		// DB erhalten
+		// eliminate duplicate entries
 		for (Rule rule : rules) {
 			if (!unicateRuleNames.contains(new Pair(rule.getHead().getKind(),
 					rule.getHead().getScheme().size())))
 				unicateRuleNames.add(new Pair(rule.getHead().getKind(), rule
 						.getHead().getScheme().size()));
 		}
+		
 		for (Pair pair : unicateRuleNames) {
 			ArrayList<ArrayList<String>> answers = bottomUp.getFact(
 					pair.ruleName, pair.ruleAnz);
