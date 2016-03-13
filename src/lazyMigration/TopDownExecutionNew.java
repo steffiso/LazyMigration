@@ -22,7 +22,7 @@ public class TopDownExecutionNew {
 	private List<Map<String, String>> unificationMap;
 	private ArrayList<Fact> putFacts;
 	private List<MagicCondition> magicList = null;
-	private int numberOfPuts=0;
+	private int numberOfPuts = 0;
 
 	public int getNumberOfPuts() {
 		return numberOfPuts;
@@ -394,7 +394,7 @@ public class TopDownExecutionNew {
 	}
 
 	public void putFactToDB(Fact newFact) {
-		Database db = new Database("data/EDBLazy.json","data/Schema.json");
+		Database db = new Database("data/EDBLazy.json", "data/Schema.json");
 		// newFact sowas wie ; "Player2(4,'Lisa',40)" (ohne timestamp)
 		db.putToDatabase(newFact.toString());
 	}
@@ -411,7 +411,7 @@ public class TopDownExecutionNew {
 	}
 
 	// generate temporary results of all joins of a rule step by step
-	public Predicate join(ArrayList<Predicate> predicates) {
+	private Predicate join(ArrayList<Predicate> predicates) {
 		Predicate temp = null;
 		if (predicates.size() > 0) {
 			temp = predicates.get(0);
@@ -645,6 +645,9 @@ public class TopDownExecutionNew {
 					i++;
 
 				}
+
+				if (set)
+					set = testIfMagicSetExists(value);
 				if (set)
 					values.add(value.getListOfValues());
 			}
@@ -656,6 +659,37 @@ public class TopDownExecutionNew {
 		else
 			return 1;
 
+	}
+
+	private boolean testIfMagicSetExists(Fact value) {
+		if(magicList!=null)
+		for (MagicCondition m : magicList)
+			if (value.getKind().equals(m.getKindRight())) {
+				if (m.getNameOfMagicView() != null) {
+					ArrayList<String> factsOfMGView = getMGViewFacts(m
+							.getNameOfMagicView());
+					if (factsOfMGView != null)
+						if (factsOfMGView.contains(value.getListOfValues().get(
+								m.getPositionRight())))
+							return true;
+						else
+							return false;
+				}
+			}
+		return true;
+	}
+
+	private ArrayList<String> getMGViewFacts(String nameOfMagicView) {
+		ArrayList<String> mgViewFacts = null;
+		for (Fact value : facts) {
+			if (value.getKind().equals(nameOfMagicView)
+					&& value.getListOfValues().size() == 1) {
+				if (mgViewFacts == null)
+					mgViewFacts = new ArrayList<String>();
+				mgViewFacts.add(value.getListOfValues().get(0));
+			}
+		}
+		return mgViewFacts;
 	}
 
 	private ArrayList<ArrayList<String>> generateMagicSet(
@@ -683,6 +717,7 @@ public class TopDownExecutionNew {
 															.getPositionLeft() + 1))));
 						}
 						magicCondition.setAlreadyFoundResults(true);
+						magicCondition.setNameOfMagicView(newViewName);
 						setNewMagicPredicateToCorrespondingRules(
 								magicCondition, newViewName);
 					}
@@ -704,7 +739,7 @@ public class TopDownExecutionNew {
 		}
 	}
 
-	public static boolean isInteger(String s) {
+	private static boolean isInteger(String s) {
 		try {
 			Integer.parseInt(s);
 		} catch (NumberFormatException e) {
@@ -713,7 +748,7 @@ public class TopDownExecutionNew {
 		return true;
 	}
 
-	public void rulesRenameandReorder(Rule rule) {
+	private void rulesRenameandReorder(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {

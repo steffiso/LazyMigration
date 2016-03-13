@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import lazyMigration.LazyMigration;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
+import parserPutToDatalog.ParserForPut;
 import parserQueryToDatalogToJava.ParserQueryToDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 import database.Database;
@@ -57,12 +58,8 @@ public class Gui extends JFrame {
 	JTextArea rulesTextArea;
 	JPanel panelCommand;
 	JScrollPane scrollPane;
-	Database databaseBU = new Database("data/EDBEager.json",
-			"data/SchemaEager.json");
-	Database databaseTD = new Database("data/EDBLazy.json",
-			"data/SchemaLazy.json");
-	Predicate goal = null;
-	ArrayList<Map<String, String>> uniMap = null;
+	Database databaseBU = new Database("data/EDBEager.json", "data/Schema.json");
+	Database databaseTD = new Database("data/EDBLazy.json", "data/Schema.json");
 	String factsBU = "";
 	String factsTD = "";
 	int totalNumberBU = 0;
@@ -83,6 +80,7 @@ public class Gui extends JFrame {
 	private JTextField textFieldResultsTD;
 	private JTextField textFieldNrDBEntriesBU;
 	private JTextField textFieldNrDBEntriesTD;
+	String kind = "";
 
 	/**
 	 * Create the application.
@@ -96,7 +94,7 @@ public class Gui extends JFrame {
 	 */
 	private void initialize() {
 		setTitle("DatalogMigration");
-		setBounds(100, 10, 778, 647);
+		setBounds(100, 10, 817, 647);
 		getContentPane().setLayout(new GridLayout(0, 1, 0, 2));
 
 		panelCommand = new JPanel();
@@ -119,11 +117,27 @@ public class Gui extends JFrame {
 
 		commandTextField = new JTextField();
 		panelCommandPrompt.add(commandTextField);
-		commandTextField.setColumns(40);
+		commandTextField.setColumns(35);
 
 		JButton execCommandBtnBU = new JButton("Execute Command");
 		panelCommandPrompt.add(execCommandBtnBU);
 		execCommandBtnBU.setFont(new Font("Tahoma", Font.PLAIN, 13));
+
+		JButton btnInfo = new JButton("Info");
+		btnInfo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane
+						.showMessageDialog(
+								new JFrame(),
+								"Commands:\n\nadd kind.attribute=value\n e.g. add Player.points=100 or add Player.name=\"100\"\n\ndelete kind.attribute\n e.g. delete Player.points\n\n"
+										+ "copy kind1.attribute to kind2 where kind1.attribute1=kind2.attribute2\n e.g. copy Player.score to Mission where Player.id=Mission.pid\n\n"
+										+ "move kind1.attribute to kind2 where kind1.attribute1=kind2.attribute2\n e.g. move Player.score to Mission where Player.id=Mission.pid\n\n"
+										+ "get kind.id=value\n e.g. get Player.id=1\n\nput kind(value1,value2,...) e.g. put Player(1,'Lisa',...)",
+								"info", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		btnInfo.setFont(new Font("Tahoma", Font.BOLD, 11));
+		panelCommandPrompt.add(btnInfo);
 		execCommandBtnBU.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -162,7 +176,6 @@ public class Gui extends JFrame {
 		panelDatalogView.add(chckbxNewCheckBox);
 
 		lblRule = new JLabel("   Rules:");
-		lblRule.setEnabled(false);
 		lblRule.setVisible(false);
 		panelDatalogView.add(lblRule);
 
@@ -175,7 +188,7 @@ public class Gui extends JFrame {
 		scrollPane = new JScrollPane(rulesTextArea);
 		panelDatalogView.add(scrollPane);
 		scrollPane.setVisible(false);
-		
+
 		chckbxNewCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -187,7 +200,6 @@ public class Gui extends JFrame {
 
 		});
 
-		
 		JPanel panelEmpty = new JPanel();
 		panelEmpty.setBackground(SystemColor.controlHighlight);
 		panelEmpty.setForeground(Color.LIGHT_GRAY);
@@ -199,12 +211,11 @@ public class Gui extends JFrame {
 				(Color) new Color(64, 64, 64)));
 		FlowLayout fl_panelViewFactsLabel = (FlowLayout) panelViewFactsLabel
 				.getLayout();
-		fl_panelViewFactsLabel.setVgap(50);
-		fl_panelViewFactsLabel.setAlignment(FlowLayout.LEFT);
+		fl_panelViewFactsLabel.setVgap(48);
 		panelCommand.add(panelViewFactsLabel);
 
-		JLabel lblViewAllFacts = new JLabel("View all Facts and Results:");
-		lblViewAllFacts.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		JLabel lblViewAllFacts = new JLabel("View all DB entries and Results:");
+		lblViewAllFacts.setFont(new Font("Tahoma", Font.PLAIN, 20));
 		panelViewFactsLabel.add(lblViewAllFacts);
 
 		JPanel panelTabbedPane = new JPanel();
@@ -219,7 +230,7 @@ public class Gui extends JFrame {
 		panelMigration.setLayout(new BorderLayout(0, 0));
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setResizeWeight(0.5f);
+		splitPane.setResizeWeight(0.5);
 
 		panelMigration.add(splitPane, BorderLayout.CENTER);
 		JPanel panelLabels = new JPanel();
@@ -264,7 +275,7 @@ public class Gui extends JFrame {
 
 		factsBU = databaseBU.getJson();
 		factsTD = databaseTD.getJson();
-		
+
 		factsTextAreaBU.setText(factsBU);
 		factsTextAreaTD.setText(factsTD);
 
@@ -286,7 +297,7 @@ public class Gui extends JFrame {
 		textFieldNrDBEager.setBounds(10, 125, 86, 20);
 		panelComparisonBU.add(textFieldNrDBEager);
 		textFieldNrDBEager.setColumns(10);
-		
+
 		JLabel lblNumberOfDb = new JLabel("Number of total DB puts");
 		lblNumberOfDb.setBounds(10, 100, 186, 14);
 		panelComparisonBU.add(lblNumberOfDb);
@@ -300,18 +311,17 @@ public class Gui extends JFrame {
 		textFieldNrPrevDBEager.setColumns(10);
 		textFieldNrPrevDBEager.setBounds(10, 180, 86, 20);
 		panelComparisonBU.add(textFieldNrPrevDBEager);
-		
-		
+
 		JLabel lblNumberOfDbBU = new JLabel("Number of DB entries");
 		lblNumberOfDbBU.setBounds(10, 44, 167, 14);
 		panelComparisonBU.add(lblNumberOfDbBU);
-		
+
 		textFieldNrDBEntriesBU = new JTextField();
 		textFieldNrDBEntriesBU.setEditable(false);
 		textFieldNrDBEntriesBU.setColumns(10);
 		textFieldNrDBEntriesBU.setBounds(10, 69, 86, 20);
 		panelComparisonBU.add(textFieldNrDBEntriesBU);
-		
+
 		totalDBEntriesBU = factsBU.split("\n").length;
 		textFieldNrDBEntriesBU.setText(String.valueOf(totalDBEntriesBU));
 
@@ -343,29 +353,28 @@ public class Gui extends JFrame {
 		JLabel lblNumberOfPreviousTD = new JLabel("Number of previous DB puts");
 		lblNumberOfPreviousTD.setBounds(10, 155, 186, 14);
 		panelComparisonTD.add(lblNumberOfPreviousTD);
-		
+
 		JLabel label = new JLabel("Number of DB entries");
 		label.setBounds(10, 43, 167, 14);
 		panelComparisonTD.add(label);
-		
+
 		textFieldNrDBEntriesTD = new JTextField();
 		textFieldNrDBEntriesTD.setEditable(false);
 		textFieldNrDBEntriesTD.setColumns(10);
 		textFieldNrDBEntriesTD.setBounds(10, 68, 86, 20);
 		panelComparisonTD.add(textFieldNrDBEntriesTD);
-		
-		totalDBEntriesTD = factsTD.split("\n").length;		
+
+		totalDBEntriesTD = factsTD.split("\n").length;
 		textFieldNrDBEntriesTD.setText(String.valueOf(totalDBEntriesTD));
 	}
 
 	private void executeGetCommand(String uiInput) {
-		String kind = "";
 		String id = "";
 		ParserQueryToDatalogToJava parserget = new ParserQueryToDatalogToJava(
 				new StringReader(uiInput));
 		ArrayList<Rule> rulesTemp = new ArrayList<Rule>();
-		if(rulesForTD!=null)
-			rulesTemp=copyRules();
+		if (rulesForTD != null)
+			rulesTemp = copyRules();
 
 		try {
 			rulesTemp.addAll(parserget.getJavaRules());
@@ -383,30 +392,32 @@ public class Gui extends JFrame {
 		attributeMap.put("kind", kind);
 		attributeMap.put("position", "0");
 		attributeMap.put("value", id);
-		uniMap = new ArrayList<Map<String, String>>();
+		ArrayList<Map<String, String>> uniMap = new ArrayList<Map<String, String>>();
 		uniMap.add(attributeMap);
 		ArrayList<String> schema = db.getLatestSchema(kind).getAttributes();
 		schema.add("?ts");
 
-		goal = new Predicate("get" + kind + db.getLatestSchemaVersion(kind),
-				schema.size(), schema);
-		executeQueryTD(rulesTemp);
+		Predicate goal = new Predicate("get" + kind
+				+ db.getLatestSchemaVersion(kind), schema.size(), schema);
+		executeQueryTD(rulesTemp, goal, uniMap);
 		rulesTextArea.setText(parserget.rulesStr);
 		executeQueryBU(parserget.rulesStr);
 	}
 
 	private ArrayList<Rule> copyRules() {
-		ArrayList<Rule> rulesTemp=new ArrayList<Rule>();
+		ArrayList<Rule> rulesTemp = new ArrayList<Rule>();
 		for (Rule r : rulesForTD) {
-			ArrayList<String> scheme = new ArrayList<String>();
-				scheme.addAll(r.getHead().getScheme());
+			@SuppressWarnings("unchecked")
+			ArrayList<String> scheme = (ArrayList<String>) r.getHead()
+					.getScheme().clone();
 			Predicate newHead = new Predicate(r.getHead().getKind(), r
 					.getHead().getAnz(), scheme);
 			newHead.setHead(r.getHead().isHead());
 			ArrayList<Predicate> predicates = new ArrayList<Predicate>();
 			for (Predicate p : r.getPredicates()) {
-				ArrayList<String> scheme2 = new ArrayList<String>();
-				scheme2.addAll(p.getScheme());
+				@SuppressWarnings("unchecked")
+				ArrayList<String> scheme2 = (ArrayList<String>) p.getScheme()
+						.clone();
 				Predicate p2 = new Predicate(p.getKind(), p.getAnz(), scheme2);
 				p2.setNot(p.isNot());
 				predicates.add(p2);
@@ -417,7 +428,7 @@ public class Gui extends JFrame {
 						.getRightOperand(), c.getOperator()));
 			RuleBody newRuleBody = new RuleBody(predicates, conditions);
 			Rule rNew = new Rule(newHead, newRuleBody);
-			
+
 			rulesTemp.add(rNew);
 		}
 		return rulesTemp;
@@ -439,13 +450,14 @@ public class Gui extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		JOptionPane.showMessageDialog(new JFrame(),
-				"successfully added schema change", "dialog",
-				JOptionPane.INFORMATION_MESSAGE);
 		rulesTextArea.setText(rulesStr);
 		textFieldNrPrevDBLazy.setText(String.valueOf(0));
 		textFieldNrDBLazy.setText(String.valueOf(totalNumberTD));
 		executeQueryBU(rulesStr);
+		JOptionPane.showMessageDialog(new JFrame(),
+				"successfully added schema change", "dialog",
+				JOptionPane.INFORMATION_MESSAGE);
+		textFieldResultsTD.setText("");
 	}
 
 	private void executeQueryBU(String rulesStr) {
@@ -474,17 +486,32 @@ public class Gui extends JFrame {
 		String answerString = migrate.writeAnswersInDatabase();
 		textFieldNrPrevDBEager.setText(String.valueOf(migrate.getNumber()));
 		totalNumberBU = totalNumberBU + migrate.getNumber();
-	    textFieldResultsBU.setText(answerString);
+
 		textFieldNrDBEager.setText(String.valueOf(totalNumberBU));
 		totalDBEntriesBU = totalDBEntriesBU + totalNumberBU;
 		factsBU = databaseBU.getJson();
 		factsTextAreaBU.setText(factsBU);
-		
-		textFieldNrDBEntriesBU.setText(String.valueOf(factsBU.split("\n").length));
+		if (query.startsWith("get")) {
+			int nr = databaseBU.getLatestSchemaVersion(kind);
+			String json = null;
+			try {
+				json = new ParserForPut(new StringReader(kind + nr + "("
+						+ answerString.replace("[", "").replace("]", "") + ")"))
+						.start2();
+			} catch (parserPutToDatalog.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			textFieldResultsBU.setText(json);
+		} else
+			textFieldResultsBU.setText("");
+		textFieldNrDBEntriesBU
+				.setText(String.valueOf(factsBU.split("\n").length));
 
 	}
 
-	private void executeQueryTD(ArrayList<Rule> rulesTemp) {
+	private void executeQueryTD(ArrayList<Rule> rulesTemp, Predicate goal,
+			ArrayList<Map<String, String>> uniMap) {
 		// set edb-facts in gui
 		String[] edbFacts = databaseTD.getEDB().split("\n");
 		ArrayList<Fact> facts = new ArrayList<Fact>();
@@ -500,14 +527,30 @@ public class Gui extends JFrame {
 		LazyMigration migrate = new LazyMigration(facts, rulesTemp, goal,
 				uniMap);
 		String answerString = migrate.writeAnswersInDatabase();
-		textFieldNrPrevDBLazy.setText(String.valueOf(migrate.getNumberOfPuts()));
+		textFieldNrPrevDBLazy
+				.setText(String.valueOf(migrate.getNumberOfPuts()));
 		totalNumberTD = totalNumberTD + migrate.getNumberOfPuts();
-	    textFieldResultsTD.setText(answerString);
+
 		textFieldNrDBLazy.setText(String.valueOf(totalNumberTD));
 		totalDBEntriesTD = totalDBEntriesTD + totalNumberTD;
-		
 		factsTD = databaseTD.getJson();
 		factsTextAreaTD.setText(factsTD);
-		textFieldNrDBEntriesTD.setText(String.valueOf(factsTD.split("\n").length));
+		int nr = databaseTD.getLatestSchemaVersion(kind);
+		String json = null;
+		try {
+			json = new ParserForPut(new StringReader(kind
+					+ nr
+					+ "("
+					+ answerString.replace("[", "").replace("]", "")
+							.replace(".", "")
+							.substring(answerString.indexOf("(")))).start2();
+		} catch (parserPutToDatalog.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(json);
+		textFieldResultsTD.setText(json);
+		textFieldNrDBEntriesTD
+				.setText(String.valueOf(factsTD.split("\n").length));
 	}
 }

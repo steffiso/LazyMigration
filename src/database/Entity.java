@@ -64,7 +64,7 @@ public class Entity {
 	}
 
 	public String toJsonString() {
-		String entity = kind + Integer.toString(schemaversion) + "(";
+		String entity = kind + Integer.toString(schemaversion) + "{";
 		String temp;
 		for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
 			entity = entity + "\"" + attributeEntry.getKey() + "\":";
@@ -72,7 +72,7 @@ public class Entity {
 				int value = Integer.parseInt(attributeEntry.getValue());
 				entity = entity + value + ",";
 			} catch (NumberFormatException e) {
-				temp = "'" + attributeEntry.getValue() + "'";
+				temp = "\"" + attributeEntry.getValue() + "\"";
 				entity = entity + temp + ",";
 			}
 		}

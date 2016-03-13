@@ -95,7 +95,6 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
       }
     }
     value = "legacy" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts)," + kind + currentVersion + "(" + schemaToString(secondSchema) + ",?nts), ?ts < ?nts.\u005cn" + "latest" + kind + currentVersion + "(?id,?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), not legacy" + kind + currentVersion + "(?id,?ts).\u005cn";
-
     return value;
   }
 
@@ -139,13 +138,14 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   String value = null;
     value = start();
     jj_consume_token(0);
-    rulesStr=value;
+    rulesStr = value;
     {if (true) return rules;}
     throw new Error("Missing return statement in function");
   }
 
   final public String start() throws ParseException {
   String value = null;
+  rules = new ArrayList < Rule > ();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case get:
       value = get();
@@ -177,13 +177,30 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token idToken = null;
     jj_consume_token(get);
     kindToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     propertyToken = jj_consume_token(name);
-    jj_consume_token(14);
-    idToken = jj_consume_token(string);
+    jj_consume_token(16);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case string:
+      idToken = jj_consume_token(string);
+      break;
+    case number:
+      idToken = jj_consume_token(number);
+      break;
+    default:
+      jj_la1[1] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     String kind = kindToken.toString();
-    String id = idToken.toString();
-    id = id.substring(1, id.length() - 1);
+    String id;
+    if (idToken.kind == string)
+    {
+      id = idToken.toString();
+      id = id.substring(1, id.length() - 1);
+      id = "'" + id + "'";
+    }
+    else id = idToken.toString();
     kindStr = kind;
     idStr = id;
     ArrayList < String > schema = getCurrentSchema(kind);
@@ -210,13 +227,30 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token valueToken = null;
     jj_consume_token(add);
     kindToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     propertyToken = jj_consume_token(name);
-    jj_consume_token(14);
-    valueToken = jj_consume_token(string);
+    jj_consume_token(16);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case string:
+      valueToken = jj_consume_token(string);
+      break;
+    case number:
+      valueToken = jj_consume_token(number);
+      break;
+    default:
+      jj_la1[2] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     String propertyName = propertyToken.toString();
-    String propertyValue = valueToken.toString();
-    propertyValue = propertyValue.substring(1, propertyValue.length() - 1);
+    String propertyValue;
+    if (valueToken.kind == string)
+    {
+      propertyValue = valueToken.toString();
+      propertyValue = propertyValue.substring(1, propertyValue.length() - 1);
+      propertyValue = "'" + propertyValue + "'";
+    }
+    else propertyValue = valueToken.toString();
     String kind = kindToken.toString();
     ArrayList < String > currentSchema = getCurrentSchema(kind);
     ArrayList < String > newSchema = getNewSchemaAdd(kind, "?" + propertyName);
@@ -244,7 +278,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token propertyToken = null;
     jj_consume_token(delete);
     kindToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     propertyToken = jj_consume_token(name);
     String propertyName = propertyToken.toString();
     String kind = kindToken.toString();
@@ -277,17 +311,17 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token conditionToToken = null;
     jj_consume_token(copy);
     kindFromToken = jj_consume_token(name);
-    jj_consume_token(13);
-    propertyToken = jj_consume_token(name);
     jj_consume_token(15);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(17);
     kindToToken = jj_consume_token(name);
-    jj_consume_token(16);
+    jj_consume_token(18);
     kindFromToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     conditionFromToken = jj_consume_token(name);
-    jj_consume_token(14);
+    jj_consume_token(16);
     kindToToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     conditionToToken = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
     String kindTo = kindToToken.toString();
@@ -334,17 +368,17 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token conditionToToken = null;
     jj_consume_token(move);
     kindFromToken = jj_consume_token(name);
-    jj_consume_token(13);
-    propertyToken = jj_consume_token(name);
     jj_consume_token(15);
+    propertyToken = jj_consume_token(name);
+    jj_consume_token(17);
     kindToToken = jj_consume_token(name);
-    jj_consume_token(16);
+    jj_consume_token(18);
     kindFromToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     conditionFromToken = jj_consume_token(name);
-    jj_consume_token(14);
+    jj_consume_token(16);
     kindToToken = jj_consume_token(name);
-    jj_consume_token(13);
+    jj_consume_token(15);
     conditionToToken = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
     String kindTo = kindToToken.toString();
@@ -397,13 +431,13 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[1];
+  final private int[] jj_la1 = new int[3];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x3e0,};
+      jj_la1_0 = new int[] {0x3e0,0xc00,0xc00,};
    }
 
   /** Constructor with InputStream. */
@@ -417,7 +451,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -431,7 +465,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -441,7 +475,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -451,7 +485,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -460,7 +494,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -469,7 +503,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 1; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -520,12 +554,12 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[17];
+    boolean[] la1tokens = new boolean[19];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 3; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -534,7 +568,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
         }
       }
     }
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 19; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

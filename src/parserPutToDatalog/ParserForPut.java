@@ -42,6 +42,15 @@ public class ParserForPut implements ParserForPutConstants {
     throw new Error("Missing return statement in function");
   }
 
+  final public String start2() throws ParseException {
+  String value = null;
+  zaehler = 0;
+    value = getJSON();
+    jj_consume_token(0);
+    {if (true) return value;}
+    throw new Error("Missing return statement in function");
+  }
+
   final public String getJSONString() throws ParseException {
   Token kind = null;
   Token schemaToken = null;
@@ -96,6 +105,60 @@ public class ParserForPut implements ParserForPutConstants {
     throw new Error("Missing return statement in function");
   }
 
+  final public String getJSON() throws ParseException {
+  Token kind = null;
+  Token schemaToken = null;
+  String value = null;
+  int ts;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case put:
+      jj_consume_token(put);
+      break;
+    default:
+      jj_la1[4] = jj_gen;
+      ;
+    }
+    kind = jj_consume_token(kindValue);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case number:
+      schemaToken = jj_consume_token(number);
+      break;
+    default:
+      jj_la1[5] = jj_gen;
+      ;
+    }
+    if (schemaToken != null)
+    {
+      schemaVersion = Integer.parseInt(schemaToken.toString());
+      getSchema(kind.toString(), schemaVersion);
+    }
+    else
+    getSchema(kind.toString(), 0);
+    jj_consume_token(15);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case string:
+    case number:
+      value = listOfValues("");
+      break;
+    default:
+      jj_la1[6] = jj_gen;
+      ;
+    }
+    jj_consume_token(16);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 17:
+      jj_consume_token(17);
+      break;
+    default:
+      jj_la1[7] = jj_gen;
+      ;
+    }
+    ts = lastTS;
+    String jsonString = kind +"{"+ value +", ts\u005c":" + Integer.toString(ts) + "}";
+    {if (true) return jsonString;}
+    throw new Error("Missing return statement in function");
+  }
+
   final public String listOfValues(String value) throws ParseException {
   Token valueOfToken = null;
   String valueOfOtherToken = null;
@@ -109,7 +172,7 @@ public class ParserForPut implements ParserForPutConstants {
       valueOfToken = jj_consume_token(number);
       break;
     default:
-      jj_la1[4] = jj_gen;
+      jj_la1[8] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -145,7 +208,7 @@ public class ParserForPut implements ParserForPutConstants {
         ;
         break;
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[9] = jj_gen;
         break label_1;
       }
       jj_consume_token(18);
@@ -166,13 +229,13 @@ public class ParserForPut implements ParserForPutConstants {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[6];
+  final private int[] jj_la1 = new int[10];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x800,0xc00,0x20000,0xc00,0x40000,};
+      jj_la1_0 = new int[] {0x40,0x800,0xc00,0x20000,0x40,0x800,0xc00,0x20000,0xc00,0x40000,};
    }
 
   /** Constructor with InputStream. */
@@ -186,7 +249,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -200,7 +263,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -210,7 +273,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -220,7 +283,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -229,7 +292,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -238,7 +301,7 @@ public class ParserForPut implements ParserForPutConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -294,7 +357,7 @@ public class ParserForPut implements ParserForPutConstants {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 10; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

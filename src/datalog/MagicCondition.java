@@ -6,6 +6,7 @@ public class MagicCondition {
 	private int positionLeft;
 	private int positionRight;
 	private boolean alreadyFoundResults;
+	private String nameOfMagicView;
 
 	public MagicCondition(String kindLeft, String kindRight, int positionLeft,
 			int positionRight) {
@@ -103,6 +104,14 @@ public class MagicCondition {
 		return "MagicCondition [kindLeft=" + kindLeft + ", kindRight="
 				+ kindRight + ", positionLeft=" + positionLeft
 				+ ", positionRight=" + positionRight + "]";
+	}
+
+	public String getNameOfMagicView() {
+		return nameOfMagicView;
+	}
+
+	public void setNameOfMagicView(String nameOfMagicView) {
+		this.nameOfMagicView = nameOfMagicView;
 	}
 
 }

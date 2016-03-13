@@ -21,7 +21,7 @@ import java.awt.Color;
 import javax.swing.JCheckBox;
 import javax.swing.border.MatteBorder;
 
-public class DatalogMigrator extends JFrame {
+public class SchemaMigrator extends JFrame {
 
 	/**
 	 * 
@@ -39,7 +39,7 @@ public class DatalogMigrator extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					DatalogMigrator frame = new DatalogMigrator();
+					SchemaMigrator frame = new SchemaMigrator();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -51,7 +51,7 @@ public class DatalogMigrator extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public DatalogMigrator() {
+	public SchemaMigrator() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 10, 770, 539);
 		setTitle("DatalogMigrator");
@@ -60,16 +60,16 @@ public class DatalogMigrator extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		JLabel lblDatalogmigrator = new JLabel("DatalogMigrator");
+		JLabel lblDatalogmigrator = new JLabel("SchemaMigrator");
 		lblDatalogmigrator.setFont(new Font("Tahoma", Font.PLAIN, 30));
-		lblDatalogmigrator.setBounds(249, 49, 226, 84);
+		lblDatalogmigrator.setBounds(256, 49, 226, 84);
 		contentPane.add(lblDatalogmigrator);
 
 		JLabel lblAToolFor = new JLabel(
-				"<html>a tool for migrating agile schema changes in <br>\r\nschema-flexible databases based on datalog rules<html>");
+				"A Tool for Schema Evolution");
 		lblAToolFor.setHorizontalAlignment(SwingConstants.CENTER);
 		lblAToolFor.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblAToolFor.setBounds(186, 128, 410, 72);
+		lblAToolFor.setBounds(162, 154, 410, 35);
 		contentPane.add(lblAToolFor);
 
 		JButton btnNewButton = new JButton("start");
@@ -95,7 +95,7 @@ public class DatalogMigrator extends JFrame {
 		FlowLayout fl_panelChooseFile = (FlowLayout) panelChooseFile
 				.getLayout();
 		fl_panelChooseFile.setVgap(20);
-		panelChooseFile.setBounds(114, 339, 483, 123);
+		panelChooseFile.setBounds(114, 339, 483, 106);
 		contentPane.add(panelChooseFile);
 
 		JButton btnChooseEager = new JButton("choose eager DB file");
@@ -130,6 +130,12 @@ public class DatalogMigrator extends JFrame {
 		
 		chckbxUseDemoFiles = new JCheckBox("use demo files");
 		panelChooseFile.add(chckbxUseDemoFiles);
+		
+		JLabel lblInNosqlDatabases = new JLabel("in NoSQL Databases based on Datalog");
+		lblInNosqlDatabases.setHorizontalAlignment(SwingConstants.CENTER);
+		lblInNosqlDatabases.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblInNosqlDatabases.setBounds(162, 177, 410, 28);
+		contentPane.add(lblInNosqlDatabases);
 	}
 
 	private String chooseFile() {
