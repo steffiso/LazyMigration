@@ -6,6 +6,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 
@@ -18,8 +19,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.FlowLayout;
 import java.awt.Color;
+
 import javax.swing.JCheckBox;
 import javax.swing.border.MatteBorder;
+
+import java.awt.GridLayout;
 
 public class SchemaMigrator extends JFrame {
 
@@ -53,23 +57,24 @@ public class SchemaMigrator extends JFrame {
 	 */
 	public SchemaMigrator() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 10, 770, 539);
-		setTitle("DatalogMigrator");
+		setBounds(145, 80, 774, 581);
+		setTitle("SchemaMigrator");
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
 		JLabel lblDatalogmigrator = new JLabel("SchemaMigrator");
+		lblDatalogmigrator.setForeground(new Color(0, 0, 128));
 		lblDatalogmigrator.setFont(new Font("Tahoma", Font.PLAIN, 30));
-		lblDatalogmigrator.setBounds(256, 49, 226, 84);
+		lblDatalogmigrator.setBounds(261, 45, 226, 84);
 		contentPane.add(lblDatalogmigrator);
 
 		JLabel lblAToolFor = new JLabel(
 				"A Tool for Schema Evolution");
 		lblAToolFor.setHorizontalAlignment(SwingConstants.CENTER);
 		lblAToolFor.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblAToolFor.setBounds(162, 154, 410, 35);
+		lblAToolFor.setBounds(163, 121, 410, 35);
 		contentPane.add(lblAToolFor);
 
 		JButton btnNewButton = new JButton("start");
@@ -87,54 +92,83 @@ public class SchemaMigrator extends JFrame {
 			}
 		});
 		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btnNewButton.setBounds(231, 211, 268, 98);
+		btnNewButton.setBounds(237, 216, 268, 98);
 		contentPane.add(btnNewButton);
 
 		JPanel panelChooseFile = new JPanel();
 		panelChooseFile.setBorder(new MatteBorder(1, 1, 1, 1, (Color) Color.LIGHT_GRAY));
-		FlowLayout fl_panelChooseFile = (FlowLayout) panelChooseFile
-				.getLayout();
-		fl_panelChooseFile.setVgap(20);
-		panelChooseFile.setBounds(114, 339, 483, 106);
+		panelChooseFile.setBounds(122, 340, 475, 127);
 		contentPane.add(panelChooseFile);
+		panelChooseFile.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JPanel panelNewFiles = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panelNewFiles.getLayout();
+		flowLayout.setVgap(20);
+		panelChooseFile.add(panelNewFiles);
+		
+				JButton btnChooseEager = new JButton("choose eager DB file");
+				panelNewFiles.add(btnChooseEager);
+				
+						JButton btnChooseLazy = new JButton("choose lazy DB file");
+						panelNewFiles.add(btnChooseLazy);
+						
+								JButton btnChooseSchema = new JButton("choose schema file");
+								panelNewFiles.add(btnChooseSchema);
+								btnChooseSchema.addActionListener(new ActionListener() {
 
-		JButton btnChooseEager = new JButton("choose eager DB file");
-		btnChooseEager.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent arg0) {
+										schemaFileName=chooseFile();
+									}
 
-			public void actionPerformed(ActionEvent arg0) {
-				eagerFileName=chooseFile();
-			}
+								});
+						btnChooseLazy.addActionListener(new ActionListener() {
 
-		});
-		panelChooseFile.add(btnChooseEager);
+							public void actionPerformed(ActionEvent arg0) {
+								lazyFileName=chooseFile();
+							}
 
-		JButton btnChooseLazy = new JButton("choose lazy DB file");
-		btnChooseLazy.addActionListener(new ActionListener() {
+						});
+				btnChooseEager.addActionListener(new ActionListener() {
 
-			public void actionPerformed(ActionEvent arg0) {
-				lazyFileName=chooseFile();
-			}
+					public void actionPerformed(ActionEvent arg0) {
+						eagerFileName=chooseFile();
+					}
 
-		});
-		panelChooseFile.add(btnChooseLazy);
-
-		JButton btnChooseSchema = new JButton("choose schema file");
-		btnChooseSchema.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				schemaFileName=chooseFile();
-			}
-
-		});
-		panelChooseFile.add(btnChooseSchema);
+				});
+		
+		JPanel panelDemoFiles = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panelDemoFiles.getLayout();
+		flowLayout_1.setVgap(20);
+		panelChooseFile.add(panelDemoFiles);
+		
+		JLabel lblNewLabel = new JLabel("         or   ");
+		panelDemoFiles.add(lblNewLabel);
+		lblNewLabel.setFont(new Font("Dialog", Font.BOLD, 13));
 		
 		chckbxUseDemoFiles = new JCheckBox("use demo files");
-		panelChooseFile.add(chckbxUseDemoFiles);
+		panelDemoFiles.add(chckbxUseDemoFiles);
+		
+		JButton btnWhatsThis = new JButton("what's this?");
+		panelDemoFiles.add(btnWhatsThis);
+		btnWhatsThis.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Font font = new Font(Font.SANS_SERIF, Font.BOLD, 15);
+				UIManager.put("OptionPane.messageFont", font);
+				JOptionPane.showMessageDialog(new JFrame(),
+						"\nour demo files illustrate a gaming app\nwhich is displayed in JSON format and consists of:\n\n"
+						+ " Player entities, e.g.:\n"
+						+ "      Player\n         {   \"id\":1,\n             \"name\":\"Lisa\",\n             \"score\":20,\n             \"ts\":1   }\n"
+						+ " and Mission entities, e.g.:\n"
+						+ "      Mission\n         {   \"id\":1,\n             \"title\":\"go to library\",\n             \"priority\":1,\n             \"pid\":1,\n             \"ts\":4   }\n"
+						+ "\n", "Info on Demo Files",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
 		
 		JLabel lblInNosqlDatabases = new JLabel("in NoSQL Databases based on Datalog");
 		lblInNosqlDatabases.setHorizontalAlignment(SwingConstants.CENTER);
 		lblInNosqlDatabases.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblInNosqlDatabases.setBounds(162, 177, 410, 28);
+		lblInNosqlDatabases.setBounds(173, 150, 410, 28);
 		contentPane.add(lblInNosqlDatabases);
 	}
 

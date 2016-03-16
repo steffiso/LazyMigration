@@ -1,7 +1,1 @@
 /gui
-/lazyMigration
-/parserQueryToDatalog2
-/parserQueryToDatalogToJava
-/database
-/parserPutToDatalog
-/datalog

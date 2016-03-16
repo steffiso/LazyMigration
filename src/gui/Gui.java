@@ -93,8 +93,8 @@ public class Gui extends JFrame {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		setTitle("DatalogMigration");
-		setBounds(100, 10, 817, 647);
+		setTitle("SchemaMigration");
+		setBounds(110, 45, 860, 674);
 		getContentPane().setLayout(new GridLayout(0, 1, 0, 2));
 
 		panelCommand = new JPanel();
@@ -183,7 +183,7 @@ public class Gui extends JFrame {
 		rulesTextArea.setEditable(false);
 		rulesTextArea.setFont(new Font("Monospaced", Font.PLAIN, 10));
 		rulesTextArea.setRows(3);
-		rulesTextArea.setColumns(65);
+		rulesTextArea.setColumns(70);
 		rulesTextArea.setVisible(false);
 		scrollPane = new JScrollPane(rulesTextArea);
 		panelDatalogView.add(scrollPane);
@@ -219,9 +219,9 @@ public class Gui extends JFrame {
 		panelViewFactsLabel.add(lblViewAllFacts);
 
 		JPanel panelTabbedPane = new JPanel();
+		getContentPane().add(panelTabbedPane);
 		panelTabbedPane.setBorder(new MatteBorder(0, 2, 2, 2,
 				(Color) new Color(64, 64, 64)));
-		getContentPane().add(panelTabbedPane);
 		panelTabbedPane.setLayout(new GridLayout(0, 1, 0, 0));
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		panelTabbedPane.add(tabbedPane);
@@ -263,21 +263,17 @@ public class Gui extends JFrame {
 		lblLazymigration.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		panelLabels.add(lblLazymigration);
 		factsTextAreaBU = new JTextArea();
+		factsTextAreaBU.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		factsTextAreaBU.setEditable(false);
 		JScrollPane scrollFactsBU = new JScrollPane(factsTextAreaBU);
 		scrollFactsBU.setBounds(10, 25, 330, 226);
 		splitPane.add(scrollFactsBU);
 		factsTextAreaTD = new JTextArea();
+		factsTextAreaTD.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		factsTextAreaTD.setEditable(false);
 		JScrollPane scrollFactsTD = new JScrollPane(factsTextAreaTD);
 		scrollFactsTD.setBounds(368, 25, 330, 226);
 		splitPane.add(scrollFactsTD);
-
-		factsBU = databaseBU.getJson();
-		factsTD = databaseTD.getJson();
-
-		factsTextAreaBU.setText(factsBU);
-		factsTextAreaTD.setText(factsTD);
 
 		JPanel panelComparison = new JPanel();
 		tabbedPane.addTab("Comparison", null, panelComparison, null);
@@ -321,8 +317,6 @@ public class Gui extends JFrame {
 		textFieldNrDBEntriesBU.setColumns(10);
 		textFieldNrDBEntriesBU.setBounds(10, 69, 86, 20);
 		panelComparisonBU.add(textFieldNrDBEntriesBU);
-
-		totalDBEntriesBU = factsBU.split("\n").length;
 		textFieldNrDBEntriesBU.setText(String.valueOf(totalDBEntriesBU));
 
 		JPanel panelComparisonTD = new JPanel();
@@ -363,9 +357,16 @@ public class Gui extends JFrame {
 		textFieldNrDBEntriesTD.setColumns(10);
 		textFieldNrDBEntriesTD.setBounds(10, 68, 86, 20);
 		panelComparisonTD.add(textFieldNrDBEntriesTD);
+		textFieldNrDBEntriesTD.setText(String.valueOf(totalDBEntriesTD));
+
+		factsBU = databaseBU.getJson();
+		factsTD = databaseTD.getJson();
+		factsTextAreaBU.setText(factsBU);
+		factsTextAreaTD.setText(factsTD);
+		totalDBEntriesBU = factsBU.split("\n").length;
 
 		totalDBEntriesTD = factsTD.split("\n").length;
-		textFieldNrDBEntriesTD.setText(String.valueOf(totalDBEntriesTD));
+
 	}
 
 	private void executeGetCommand(String uiInput) {
@@ -400,8 +401,10 @@ public class Gui extends JFrame {
 		Predicate goal = new Predicate("get" + kind
 				+ db.getLatestSchemaVersion(kind), schema.size(), schema);
 		executeQueryTD(rulesTemp, goal, uniMap);
-		rulesTextArea.setText(parserget.rulesStr);
 		executeQueryBU(parserget.rulesStr);
+		rulesTextArea.setText(parserget.rulesStr.substring(0,
+				parserget.rulesStr.length() - 1));
+
 	}
 
 	private ArrayList<Rule> copyRules() {
@@ -450,7 +453,7 @@ public class Gui extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		rulesTextArea.setText(rulesStr);
+		rulesTextArea.setText(rulesStr.substring(0, rulesStr.length() - 1));
 		textFieldNrPrevDBLazy.setText(String.valueOf(0));
 		textFieldNrDBLazy.setText(String.valueOf(totalNumberTD));
 		executeQueryBU(rulesStr);
