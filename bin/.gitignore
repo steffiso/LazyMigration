@@ -1,1 +1,12 @@
-/gui
+/database/
+/datalog/
+/eagerMigration/
+/gui/
+/junitTests/
+/lazyMigration/
+/parserEDBFactToJava/
+/parserGetToDatalog/
+/parserJSONToEDBFacts/
+/parserPutToDatalog/
+/parserQueryToDatalogToJava/
+/parserRuletoJava/

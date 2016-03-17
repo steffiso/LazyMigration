@@ -57,7 +57,7 @@ public class SchemaMigrator extends JFrame {
 	 */
 	public SchemaMigrator() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(145, 80, 774, 581);
+		setBounds(145, 90, 774, 581);
 		setTitle("SchemaMigrator");
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -67,14 +67,14 @@ public class SchemaMigrator extends JFrame {
 		JLabel lblDatalogmigrator = new JLabel("SchemaMigrator");
 		lblDatalogmigrator.setForeground(new Color(0, 0, 128));
 		lblDatalogmigrator.setFont(new Font("Tahoma", Font.PLAIN, 30));
-		lblDatalogmigrator.setBounds(261, 45, 226, 84);
+		lblDatalogmigrator.setBounds(265, 44, 226, 84);
 		contentPane.add(lblDatalogmigrator);
 
 		JLabel lblAToolFor = new JLabel(
-				"A Tool for Schema Evolution");
+				"A Datalog-Based Tool for Schema Evolution");
 		lblAToolFor.setHorizontalAlignment(SwingConstants.CENTER);
 		lblAToolFor.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		lblAToolFor.setBounds(163, 121, 410, 35);
+		lblAToolFor.setBounds(173, 121, 410, 35);
 		contentPane.add(lblAToolFor);
 
 		JButton btnNewButton = new JButton("start");
@@ -86,7 +86,8 @@ public class SchemaMigrator extends JFrame {
 							"choose all filenames", "dialog",
 							JOptionPane.ERROR_MESSAGE);
 				else {
-					Gui gui = new Gui();
+					GuiAlternative gui = new GuiAlternative();
+					//Gui gui = new Gui();
 					gui.setVisible(true);
 				}
 			}
@@ -165,7 +166,7 @@ public class SchemaMigrator extends JFrame {
 			}
 		});
 		
-		JLabel lblInNosqlDatabases = new JLabel("in NoSQL Databases based on Datalog");
+		JLabel lblInNosqlDatabases = new JLabel("in NoSQL Databases");
 		lblInNosqlDatabases.setHorizontalAlignment(SwingConstants.CENTER);
 		lblInNosqlDatabases.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblInNosqlDatabases.setBounds(173, 150, 410, 28);

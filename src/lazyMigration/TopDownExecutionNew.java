@@ -108,9 +108,8 @@ public class TopDownExecutionNew {
 
 		ArrayList<Rule> childrenRules = new ArrayList<Rule>();
 		for (Rule r : rules) {
-			// durchsuche die Head Prädikate der Rules nach benötigtem Goal-
-			// Prädikat
-			// unifiziere alle gefundenen Regeln
+			// look for needed goal predicate in rule heads
+			// + unify found rules
 			Predicate ruleHead = r.getHead();
 			if (ruleHead.getKind().equals(goal.getKind())
 					&& ruleHead.getAnz() == goal.getAnz()) {
@@ -145,7 +144,6 @@ public class TopDownExecutionNew {
 		if (goal.getRelation() != null) {
 			System.out.println("Ergebnis: " + goal.getRelation().toString());
 
-			// speichert Result Map des Goal in Facts ab
 			for (ArrayList<String> str : goal.getRelation()) {
 				answer.add(new Fact(goal.getKind(), str));
 			}
@@ -175,7 +173,12 @@ public class TopDownExecutionNew {
 						exists = false;
 						break;
 					}
-					exists = true;
+					if (putFact.getKind().equals(f.getKind())){
+						exists = true;
+					}
+					else
+						exists = false;
+						break;
 				}
 				if (exists == true)
 					break;
@@ -186,7 +189,12 @@ public class TopDownExecutionNew {
 						exists = false;
 						break;
 					}
-					exists = true;
+					if (putFact.getKind().equals(f.getKind())){
+						exists = true;
+					}
+					else
+						exists = false;
+						break;
 				}
 				if (exists == true)
 					break;
@@ -198,7 +206,7 @@ public class TopDownExecutionNew {
 
 	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-		// ArrayList<String> scheme = tree.getGoal().getScheme();
+
 		for (Rule childRule : tree.getChildren()) {
 			Predicate resultPredicate = null;
 			RuleBody body = childRule.getRuleBody();

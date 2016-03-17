@@ -26,9 +26,5 @@
 {"kind":"Player",
 "schemaversion":1,
 "attributes":{"id":"1","name":"Lisa S.","score":"20"},
-"ts":7},
-{"kind":"Player",
-"schemaversion":1,
-"attributes":{"id":"1","name":"Lisa M.","score":"20"},
-"ts":8}
+"ts":7}
 ]

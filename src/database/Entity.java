@@ -77,7 +77,7 @@ public class Entity {
 			}
 		}
 		if (entity.endsWith(","))
-			entity = entity + "\"ts\":" + Integer.toString(timestamp) + ").\n";
+			entity = entity + "\"ts\":" + Integer.toString(timestamp) + "}.\n";
 		else
 			entity = entity + ", \"ts\":" + Integer.toString(timestamp)
 					+ "}.\n";
