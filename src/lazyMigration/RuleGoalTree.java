@@ -1,12 +1,9 @@
 package lazyMigration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import datalog.Predicate;
 import datalog.Rule;
-import datalog.RuleBody;
 
 public class RuleGoalTree {
 

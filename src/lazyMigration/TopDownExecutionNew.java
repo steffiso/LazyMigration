@@ -74,6 +74,7 @@ public class TopDownExecutionNew {
 	}
 
 	// Testgenerierung einer Rule mit Top Down
+	// ???
 	public ArrayList<ArrayList<String>> getAnswer(Rule rule) {
 
 		rulesRenameandReorder(rule);
@@ -101,9 +102,7 @@ public class TopDownExecutionNew {
 	}
 
 	public ArrayList<Fact> getAnswers() {
-
 		putFacts = new ArrayList<Fact>();
-
 		ArrayList<Fact> answer = new ArrayList<Fact>();
 
 		ArrayList<Rule> childrenRules = new ArrayList<Rule>();
@@ -113,62 +112,112 @@ public class TopDownExecutionNew {
 			Predicate ruleHead = r.getHead();
 			if (ruleHead.getKind().equals(goal.getKind())
 					&& ruleHead.getAnz() == goal.getAnz()) {
-				if (ruleHead.getKind().contains("Mission2"))
-					System.out.println("Mission2");
 				Rule unifiedRule = unifyRule(goal, r);
 				childrenRules.add(unifiedRule);
 			}
 		}
+		
+		// initialize next level of ruleGoalTree with unified 
+		// children rules and save the results in Predicate subgoal
+		tree = new RuleGoalTree(childrenRules);
+		goal.setRelation(getAnswersForSubtree(tree));
 
-		if (childrenRules.size() == 0) {
-			System.out.println("Keine children rules!" + goal.getKind()
-					+ goal.getScheme().toString());
-		} else {
-			// vorläufige toString Methode muss angepasst werden
-			System.out.println("Unifizierte Regeln: ");
-			for (Rule rr : childrenRules) {
-				System.out.print(rr.getHead().getKind());
-				System.out.print(rr.getHead().getScheme().toString() + ":-");
-				for (Predicate pr : rr.getPredicates()) {
-					System.out.print(pr.getKind());
-					System.out.print(pr.getScheme().toString());
-				}
-			}
-			System.out.println();
-
-			// compute the answers of corresponding rule goal tree
-			tree = new RuleGoalTree(childrenRules);
-			goal.setRelation(getAnswersForSubtree(tree));
-		}
-
+		// add results to temp fact list
 		if (goal.getRelation() != null) {
-			System.out.println("Ergebnis: " + goal.getRelation().toString());
-
 			for (ArrayList<String> str : goal.getRelation()) {
 				answer.add(new Fact(goal.getKind(), str));
 			}
-		} else
-			System.out.println("Ergebnis ist null");
-
+		}
+		
+		// add put facts to put list
 		if (putFacts.size() != 0) {
 			for (Fact f : putFacts) {
 				putFactToDB(f);
 				numberOfPuts++;
-				System.out.println("put in DB: " + f.toString());
 			}
 
 		}
 		return answer;
 
 	}
+	
+	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
+		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
 
+		for (Rule childRule : tree.getChildren()) {
+			Predicate resultPredicate = null;
+			RuleBody body = childRule.getRuleBody();
+
+			for (Predicate subgoal : body.getPredicates()) {
+				// subgoal already exists in fact list?
+				if (getFacts(subgoal) == 0) {
+					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
+					for (Rule r : rules) {
+						// look for needed goal predicate in rule heads
+						// + unify found rules
+						Predicate ruleHead = r.getHead();
+						if (ruleHead.getKind().equals(subgoal.getKind())
+								&& ruleHead.getAnz() == subgoal.getAnz()) {
+							Rule unifiedRule = unifyRule(subgoal, r);
+							unifiedChildrenRules.add(unifiedRule);
+						}
+					}
+
+					if (unifiedChildrenRules.size() != 0) {
+						// initialize next level of ruleGoalTree with unified 
+						// children rules and save the results in Predicate subgoal
+						RuleGoalTree subTree = new RuleGoalTree(
+								unifiedChildrenRules);
+						subgoal.setRelation(getAnswersForSubtree(subTree));
+
+						// add new facts to temp fact list
+						for (ArrayList<String> str : subgoal.getRelation()) {
+							facts.add(new Fact(subgoal.getKind(), str));
+						}
+					}					
+				} 
+			}
+			
+			// get results of rule body (join and conditions)
+			if (body.getPredicates().size() > 1)
+				resultPredicate = join(body.getPredicates());
+			else if (!body.getPredicates().isEmpty())
+				resultPredicate = body.getPredicates().get(0);
+			if (body.getConditions() != null && !body.getConditions().isEmpty())
+				resultPredicate = selection(resultPredicate,
+						body.getConditions());
+			
+			// save results in head predicate
+			childRule.getHead()
+					.setRelation(
+							getResults(resultPredicate, childRule.getHead()
+									.getScheme()));
+
+			result.addAll(childRule.getHead().getRelation());
+
+		}
+
+		if (tree.getGoal().isHead()) {
+			// add put facts to put list
+			for (ArrayList<String> str : result) {
+				Fact newFact = new Fact(tree.getGoal().getKind(), str);
+				if (!factExists(facts, newFact)
+						&& !factExists(putFacts, newFact)
+						&& !newFact.getKind().startsWith("get"))
+					putFacts.add(newFact);
+			}
+		}
+		return result;
+	}
+	
+	// checks whether a fact exists in an arrayList<Fact>
 	public boolean factExists(ArrayList<Fact> factList, Fact putFact) {
 		boolean exists = false;
 		ArrayList<String> valuesPutFact = putFact.getListOfValues();
 		for (Fact f : factList) {
 			ArrayList<String> valuesFactList = f.getListOfValues();
 			if (valuesPutFact.size() + 1 == valuesFactList.size()) {
-				for (int i = 0; i < valuesPutFact.size() - 1; i++) {
+				for (int i = 0; i < valuesPutFact.size() - 1;) {
 					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
 						exists = false;
 						break;
@@ -184,7 +233,7 @@ public class TopDownExecutionNew {
 					break;
 			}
 			if (valuesPutFact.size() == valuesFactList.size()) {
-				for (int i = 0; i < valuesPutFact.size(); i++) {
+				for (int i = 0; i < valuesPutFact.size();) {
 					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
 						exists = false;
 						break;
@@ -204,109 +253,6 @@ public class TopDownExecutionNew {
 		return exists;
 	}
 
-	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
-		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
-
-		for (Rule childRule : tree.getChildren()) {
-			Predicate resultPredicate = null;
-			RuleBody body = childRule.getRuleBody();
-
-			for (Predicate subgoal : body.getPredicates()) {
-				if (subgoal.getKind().equals("Player2")) {
-					System.out.println("Player2!!!");
-				}
-				// existiert ein Fact zu benötigtem Subgoal?
-				if (getFacts(subgoal) == 0) {
-					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
-					for (Rule r : rules) {
-						// durchsuche die Head Prädikate der Rules nach
-						// benötigtem Goal- Prädikat
-						// & unifiziere alle gefundenen Regeln
-						Predicate ruleHead = r.getHead();
-						if (ruleHead.getKind().equals(subgoal.getKind())
-								&& ruleHead.getAnz() == subgoal.getAnz()) {
-							Rule unifiedRule = unifyRule(subgoal, r);
-							unifiedChildrenRules.add(unifiedRule);
-						}
-					}
-
-					// temporär für Testzwecke
-					if (unifiedChildrenRules.size() == 0) {
-						System.out.println("Keine children rules!"
-								+ subgoal.getKind()
-								+ subgoal.getScheme().toString());
-					} else {
-
-						// vorläufige toString Methode muss angepasst werden
-						System.out.println("Unifizierte Regeln: ");
-						for (Rule rr : unifiedChildrenRules) {
-							System.out.print(rr.getHead().getKind());
-							System.out.print(rr.getHead().getScheme()
-									.toString()
-									+ ":-");
-							for (Predicate pr : rr.getPredicates()) {
-								System.out.print(pr.getKind());
-								System.out.print(pr.getScheme().toString());
-							}
-						}
-
-						System.out.println();
-
-						// erzeuge für unifizierte Kinder (Rules) neuen
-						// RuleGoalTree
-						// und speichere ResultMap in Prädikat subgoal ab
-						RuleGoalTree subTree = new RuleGoalTree(
-								unifiedChildrenRules);
-						subgoal.setRelation(getAnswersForSubtree(subTree));
-
-						// füge neu erzeugte Facts zu temporärer Fact Liste
-						// hinzu
-						for (ArrayList<String> str : subgoal.getRelation()) {
-							facts.add(new Fact(subgoal.getKind(), str));
-						}
-					}
-
-					// temporär für Testzwecke
-				} else
-					System.out.println("Facts gefunden!"
-							+ subgoal.getRelation().toString());
-			}
-
-			if (childRule.getHead().getKind().equals("Mission2"))
-				System.out.println("Kind: " + childRule.getHead().getKind());
-			// Berechnung des Rule Bodys: join der Prädikate + Bedingungen
-			if (body.getPredicates().size() > 1)
-				resultPredicate = join(body.getPredicates());
-			else if (!body.getPredicates().isEmpty())
-				resultPredicate = body.getPredicates().get(0);
-			if (body.getConditions() != null && !body.getConditions().isEmpty())
-				resultPredicate = selection(resultPredicate,
-						body.getConditions());
-			System.out.println("Kind: " + childRule.getHead().getKind());
-			// speichere Ergebnis in ResultMap des Head-Prädikates des Kindes ab
-			childRule.getHead()
-					.setRelation(
-							getResults(resultPredicate, childRule.getHead()
-									.getScheme()));
-			System.out.println("Join: "
-					+ childRule.getHead().getRelation().toString());
-
-			result.addAll(childRule.getHead().getRelation());
-
-		}
-
-		if (tree.getGoal().isHead()) {
-			// add put facts to list
-			for (ArrayList<String> str : result) {
-				Fact newFact = new Fact(tree.getGoal().getKind(), str);
-				if (!factExists(facts, newFact)
-						&& !factExists(putFacts, newFact)
-						&& !newFact.getKind().startsWith("get"))
-					putFacts.add(newFact);
-			}
-		}
-		return result;
-	}
 
 	// only get the result-attributes of predicate which are in the scheme of
 	// the head
@@ -403,20 +349,20 @@ public class TopDownExecutionNew {
 
 	public void putFactToDB(Fact newFact) {
 		Database db = new Database("data/EDBLazy.json", "data/Schema.json");
-		// newFact sowas wie ; "Player2(4,'Lisa',40)" (ohne timestamp)
+		// put fact to database: "Player2(4,'Lisa',40)" (timestamp will be added automatically)
 		db.putToDatabase(newFact.toString());
 	}
 
-	public ArrayList<Rule> getRules(Predicate p) {
-		ArrayList<Rule> rule = new ArrayList<Rule>();
-		for (Rule r : rules) {
-			if (r.getHead().getKind().equals(p.getKind())
-					&& r.getHead().getAnz() == p.getAnz()) {
-				rule.add(r);
-			}
-		}
-		return rule;
-	}
+//	public ArrayList<Rule> getRules(Predicate p) {
+//		ArrayList<Rule> rule = new ArrayList<Rule>();
+//		for (Rule r : rules) {
+//			if (r.getHead().getKind().equals(p.getKind())
+//					&& r.getHead().getAnz() == p.getAnz()) {
+//				rule.add(r);
+//			}
+//		}
+//		return rule;
+//	}
 
 	// generate temporary results of all joins of a rule step by step
 	private Predicate join(ArrayList<Predicate> predicates) {

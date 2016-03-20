@@ -8,6 +8,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,13 +27,10 @@ public class Database {
 
 	private String filenameEDB;
 	private String filenameSchema;
-	@SuppressWarnings("unused")
-	private String filenameLegacy;
 	
 	public Database(){
 		filenameEDB = "data/EDB.json";
 		filenameSchema = "data/Schema.json";
-		filenameLegacy = "data/LegacyEntities.txt";
 	}
 
 	public Database(String filenameEDB, String filenameSchema) {
@@ -38,7 +39,8 @@ public class Database {
 		this.filenameSchema = filenameSchema;
 	}
 
-	//return all edb-facts from database in one string
+	// return all database entries as edb facts in one string
+	// e.g. "Player1(1,'Lisa',20,1).\nPlayer1(2,'Bart',20,2).\nPlayer1(3,'Homer',20,3)."
 	public String getEDB(){
 		String edb = "";
 		ArrayList<Entity> entities;
@@ -66,7 +68,10 @@ public class Database {
 		return edb;			
 	}
 		
-	//return all json-facts from database in one string
+	// return all database entries from database in a json-like string 
+	// e.g. "Player1{"id":1,"name":"Lisa","score":20,"ts":1}.\n" +
+	//		"Player1{"id":2,"name":"Bart","score":20,"ts":2}.\n" +
+	//		"Player1{"id":3,"name":"Homer","score":20,"ts":3}."
 	public String getJson(){
 		String edb = "";
 		ArrayList<Entity> entities;
@@ -95,8 +100,7 @@ public class Database {
 	}
 			
 	
-	//return the schema for one version and one kind
-	//something like "?id,?name,?score" (without ts)
+	// return the schema for kind and version 
 	public Schema getSchema(String inputKind, int inputVersion){	
 		
 		Schema schema = null;
@@ -155,9 +159,9 @@ public class Database {
 		return latestSchemaVersion;
 	}
 	
-	//write the datalogFact in json-File
-	//input: "Player2(4,'Lisa',40)"
-	//timestamp will be added automatically
+	// write the datalogFact in json-File
+	// input: "Player2(4,'Lisa',40)"
+	// timestamp will be added automatically
 	public void putToDatabase(String datalogFact) {
 		
 		String json=null;
@@ -275,6 +279,18 @@ public class Database {
 		if (!inputFile.delete() || !tempFile.renameTo(inputFile)){
 			System.out.println("Problem occurs while writing json files");
 		};
+	}
+	
+	// reset database to initial state
+	public void resetDatabaseState() throws IOException{
+		Path initialState = Paths.get("data/initialState/EDB.json");
+		Path overwrite = Paths.get(filenameEDB);
+		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);
+		
+		initialState = Paths.get("data/initialState/Schema.json");
+		overwrite = Paths.get(filenameSchema);
+		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);		
+		
 	}
 	
 }

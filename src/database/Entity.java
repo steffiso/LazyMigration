@@ -11,9 +11,9 @@ public class Entity {
 	@JsonProperty("schemaversion")
 	private int schemaversion;
 	@JsonProperty("attributes")
-	LinkedHashMap<String, String> attributes;
+	private LinkedHashMap<String, String> attributes;
 	@JsonProperty("ts")
-	int timestamp;
+	private int timestamp;
 
 	public String getKind() {
 		return kind;

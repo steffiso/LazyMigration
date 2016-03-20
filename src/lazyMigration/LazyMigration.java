@@ -48,7 +48,6 @@ public class LazyMigration {
 
 		}
 		setNumberOfPuts(lazy.getNumberOfPuts());
-		//return answerString + "\n Answer Get: " + answers2;
 		return answers2.toString();
 	}
 

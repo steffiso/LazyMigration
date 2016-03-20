@@ -12,6 +12,8 @@ import datalog.Rule;
 
 public class DatalogRulesGenerator {
 
+	// return the generated Datalog rules in one String for 
+	// get, add, delete, copy or move
 	public String getRules(String input) {
 		String rules = "";
 
@@ -31,6 +33,8 @@ public class DatalogRulesGenerator {
 		return rules;
 	}
 
+	// return the generated Datalog rules in ArrayList<Rule> for 
+	// get, add, delete, copy or move
 	public ArrayList<Rule> getJavaRules(String input) {
 		ArrayList<Rule> rules = new ArrayList<Rule>();
 
@@ -48,19 +52,6 @@ public class DatalogRulesGenerator {
 
 		return rules;
 	}
-	
-	// public String get(String input) {
-	// String rules = "";
-	// try {
-	// rules = rules
-	// + new ParserForGet(new StringReader(input)).getRule();
-	// } catch (parserGetToDatalog.ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// return rules;
-	//
-	// }
 
 	public String[] getTD(String input) {
 		String rules = "";
@@ -80,66 +71,8 @@ public class DatalogRulesGenerator {
 
 	}
 
-	// public String addAttribute(String input) {
-	// String rules = "";
-	// try {
-	// rules = rules
-	// + new ParserForFunctions(
-	// new StringReader(input))
-	// .getFunctionRule();
-	// } catch (parserFunctionsToDatalog.ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// return rules;
-	// }
-	//
-	// public String deleteAttribute(String input) {
-	// String rules = "";
-	// try {
-	// rules = rules
-	// + new ParserForFunctions(new StringReader(input))
-	// .getFunctionRule();
-	// } catch (parserFunctionsToDatalog.ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// return rules;
-	//
-	// }
-	//
-	// public String copyAttribute(String input) {
-	// String rules = "";
-	// try {
-	// rules = rules
-	// + new ParserForFunctions(new StringReader(input))
-	// .getFunctionRule();
-	// } catch (parserFunctionsToDatalog.ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// return rules;
-	//
-	// }
-	//
-	// public String moveAttribute(String input) {
-	// String rules = "";
-	// try {
-	// rules = rules
-	// + new ParserForFunctions(new StringReader(input))
-	// .getFunctionRule();
-	// } catch (parserFunctionsToDatalog.ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// return rules;
-	//
-	// }
-
+	// writes a fact to database
+	// input e.g. "put Player(4,'Maggie',30)
 	public String putFact(String input) {
 		String fact = "";
 		String jsonString = "";
@@ -161,8 +94,8 @@ public class DatalogRulesGenerator {
 		return fact;
 	}
 
+	// returns all edb facts from database in one string
 	public String getEDBFacts() {
-
 		Database parseToEDB = new Database();
 		String edbFacts = "";
 		edbFacts = parseToEDB.getEDB();
@@ -170,8 +103,8 @@ public class DatalogRulesGenerator {
 
 	}
 
+	// returns all edb facts from database in one json-like string
 	public String getJsonFacts() {
-
 		Database parseToEDB = new Database();
 		String edbFacts = "";
 		edbFacts = parseToEDB.getJson();

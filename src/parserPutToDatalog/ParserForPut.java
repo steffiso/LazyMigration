@@ -30,7 +30,8 @@ public class ParserForPut implements ParserForPutConstants {
     else schema = db.getSchema(kind, number);
     attributes = schema.getAttributes();
     laenge = attributes.size();
-    //lastTS = db.getLastTimestamp();    schemaVersion = schema.getSchemaversion();
+    lastTS = db.getLastTimestamp();
+    schemaVersion = schema.getSchemaversion();
   }
 
   final public String start() throws ParseException {
@@ -99,7 +100,7 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[3] = jj_gen;
       ;
     }
-    ts = lastTS;
+    ts = lastTS + 1;
     String jsonString = "{\u005c"kind\u005c":\u005c"" + kind + "\u005c",\u005cn" + "\u005c"schemaversion\u005c":" + schemaVersion + ",\u005cn" + "\u005c"attributes\u005c":{" + value + "},\u005cn\u005c"ts\u005c":" + Integer.toString(ts) + "}";
     {if (true) return jsonString;}
     throw new Error("Missing return statement in function");
@@ -129,11 +130,11 @@ public class ParserForPut implements ParserForPutConstants {
     }
     if (schemaToken != null)
     {
-      schemaVersion = Integer.parseInt(schemaToken.toString());
-      getSchema(kind.toString(), schemaVersion);
+        schemaVersion = Integer.parseInt(schemaToken.toString());
+        getSchema(kind.toString(), schemaVersion);
     }
     else
-    getSchema(kind.toString(), 0);
+        getSchema(kind.toString(), 0);
     jj_consume_token(15);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case string:
@@ -153,7 +154,7 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[7] = jj_gen;
       ;
     }
-    ts = lastTS;
+    ts = lastTS + 1;
     String jsonString = kind +"{"+ value +", ts\u005c":" + Integer.toString(ts) + "}";
     {if (true) return jsonString;}
     throw new Error("Missing return statement in function");
@@ -198,7 +199,7 @@ public class ParserForPut implements ParserForPutConstants {
     }
     else
     {
-      //Exception werfen ???
+      //Exception werfen, da mehr Attribute eingegeben wurden, als in Schema abgespeichert
       zaehler++;
     }
     label_1:

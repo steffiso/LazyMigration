@@ -69,8 +69,6 @@ public class EagerMigration {
 			} else if (!pair.ruleName.startsWith("latest")
 					&& !query.startsWith("get")) {
 				for (ArrayList<String> answer : answers) {
-					// put to database file
-
 					String values = "";
 					for (String s : answer) {
 						values += s + ", ";
@@ -78,7 +76,8 @@ public class EagerMigration {
 
 					values = values.substring(0, values.length() - 2);
 					String tempKind = pair.ruleName;
-					// toDo:
+					
+					// put to database file
 					String datalogFact = tempKind + "(" + values + ").";
 					db.putToDatabase(datalogFact);
 					setNumber(getNumber() + 1);
@@ -92,8 +91,7 @@ public class EagerMigration {
 						+ "\n";
 
 		}
-
-		//return answerString+answer2;
+		
 		return answer2;
 	}
 

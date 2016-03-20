@@ -15,10 +15,10 @@ import datalog.Rule;
 
 public class BottomUpExecutionNew {
 
-	// Alle EDB-Fakten und generierten IDB-Fakten
+	// all edb facts and generated idb
 	private ArrayList<Fact> facts;
 
-	// Setze EDB-Fakten
+	// set edb facts
 	public BottomUpExecutionNew(ArrayList<Fact> values) {
 		super();
 		this.facts = values;
@@ -384,14 +384,13 @@ public class BottomUpExecutionNew {
 
 	}
 
-	// Stratifizierung der IDB Regeln
+	// stratification of the idb
 	public void orderStratum(ArrayList<Rule> rules) throws Exception {
 		int size = rules.size() - 1;
 		Map<String, Integer> mapStratum = new HashMap<String, Integer>();
 
 		for (Rule rule : rules) {
 			String kindHead = rule.getHead().getKind();
-			System.out.println(kindHead);
 			mapStratum.put(kindHead, 0);
 			for (Predicate predicate : rule.getPredicates()) {
 				String kindPredicate = predicate.getKind();
@@ -431,7 +430,7 @@ public class BottomUpExecutionNew {
 				}
 		} while (changed);
 
-		// schreibe die Stratum Werte in die Prädikatsobjekte
+		// save stratum in predicate objects
 		for (Rule r : rules) {
 			String head = r.getHead().getKind();
 			r.getHead().setStratum(mapStratum.get(head));
@@ -441,9 +440,8 @@ public class BottomUpExecutionNew {
 
 	}
 
-	// generiere eine Abhängigkeits-Map
-	// return : z.B. [Mission2, ( Mission, latestMission, Player, latestPlayer
-	// )]
+	// generate dependency map
+	// return : e.g.. [Mission2, ( Mission, latestMission, Player, latestPlayer)]
 	public Map<String, ArrayList<String>> generateDependencyMap(
 			ArrayList<Rule> rules) {
 		Map<String, ArrayList<String>> dependencyMap = new HashMap<String, ArrayList<String>>();
@@ -465,10 +463,8 @@ public class BottomUpExecutionNew {
 		return dependencyMap;
 	}
 
-	// sortiere die IDB Regeln mithilfe der stratum- Werte und den
-	// Abhängigkeiten
+	// sort rules by stratum values and generated dependencies
 	public void sortRules(ArrayList<Rule> rules, Map<String, Integer> mapStratum) {
-		System.out.println("Vor dem Sortieren:");
 		Map<String, ArrayList<String>> dependencyMap = generateDependencyMap(rules);
 		Map<String, Integer> rankingMap = mapStratum;
 
@@ -476,8 +472,6 @@ public class BottomUpExecutionNew {
 		for (Rule r : rules) {
 			int stratum = r.getHead().getStratum();
 			r.getHead().setRanking(stratum);
-			System.out.println(r.getHead().getKind() + ":" + stratum + ":"
-					+ r.getHead().getRanking());
 		}
 
 		boolean changed = true;
@@ -510,14 +504,6 @@ public class BottomUpExecutionNew {
 				return 0;
 			}
 		});
-
-		System.out.println("Nach dem Sortieren:");
-		for (Rule r : rules) {
-			String head = r.getHead().getKind();
-			int stratum = r.getHead().getStratum();
-			int headRanking = r.getHead().getRanking();
-			System.out.println(head + ":" + stratum + ":" + headRanking);
-		}
 	}
 
 	public static boolean isInteger(String s) {
