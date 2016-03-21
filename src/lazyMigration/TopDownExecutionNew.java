@@ -348,7 +348,7 @@ public class TopDownExecutionNew {
 	}
 
 	public void putFactToDB(Fact newFact) {
-		Database db = new Database("data/EDBLazy.json", "data/Schema.json");
+		Database db = new Database("src/data/EDBLazy.json", "src/data/Schema.json");
 		// put fact to database: "Player2(4,'Lisa',40)" (timestamp will be added automatically)
 		db.putToDatabase(newFact.toString());
 	}

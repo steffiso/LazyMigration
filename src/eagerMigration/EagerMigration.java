@@ -22,7 +22,7 @@ public class EagerMigration {
 
 	public String writeAnswersInDatabase() {
 
-		Database db = new Database("data/EDBEager.json", "data/Schema.json");
+		Database db = new Database("src/data/EDBEager.json", "src/data/Schema.json");
 		String answerString = "";
 		String answer2 = "";
 		BottomUpExecutionNew bottomUp = new BottomUpExecutionNew(facts);

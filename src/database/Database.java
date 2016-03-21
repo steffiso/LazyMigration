@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.chainsaw.Main;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -29,8 +32,8 @@ public class Database {
 	private String filenameSchema;
 	
 	public Database(){
-		filenameEDB = "data/EDB.json";
-		filenameSchema = "data/Schema.json";
+		filenameEDB = "src/data/EDB.json";
+		filenameSchema = "src/data/Schema.json";
 	}
 
 	public Database(String filenameEDB, String filenameSchema) {
@@ -39,6 +42,14 @@ public class Database {
 		this.filenameSchema = filenameSchema;
 	}
 
+	public String getFilenameEDB() {
+		return filenameEDB;
+	}
+
+	public String getFilenameSchema() {
+		return filenameSchema;
+	}
+	
 	// return all database entries as edb facts in one string
 	// e.g. "Player1(1,'Lisa',20,1).\nPlayer1(2,'Bart',20,2).\nPlayer1(3,'Homer',20,3)."
 	public String getEDB(){
@@ -48,6 +59,9 @@ public class Database {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
+			//InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameEDB);
+			//entities = mapper.readValue(inputStream, new TypeReference<List<Entity>>(){});
+			
 			entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
 			
 			for (Entity e: entities){
@@ -79,6 +93,8 @@ public class Database {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
+			//InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameEDB);
+			//entities = mapper.readValue(inputStream, new TypeReference<List<Entity>>(){});
 			entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
 			
 			for (Entity e: entities){
@@ -108,7 +124,9 @@ public class Database {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
-			schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});		
+			//InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameSchema);
+			//schemata = mapper.readValue(inputStream, new TypeReference<List<Schema>>(){});	
+			schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});
 			
 			for (Schema s: schemata){
 				if (s.getKind().equals(inputKind) && s.getSchemaversion() == inputVersion){
@@ -136,9 +154,12 @@ public class Database {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
-			schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});		
+			//InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameSchema);
+			//schemata = mapper.readValue(inputStream, new TypeReference<List<Schema>>(){});		
+			schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});
 			int schemaVersion;
 			String kind;
+			
 			for (Schema s: schemata){
 				kind = s.getKind();
 				schemaVersion = s.getSchemaversion();
@@ -166,7 +187,7 @@ public class Database {
 		
 		String json=null;
 			try {
-				json = new ParserForPut(new StringReader(datalogFact)).start();
+				json = new ParserForPut(new StringReader(datalogFact)).start(this);
 				writeInJsonFile(filenameEDB, json);
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
@@ -209,11 +230,14 @@ public class Database {
 		ArrayList<Entity> entities;
 
 			try {
+				//InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameSchema);
+				
 				schemata = mapper.readValue(new File(filenameSchema), new TypeReference<List<Schema>>(){});	
 				for (Schema s: schemata){
 					if (s.getTimestamp()>ts) ts = s.getTimestamp();
 				}
 				
+				//inputStream = this.getClass().getClassLoader().getResourceAsStream(filenameEDB);
 				entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
 				for (Entity e: entities){
 					if (e.getTimestamp() > ts) ts = e.getTimestamp();
@@ -243,10 +267,9 @@ public class Database {
 		writeInJsonFile(filename, jsonString);		
 	}
 	
-	public void writeInJsonFile(String filename, String jsonString){
-		
-		File inputFile = new File(filename);
-		File tempFile = new File("data/temp.json");
+	public void writeInJsonFile(String filename, String jsonString){		
+		File inputFile = new File(filename);		
+		File tempFile = new File("src/data/temp.json");
 		
 		BufferedReader reader;
 		BufferedWriter writer;
@@ -283,11 +306,11 @@ public class Database {
 	
 	// reset database to initial state
 	public void resetDatabaseState() throws IOException{
-		Path initialState = Paths.get("data/initialState/EDB.json");
+		Path initialState = Paths.get("src/data/EDBInitial.json");
 		Path overwrite = Paths.get(filenameEDB);
 		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);
 		
-		initialState = Paths.get("data/initialState/Schema.json");
+		initialState = Paths.get("src/data/SchemaInitial.json");
 		overwrite = Paths.get(filenameSchema);
 		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);		
 		

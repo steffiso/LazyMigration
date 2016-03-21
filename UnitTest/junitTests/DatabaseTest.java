@@ -16,7 +16,7 @@ public class DatabaseTest {
 	
 	@Before
 	public void setUp(){
-		db = new Database("data/eager/EDB.json", "data/eager/Schema.json");
+		db = new Database("src/data/EDB.json", "src/data/Schema.json");
 		initialEDB = db.getEDB();
 	}
 

@@ -2,20 +2,16 @@ package lazyMigration;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
-import datalog.DatalogRulesGenerator;
+import database.Database;
 import datalog.Fact;
 import datalog.Predicate;
 import datalog.Rule;
 import parserEDBFactToJava.ParseException;
 import parserEDBFactToJava.ParserforDatalogToJava;
 import parserQueryToDatalogToJava.ParserQueryToDatalogToJava;
-import parserRuletoJava.ParserRuleToJava;
 
 public class TestTopDownSNew {
 	public static void main(String[] args) throws ParseException,
@@ -178,9 +174,10 @@ public class TestTopDownSNew {
 		 */
 
 		// Durchlauf für Add points + Move name + get Player 1
+		Database db = new Database("src/data/EDBLazy.json","src/data/Schema.json");
 		for (int i = 0; i < inputSplitAddMove.length; i++) {
 			rulesAddMove.addAll((new ParserQueryToDatalogToJava(
-					new StringReader(inputSplitAddMove[i]))).getJavaRules());
+					new StringReader(inputSplitAddMove[i]))).getJavaRules(db));
 		}
 		System.out.println(rulesAddMove.toString());
 		

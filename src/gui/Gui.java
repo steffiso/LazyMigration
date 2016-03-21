@@ -58,8 +58,8 @@ public class Gui extends JFrame {
 	JTextArea rulesTextArea;
 	JPanel panelCommand;
 	JScrollPane scrollPane;
-	Database databaseBU = new Database("data/EDBEager.json", "data/Schema.json");
-	Database databaseTD = new Database("data/EDBLazy.json", "data/Schema.json");
+	Database databaseBU = new Database("src/data/EDBEager.json", "src/data/Schema.json");
+	Database databaseTD = new Database("src/data/EDBLazy.json", "src/data/Schema.json");
 	String factsBU = "";
 	String factsTD = "";
 	int totalNumberBU = 0;
@@ -378,7 +378,7 @@ public class Gui extends JFrame {
 			rulesTemp = copyRules();
 
 		try {
-			rulesTemp.addAll(parserget.getJavaRules());
+			rulesTemp.addAll(parserget.getJavaRules(databaseTD));
 		} catch (parserQueryToDatalogToJava.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -445,7 +445,7 @@ public class Gui extends JFrame {
 		try {
 			ParserQueryToDatalogToJava parserQuery = new ParserQueryToDatalogToJava(
 					new StringReader(uiInput));
-			rulesTemp = parserQuery.getJavaRules();
+			rulesTemp = parserQuery.getJavaRules(databaseTD);
 			rulesForTD.addAll(rulesTemp);
 			rulesStr = parserQuery.rulesStr;
 
@@ -500,7 +500,7 @@ public class Gui extends JFrame {
 			try {
 				json = new ParserForPut(new StringReader(kind + nr + "("
 						+ answerString.replace("[", "").replace("]", "") + ")"))
-						.start2();
+						.start2(databaseBU);
 			} catch (parserPutToDatalog.ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -546,7 +546,7 @@ public class Gui extends JFrame {
 					+ "("
 					+ answerString.replace("[", "").replace("]", "")
 							.replace(".", "")
-							.substring(answerString.indexOf("(")))).start2();
+							.substring(answerString.indexOf("(")))).start2(databaseTD);
 		} catch (parserPutToDatalog.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

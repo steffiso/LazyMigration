@@ -25,9 +25,10 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
 
   private static ArrayList < Rule > rules = new ArrayList < Rule > ();
 
+  private static Database db;
+
   private static ArrayList < String > getCurrentSchema(String kind)
   {
-    Database db = new Database();
     Schema currentSchema = db.getLatestSchema(kind);
     ArrayList < String > attributes = currentSchema.getAttributes();
     return attributes;
@@ -46,7 +47,6 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
 
   private static int getCurrentSchemaVersion(String kind)
   {
-    Database db = new Database();
     int currentSchemaVersion = db.getLatestSchemaVersion(kind);
     return currentSchemaVersion;
   }
@@ -71,7 +71,6 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
 
   private static void saveCurrentSchema(String kind, ArrayList < String > newSchema)
   {
-    Database db = new Database();
     ArrayList < String > currentSchema = getCurrentSchema(kind);
     if (!currentSchema.equals(newSchema))
     {
@@ -100,14 +99,12 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
 
   private static int getTimestamp()
   {
-    Database db = new Database();
     int time = db.getLastTimestamp();
     return time + 1;
   }
 
   public ArrayList < String > getSchema(String kind, int schemaNumber)
   {
-    Database db = new Database();
     Schema currentSchema = db.getSchema(kind, schemaNumber);
     if (currentSchema != null) return currentSchema.getAttributes();
     else return null;
@@ -115,7 +112,6 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
 
   public String getAttributeName(String kind, int schemaNumber, int pos)
   {
-    Database db = new Database();
     Schema currentSchema = db.getSchema(kind, schemaNumber);
     if (currentSchema != null)
     {
@@ -126,16 +122,18 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     else return null;
   }
 
-  final public String getDatalogRules() throws ParseException {
+  final public String getDatalogRules(Database db) throws ParseException {
   String value = null;
+  this.db = db;
     value = start();
     jj_consume_token(0);
     {if (true) return value;}
     throw new Error("Missing return statement in function");
   }
 
-  final public ArrayList < Rule > getJavaRules() throws ParseException {
+  final public ArrayList < Rule > getJavaRules(Database db) throws ParseException {
   String value = null;
+  this.db = db;
     value = start();
     jj_consume_token(0);
     rulesStr = value;
