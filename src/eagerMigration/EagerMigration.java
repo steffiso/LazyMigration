@@ -20,15 +20,14 @@ public class EagerMigration {
 		this.query = query;
 	}
 
-	public String writeAnswersInDatabase() {
+	public ArrayList<String> writeAnswersInDatabase() {
 
-		Database db = new Database("src/data/EDBEager.json", "src/data/Schema.json");
-		String answerString = "";
-		String answer2 = "";
-		BottomUpExecutionNew bottomUp = new BottomUpExecutionNew(facts);
+		Database db = new Database("/data/EDBEager.json",
+				"/data/Schema.json");
+		BottomUpExecution bottomUp = new BottomUpExecution(facts);
 		bottomUp.generateAllRules(rules);
 		ArrayList<Pair> unicateRuleNames = new ArrayList<Pair>();
-
+		ArrayList<String> list = null;
 		// eliminate duplicate entries
 		for (Rule rule : rules) {
 			if (!unicateRuleNames.contains(new Pair(rule.getHead().getKind(),
@@ -36,38 +35,12 @@ public class EagerMigration {
 				unicateRuleNames.add(new Pair(rule.getHead().getKind(), rule
 						.getHead().getScheme().size()));
 		}
-		
+
 		for (Pair pair : unicateRuleNames) {
 			ArrayList<ArrayList<String>> answers = bottomUp.getFact(
 					pair.ruleName, pair.ruleAnz);
 
-			if (pair.ruleName.startsWith("legacy")) {
-				// PrintWriter out;
-				// try {
-				// out = new PrintWriter (new BufferedWriter(new
-				// FileWriter("data/legacyEntities")));
-				// String legacyEntities = "";
-				// for (ArrayList<String> answer : answers){
-				// //put to legacy file
-				// String valueString = "";
-				// for (String s: answer) {
-				// valueString = valueString + s + ",";
-				// }
-				// valueString = valueString.substring(0,valueString.length() -
-				// 1);
-				// legacyEntities = legacyEntities + rule.getHead().getKind()
-				// +"(" + valueString + ")\n";
-				//
-				// }
-				// out.append(legacyEntities);
-				// out.close();
-				// } catch (IOException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
-
-			} else if (!pair.ruleName.startsWith("latest")
-					&& !query.startsWith("get")) {
+			if (!pair.ruleName.startsWith("latest") && !query.startsWith("get")&&!pair.ruleName.startsWith("legacy")) {
 				for (ArrayList<String> answer : answers) {
 					String values = "";
 					for (String s : answer) {
@@ -76,23 +49,24 @@ public class EagerMigration {
 
 					values = values.substring(0, values.length() - 2);
 					String tempKind = pair.ruleName;
-					
+
 					// put to database file
 					String datalogFact = tempKind + "(" + values + ").";
 					db.putToDatabase(datalogFact);
 					setNumber(getNumber() + 1);
 				}
 			} else if (query.startsWith("get")
-					&& pair.ruleName.startsWith("get"))
-				answer2 = answers.toString();
+					&& pair.ruleName.startsWith("get")) {
 
-			for (ArrayList<String> answer : answers)
-				answerString = answerString + pair.ruleName + answer.toString()
-						+ "\n";
-
+				for (ArrayList<String> answer : answers) {
+					if (list == null)
+						list = new ArrayList<String>();
+					list.add(answer.toString());
+				}
+			}
 		}
-		
-		return answer2;
+
+		return list;
 	}
 
 	public int getNumber() {

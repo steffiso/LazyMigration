@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="iris/demo/DemoGUI.java|lazyMigration/JsonToObject.java" kind="src" path="src"/>
+	<classpathentry excluding="iris/demo/DemoGUI.java|lazyMigration/JsonToObject.java|data/" kind="src" path="src"/>
 	<classpathentry kind="src" path="UnitTest"/>
 	<classpathentry kind="lib" path="lib/iris-0.60.jar"/>
 	<classpathentry kind="lib" path="lib/iris-app-0.60.jar"/>

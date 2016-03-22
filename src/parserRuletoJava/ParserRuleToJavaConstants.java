@@ -11,21 +11,23 @@ public interface ParserRuleToJavaConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int variable = 5;
+  int nullValue = 5;
   /** RegularExpression Id. */
-  int string = 6;
+  int variable = 6;
   /** RegularExpression Id. */
-  int operators = 7;
+  int string = 7;
   /** RegularExpression Id. */
-  int number = 8;
+  int operators = 8;
   /** RegularExpression Id. */
-  int digit = 9;
+  int number = 9;
   /** RegularExpression Id. */
-  int not = 10;
+  int digit = 10;
   /** RegularExpression Id. */
-  int kindValue = 11;
+  int not = 11;
   /** RegularExpression Id. */
-  int nameValue = 12;
+  int kindValue = 12;
+  /** RegularExpression Id. */
+  int nameValue = 13;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -37,6 +39,7 @@ public interface ParserRuleToJavaConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
+    "\"null\"",
     "<variable>",
     "<string>",
     "<operators>",

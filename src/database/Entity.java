@@ -11,7 +11,7 @@ public class Entity {
 	@JsonProperty("schemaversion")
 	private int schemaversion;
 	@JsonProperty("attributes")
-	private LinkedHashMap<String, String> attributes;
+	private LinkedHashMap<String, Object> attributes;
 	@JsonProperty("ts")
 	private int timestamp;
 
@@ -31,11 +31,11 @@ public class Entity {
 		this.schemaversion = schemaversion;
 	}
 
-	public LinkedHashMap<String, String> getAttributes() {
+	public LinkedHashMap<String, Object> getAttributes() {
 		return attributes;
 	}
 
-	public void setAttributes(LinkedHashMap<String, String> attributes) {
+	public void setAttributes(LinkedHashMap<String, Object> attributes) {
 		this.attributes = attributes;
 	}
 
@@ -43,45 +43,52 @@ public class Entity {
 		return this.timestamp;
 	}
 
-	public String toString() {
-		String entity = kind + Integer.toString(schemaversion) + "(";
-		String temp;
-		for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
-			try {
-				int value = Integer.parseInt(attributeEntry.getValue());
-				entity = entity + value + ",";
-			} catch (NumberFormatException e) {
-				temp = "'" + attributeEntry.getValue() + "'";
-				entity = entity + temp + ",";
-			}
-		}
-		if (entity.endsWith(","))
-			entity = entity + Integer.toString(timestamp) + ").\n";
-		else
-			entity = entity + "," + Integer.toString(timestamp) + ").\n";
+	public String toEDBString() {
+		String entity = toString(true);
+		return entity;
+	}
+
+	public String toJsonString() {
+		String entity = toString(false);
 		return entity;
 
 	}
 
-	public String toJsonString() {
-		String entity = kind + Integer.toString(schemaversion) + "{";
-		String temp;
-		for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
-			entity = entity + "\"" + attributeEntry.getKey() + "\":";
-			try {
-				int value = Integer.parseInt(attributeEntry.getValue());
-				entity = entity + value + ",";
-			} catch (NumberFormatException e) {
-				temp = "\"" + attributeEntry.getValue() + "\"";
-				entity = entity + temp + ",";
-			}
-		}
-		if (entity.endsWith(","))
-			entity = entity + "\"ts\":" + Integer.toString(timestamp) + "}.\n";
+	public String toString(boolean isEDB) {
+		String entity = "";
+		if (isEDB)
+			entity = kind + Integer.toString(schemaversion) + "(";
 		else
-			entity = entity + ", \"ts\":" + Integer.toString(timestamp)
-					+ "}.\n";
+			entity = kind + Integer.toString(schemaversion) + "{";
+		String temp;
+		for (Map.Entry<String, Object> attributeEntry : attributes.entrySet()) {
+			if (!isEDB)
+				entity = entity + "\"" + attributeEntry.getKey() + "\":";
+			if (attributeEntry.getValue() == null)
+				temp = "null";
+			else if (attributeEntry.getValue().getClass().getSimpleName()
+					.equals("String"))
+				if (isEDB)
+					temp = "'" + attributeEntry.getValue() + "'";
+				else
+					temp = "\"" + attributeEntry.getValue() + "\"";
+			else
+				temp = attributeEntry.getValue().toString();
+			entity = entity + temp + ",";
+		}
+		if (isEDB) {
+			if (entity.endsWith(","))
+				entity = entity + Integer.toString(timestamp) + ").\n";
+			else
+				entity = entity + "," + Integer.toString(timestamp) + ").\n";
+		} else {
+			if (entity.endsWith(","))
+				entity = entity + "\"ts\":" + Integer.toString(timestamp)
+						+ "}.\n";
+			else
+				entity = entity + ", \"ts\":" + Integer.toString(timestamp)
+						+ "}.\n";
+		}
 		return entity;
-
 	}
 }

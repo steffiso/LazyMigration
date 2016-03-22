@@ -21,15 +21,17 @@ public interface ParserForPutConstants {
   /** RegularExpression Id. */
   int punkt = 9;
   /** RegularExpression Id. */
-  int string = 10;
+  int nullValue = 10;
   /** RegularExpression Id. */
-  int number = 11;
+  int string = 11;
   /** RegularExpression Id. */
-  int digit = 12;
+  int number = 12;
   /** RegularExpression Id. */
-  int kindValue = 13;
+  int digit = 13;
   /** RegularExpression Id. */
-  int nameValue = 14;
+  int kindValue = 14;
+  /** RegularExpression Id. */
+  int nameValue = 15;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -46,6 +48,7 @@ public interface ParserForPutConstants {
     "\"{\"",
     "\"}\"",
     "\":\"",
+    "\"null\"",
     "<string>",
     "<number>",
     "<digit>",

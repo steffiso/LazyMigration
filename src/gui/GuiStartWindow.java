@@ -22,7 +22,7 @@ import javax.swing.border.MatteBorder;
 
 import java.awt.GridLayout;
 
-public class SchemaMigrator extends JFrame {
+public class GuiStartWindow extends JFrame {
 
 	/**
 	 * 
@@ -36,7 +36,7 @@ public class SchemaMigrator extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SchemaMigrator frame = new SchemaMigrator();
+					GuiStartWindow frame = new GuiStartWindow();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -48,7 +48,8 @@ public class SchemaMigrator extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public SchemaMigrator() {
+	public GuiStartWindow() {
+		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(250, 90, 780, 539);
 		setTitle("SchemaMigrator");
@@ -67,8 +68,7 @@ public class SchemaMigrator extends JFrame {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-					GuiAlternative gui = new GuiAlternative();
-					//Gui gui = new Gui();
+					GuiMigration gui = new GuiMigration();
 					gui.setVisible(true);
 				
 			}

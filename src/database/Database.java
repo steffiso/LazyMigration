@@ -1,5 +1,7 @@
 package database;
 
+import gui.GuiStartWindow;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -7,16 +9,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.chainsaw.Main;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,16 +30,21 @@ public class Database {
 
 	private String filenameEDB;
 	private String filenameSchema;
+	private String filePath;
 	
-	public Database(){
-		filenameEDB = "src/data/EDB.json";
-		filenameSchema = "src/data/Schema.json";
-	}
-
 	public Database(String filenameEDB, String filenameSchema) {
 		super();
-		this.filenameEDB = filenameEDB;
-		this.filenameSchema = filenameSchema;
+		String jarPath="";
+		try {
+			jarPath = new File(
+					   GuiStartWindow.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getPath();
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		this.filePath=jarPath;
+		this.filenameEDB = jarPath+filenameEDB;
+		this.filenameSchema = jarPath+filenameSchema;
 	}
 
 	public String getFilenameEDB() {
@@ -65,7 +70,7 @@ public class Database {
 			entities = mapper.readValue(new File(filenameEDB), new TypeReference<List<Entity>>(){});
 			
 			for (Entity e: entities){
-				edb = edb + e.toString();
+				edb = edb + e.toEDBString();
 			}
 			
 		} catch (JsonParseException e) {
@@ -269,7 +274,7 @@ public class Database {
 	
 	public void writeInJsonFile(String filename, String jsonString){		
 		File inputFile = new File(filename);		
-		File tempFile = new File("src/data/temp.json");
+		File tempFile = new File(filePath+"/data/temp.json");
 		
 		BufferedReader reader;
 		BufferedWriter writer;
@@ -306,11 +311,11 @@ public class Database {
 	
 	// reset database to initial state
 	public void resetDatabaseState() throws IOException{
-		Path initialState = Paths.get("src/data/EDBInitial.json");
+		Path initialState = Paths.get(filePath+"/data/EDBInitial.json");
 		Path overwrite = Paths.get(filenameEDB);
 		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);
 		
-		initialState = Paths.get("src/data/SchemaInitial.json");
+		initialState = Paths.get(filePath+"/data/SchemaInitial.json");
 		overwrite = Paths.get(filenameSchema);
 		Files.copy(initialState, overwrite, StandardCopyOption.REPLACE_EXISTING);		
 		

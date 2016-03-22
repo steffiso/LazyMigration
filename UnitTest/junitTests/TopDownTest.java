@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import lazyMigration.TopDownExecutionNew;
+import lazyMigration.TopDownExecution;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,7 +26,7 @@ import datalog.Rule;
 public class TopDownTest {
 
 	ArrayList<Fact> facts = new ArrayList<Fact>();
-	Database db=new Database("src/data/EDBLazy.json", "src/data/Schema.json");
+	Database db=new Database("/data/EDBLazy.json", "/data/Schema.json");
 
 	@Before
 	public void setUp() throws ParseException {
@@ -49,7 +49,7 @@ public class TopDownTest {
 	
 	@Test
 	public void testJoin() throws parserRuletoJava.ParseException {
-		TopDownExecutionNew execute = new TopDownExecutionNew(facts);
+		TopDownExecution execute = new TopDownExecution(facts);
 
 		ArrayList<Rule> rules = new ParserRuleToJava(
 				new StringReader(
@@ -65,7 +65,7 @@ public class TopDownTest {
 	
 	@Test
 	public void testNot() throws parserRuletoJava.ParseException {
-		TopDownExecutionNew execute = new TopDownExecutionNew(facts);
+		TopDownExecution execute = new TopDownExecution(facts);
 
 		ArrayList<Rule> rules = new ParserRuleToJava(
 				new StringReader(
@@ -102,7 +102,7 @@ public class TopDownTest {
 				
 				.start();
 		
-		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,unificationMap);
+		TopDownExecution lazy = new TopDownExecution(facts, rules, goal,unificationMap);
 		assertEquals("[getPlayer1(1,'Lisa. M',20,5).]",lazy.getAnswers().toString());
 		
 	}
@@ -130,7 +130,7 @@ public class TopDownTest {
 				
 				.start();
 		
-		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,unificationMap);
+		TopDownExecution lazy = new TopDownExecution(facts, rules, goal,unificationMap);
 		assertEquals("[getPlayer1(1,5).]",lazy.getAnswers().toString());
 		
 	}
@@ -172,7 +172,7 @@ public class TopDownTest {
 				
 				.start();
 		
-		TopDownExecutionNew lazy = new TopDownExecutionNew(facts, rules, goal,unificationMap);
+		TopDownExecution lazy = new TopDownExecution(facts, rules, goal,unificationMap);
 		assertEquals("[getMission2(2,'collect',2,100,13).]",lazy.getAnswers().toString());
 		
 	}	

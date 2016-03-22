@@ -23,13 +23,15 @@ public interface ParserQueryToDatalogToJavaConstants {
   /** RegularExpression Id. */
   int string = 10;
   /** RegularExpression Id. */
-  int number = 11;
+  int nullValue = 11;
   /** RegularExpression Id. */
-  int digit = 12;
+  int number = 12;
   /** RegularExpression Id. */
-  int name = 13;
+  int digit = 13;
   /** RegularExpression Id. */
-  int nameValue = 14;
+  int name = 14;
+  /** RegularExpression Id. */
+  int nameValue = 15;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -47,6 +49,7 @@ public interface ParserQueryToDatalogToJavaConstants {
     "\"copy\"",
     "\"move\"",
     "<string>",
+    "\"null\"",
     "<number>",
     "<digit>",
     "<name>",

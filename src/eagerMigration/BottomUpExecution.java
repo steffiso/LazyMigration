@@ -13,13 +13,13 @@ import datalog.Fact;
 import datalog.Predicate;
 import datalog.Rule;
 
-public class BottomUpExecutionNew {
+public class BottomUpExecution {
 
 	// all edb facts and generated idb
 	private ArrayList<Fact> facts;
 
 	// set edb facts
-	public BottomUpExecutionNew(ArrayList<Fact> values) {
+	public BottomUpExecution(ArrayList<Fact> values) {
 		super();
 		this.facts = values;
 	}
@@ -121,7 +121,6 @@ public class BottomUpExecutionNew {
 				}
 			}
 
-		// toDo: reordering of Predicates
 	}
 
 	private void renameVariablesOfAllPredicates(Rule rule, String left,

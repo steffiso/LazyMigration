@@ -48,15 +48,17 @@ import java.awt.SystemColor;
 
 import javax.swing.SwingConstants;
 
-public class GuiAlternative extends JFrame {
+public class GuiMigration extends JFrame {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	JPanel panelCommand;
-	Database databaseBU = new Database("src/data/EDBEager.json", "src/data/Schema.json");
-	Database databaseTD = new Database("src/data/EDBLazy.json", "src/data/Schema.json");
+	JPanel panelMigration;
+	Database databaseBU = new Database("/data/EDBEager.json",
+			"/data/Schema.json");
+	Database databaseTD = new Database("/data/EDBLazy.json",
+			"/data/Schema.json");
 	String factsEager = "";
 	String factsLazy = "";
 	int totalPutsBU = 0;
@@ -76,23 +78,25 @@ public class GuiAlternative extends JFrame {
 	private JTextArea txtAreaFactsEager;
 	JScrollPane scrollPaneResultsEager;
 	JScrollPane scrollPaneResultsLazy;
+
 	/**
 	 * Create the application.
 	 */
-	public GuiAlternative() {
+	public GuiMigration() {
 		setResizable(false);
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
-	private void initialize(){
+	private void initialize() {
 		setTitle("DatalogMigration");
-		setBounds(200, 80, 939, 609);
-		getContentPane().setLayout(new GridLayout(0, 1, 0, 2));		
-		
+		setBounds(200, 80, 959, 609);
+		getContentPane().setLayout(new GridLayout(0, 1, 0, 2));
+
 		// reset database to initial state
 		try {
 			databaseBU.resetDatabaseState();
@@ -101,45 +105,45 @@ public class GuiAlternative extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		panelCommand = new JPanel();
-		getContentPane().add(panelCommand);
-		panelCommand.setBorder(new LineBorder(new Color(0, 0, 0)));
-		panelCommand.setLayout(new GridLayout(0, 1, 0, 1));
 
-		JPanel panelEmpty = new JPanel();
-		panelEmpty.setBackground(SystemColor.control);
-		panelEmpty.setForeground(Color.LIGHT_GRAY);
-		panelEmpty.setBorder(null);
-		panelCommand.add(panelEmpty);
-		panelEmpty.setLayout(null);
-		
-		JPanel panel = new JPanel();
-		panel.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
-		panel.setBounds(0, 0, 931, 51);
-		panelEmpty.add(panel);
-		panel.setLayout(null);
-		
+		panelMigration = new JPanel();
+		getContentPane().add(panelMigration);
+		panelMigration.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panelMigration.setLayout(new GridLayout(0, 1, 0, 1));
+
+		JPanel panelMain = new JPanel();
+		panelMain.setBackground(SystemColor.control);
+		panelMain.setForeground(Color.LIGHT_GRAY);
+		panelMain.setBorder(null);
+		panelMigration.add(panelMain);
+		panelMain.setLayout(null);
+
+		JPanel panelCommand = new JPanel();
+		panelCommand.setBorder(new MatteBorder(0, 0, 1, 0, (Color) new Color(0, 0, 0)));
+		panelCommand.setBounds(0, 0, 951, 51);
+		panelMain.add(panelCommand);
+		panelCommand.setLayout(null);
+
 		txtFieldCommand = new JTextField();
 		txtFieldCommand.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		txtFieldCommand.setBounds(153, 12, 518, 23);
-		panel.add(txtFieldCommand);
+		panelCommand.add(txtFieldCommand);
 		txtFieldCommand.setColumns(50);
-		
+
 		JButton btCommand = new JButton("Execute Command");
 		btCommand.setBounds(681, 11, 144, 25);
-		panel.add(btCommand);
+		panelCommand.add(btCommand);
 		btCommand.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		
+
 		JButton btInfo = new JButton("Info");
 		btInfo.setBounds(835, 13, 62, 23);
-		panel.add(btInfo);
+		panelCommand.add(btInfo);
 		btInfo.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent arg0) {
 				JOptionPane
 						.showMessageDialog(
 								new JFrame(),
-								"Commands:\n\nadd kind.attribute=value\n e.g. add Player.points=100 or add Player.name=\"100\"\n\ndelete kind.attribute\n e.g. delete Player.points\n\n"
+								"Commands:\n\nadd kind.attribute=value\n e.g. add Player.points=100 or add Player.name=\"Lisa\"\n\ndelete kind.attribute\n e.g. delete Player.points\n\n"
 										+ "copy kind1.attribute to kind2 where kind1.attribute1=kind2.attribute2\n e.g. copy Player.score to Mission where Player.id=Mission.pid\n\n"
 										+ "move kind1.attribute to kind2 where kind1.attribute1=kind2.attribute2\n e.g. move Player.score to Mission where Player.id=Mission.pid\n\n"
 										+ "get kind.id=value\n e.g. get Player.id=1\n\nput kind(value1,value2,...) e.g. put Player(1,'Lisa',...)",
@@ -147,10 +151,10 @@ public class GuiAlternative extends JFrame {
 			}
 		});
 		btInfo.setFont(new Font("Tahoma", Font.BOLD, 11));
-		
+
 		JLabel lblCommand = new JLabel(" Command Prompt:");
 		lblCommand.setBounds(10, 15, 122, 16);
-		panel.add(lblCommand);
+		panelCommand.add(lblCommand);
 		lblCommand.setFont(new Font("Tahoma", Font.BOLD, 13));
 		btCommand.addActionListener(new ActionListener() {
 			@Override
@@ -172,27 +176,27 @@ public class GuiAlternative extends JFrame {
 			}
 
 		});
-		
+
 		JLabel lbDBEntriesEager = new JLabel("Number of DB entries");
 		lbDBEntriesEager.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		lbDBEntriesEager.setBounds(107, 538, 215, 14);
-		panelEmpty.add(lbDBEntriesEager);
-		
+		panelMain.add(lbDBEntriesEager);
+
 		txtFieldDBEntriesEager = new JTextField();
 		txtFieldDBEntriesEager.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtFieldDBEntriesEager.setText("0");
 		txtFieldDBEntriesEager.setEditable(false);
 		txtFieldDBEntriesEager.setColumns(10);
 		txtFieldDBEntriesEager.setBounds(442, 536, 49, 20);
-		panelEmpty.add(txtFieldDBEntriesEager);
-		
+		panelMain.add(txtFieldDBEntriesEager);
+
 		txtFieldDBEntriesLazy = new JTextField();
 		txtFieldDBEntriesLazy.setText("0");
 		txtFieldDBEntriesLazy.setEditable(false);
 		txtFieldDBEntriesLazy.setColumns(10);
 		txtFieldDBEntriesLazy.setBounds(512, 536, 49, 20);
-		panelEmpty.add(txtFieldDBEntriesLazy);
-		
+		panelMain.add(txtFieldDBEntriesLazy);
+
 		JCheckBox cbDatalogRules = new JCheckBox("view generated rules");
 		cbDatalogRules.setBackground(SystemColor.control);
 		cbDatalogRules.addActionListener(new ActionListener() {
@@ -205,95 +209,92 @@ public class GuiAlternative extends JFrame {
 
 		});
 		cbDatalogRules.setBounds(107, 58, 145, 23);
-		panelEmpty.add(cbDatalogRules);
-		
+		panelMain.add(cbDatalogRules);
+
 		JLabel lblDatalogView = new JLabel("DATALOG VIEW");
 		lblDatalogView.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblDatalogView.setBounds(10, 62, 91, 14);
-		panelEmpty.add(lblDatalogView);
-		
+		panelMain.add(lblDatalogView);
+
 		JLabel lblSummary = new JLabel("SUMMARY");
 		lblSummary.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblSummary.setBounds(10, 539, 66, 14);
-		panelEmpty.add(lblSummary);
-		
+		panelMain.add(lblSummary);
+
 		JLabel lblDbEntries = new JLabel("DB ENTRIES");
 		lblDbEntries.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblDbEntries.setBounds(10, 199, 66, 14);
-		panelEmpty.add(lblDbEntries);
-		
+		panelMain.add(lblDbEntries);
+
 		JLabel lblEagerMigration = new JLabel("Eager Migration");
 		lblEagerMigration.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblEagerMigration.setBounds(214, 167, 123, 23);
-		panelEmpty.add(lblEagerMigration);
-		
+		panelMain.add(lblEagerMigration);
+
 		JLabel lblLazyMigration = new JLabel("Lazy Migration");
 		lblLazyMigration.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblLazyMigration.setBounds(566, 166, 107, 25);
-		panelEmpty.add(lblLazyMigration);
-		
+		panelMain.add(lblLazyMigration);
+
 		factsEager = databaseBU.getJson();
 		factsLazy = databaseTD.getJson();
-		
+
 		txtAreaFactsLazy = new JTextArea();
 		txtAreaFactsLazy.setEditable(false);
 		txtAreaFactsLazy.setText(factsLazy);
-		
+
 		txtAreaFactsEager = new JTextArea();
 		txtAreaFactsEager.setEditable(false);
 		txtAreaFactsEager.setText(factsEager);
 
 		JScrollPane scrollPaneEager = new JScrollPane(txtAreaFactsEager);
 		scrollPaneEager.setBounds(107, 193, 384, 275);
-		scrollPaneEager.setViewportView(txtAreaFactsEager);	
-		panelEmpty.add(scrollPaneEager);
-		
+		scrollPaneEager.setViewportView(txtAreaFactsEager);
+		panelMain.add(scrollPaneEager);
+
 		JScrollPane scrollPaneLazy = new JScrollPane(txtAreaFactsLazy);
 		scrollPaneLazy.setBounds(512, 193, 384, 275);
-		panelEmpty.add(scrollPaneLazy);
-		
+		panelMain.add(scrollPaneLazy);
+
 		txtAreaRules = new JTextArea();
 		txtAreaRules.setEditable(false);
 		txtAreaRules.setBounds(20, 11, 796, 66);
 		txtAreaRules.setVisible(false);
-				
+
 		scrollPaneRules = new JScrollPane(txtAreaRules);
 		scrollPaneRules.setEnabled(false);
 		scrollPaneRules.setBounds(107, 88, 789, 68);
 		scrollPaneRules.setVisible(false);
-		panelEmpty.add(scrollPaneRules);
-				
-				
-		
+		panelMain.add(scrollPaneRules);
+
 		totalDBEntriesBU = factsEager.split("\n").length;
 
 		totalDBEntriesTD = factsLazy.split("\n").length;
-		
+
 		txtFieldDBEntriesEager.setText(String.valueOf(totalDBEntriesBU));
 		txtFieldDBEntriesLazy.setText(String.valueOf(totalDBEntriesTD));
-				
+
 		txtAreaResultsLazy = new JTextArea();
 		txtAreaResultsLazy.setEditable(false);
-		
+
 		txtAreaResultsEager = new JTextArea();
 		txtAreaResultsEager.setEditable(false);
-		
+
 		scrollPaneResultsEager = new JScrollPane();
 		scrollPaneResultsEager.setBounds(107, 480, 384, 44);
-		scrollPaneResultsEager.setViewportView(txtAreaResultsEager);	
-		panelEmpty.add(scrollPaneResultsEager);
-				
+		scrollPaneResultsEager.setViewportView(txtAreaResultsEager);
+		panelMain.add(scrollPaneResultsEager);
+
 		scrollPaneResultsLazy = new JScrollPane();
 		scrollPaneResultsLazy.setBounds(512, 480, 384, 44);
-		scrollPaneResultsLazy.setViewportView(txtAreaResultsLazy);	
-		panelEmpty.add(scrollPaneResultsLazy);
+		scrollPaneResultsLazy.setViewportView(txtAreaResultsLazy);
+		panelMain.add(scrollPaneResultsLazy);
 
-				
 		JLabel lblResults = new JLabel("RESULTS");
 		lblResults.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblResults.setBounds(10, 481, 49, 25);
-		panelEmpty.add(lblResults);
-		
+		panelMain.add(lblResults);
+
 	}
 
 	private void executeGetCommand(String uiInput) {
@@ -310,26 +311,23 @@ public class GuiAlternative extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		kind = parserget.kindStr;
-		id = parserget.idStr;
+		kind = parserget.getKind();
+		id = parserget.getId();
 		// start lazy migration
-
-		Database db = new Database();
-		// test für add, copy and get
 		Map<String, String> attributeMap = new TreeMap<String, String>();
 		attributeMap.put("kind", kind);
 		attributeMap.put("position", "0");
 		attributeMap.put("value", id);
 		ArrayList<Map<String, String>> uniMap = new ArrayList<Map<String, String>>();
 		uniMap.add(attributeMap);
-		ArrayList<String> schema = db.getLatestSchema(kind).getAttributes();
+		ArrayList<String> schema = databaseTD.getLatestSchema(kind).getAttributes();
 		schema.add("?ts");
 
 		Predicate goal = new Predicate("get" + kind
-				+ db.getLatestSchemaVersion(kind), schema.size(), schema);
+				+ databaseTD.getLatestSchemaVersion(kind), schema.size(), schema);
 		executeQueryTD(rulesTemp, goal, uniMap);
-		txtAreaRules.setText(parserget.rulesStr);
-		executeQueryBU(parserget.rulesStr);
+		txtAreaRules.setText(parserget.getRules());
+		executeQueryBU(parserget.getRules());
 	}
 
 	private ArrayList<Rule> copyRules() {
@@ -339,14 +337,14 @@ public class GuiAlternative extends JFrame {
 			ArrayList<String> scheme = (ArrayList<String>) r.getHead()
 					.getScheme().clone();
 			Predicate newHead = new Predicate(r.getHead().getKind(), r
-					.getHead().getAnz(), scheme);
+					.getHead().getNumberSchemeEntries(), scheme);
 			newHead.setHead(r.getHead().isHead());
 			ArrayList<Predicate> predicates = new ArrayList<Predicate>();
 			for (Predicate p : r.getPredicates()) {
 				@SuppressWarnings("unchecked")
 				ArrayList<String> scheme2 = (ArrayList<String>) p.getScheme()
 						.clone();
-				Predicate p2 = new Predicate(p.getKind(), p.getAnz(), scheme2);
+				Predicate p2 = new Predicate(p.getKind(), p.getNumberSchemeEntries(), scheme2);
 				p2.setNot(p.isNot());
 				predicates.add(p2);
 			}
@@ -372,7 +370,7 @@ public class GuiAlternative extends JFrame {
 					new StringReader(uiInput));
 			rulesTemp = parserQuery.getJavaRules(databaseTD);
 			rulesForTD.addAll(rulesTemp);
-			rulesStr = parserQuery.rulesStr;
+			rulesStr = parserQuery.getRules();
 
 		} catch (parserQueryToDatalogToJava.ParseException e) {
 			// TODO Auto-generated catch block
@@ -411,28 +409,35 @@ public class GuiAlternative extends JFrame {
 		}
 
 		EagerMigration migrate = new EagerMigration(facts, rules, query);
-		String answerString = migrate.writeAnswersInDatabase();
-		
+		ArrayList<String> answerString = migrate.writeAnswersInDatabase();
+
 		totalPutsBU = totalPutsBU + migrate.getNumber();
-		
+
 		totalDBEntriesBU = totalDBEntriesBU + totalPutsBU;
 		txtFieldDBEntriesEager.setText(String.valueOf(totalPutsBU));
-		
+
 		factsEager = databaseBU.getJson();
 		txtAreaFactsEager.setText(factsEager);
 		if (query.startsWith("get")) {
-			int nr = databaseBU.getLatestSchemaVersion(kind);
-			String json = null;
-			try {
-				json = new ParserForPut(new StringReader(kind + nr + "("
-						+ answerString.replace("[", "").replace("]", "") + ")"))
-						.start2(databaseBU);
-			} catch (parserPutToDatalog.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			txtAreaResultsEager.setText(json);
-			scrollPaneResultsEager.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+			String getAnswer = "";
+			if (answerString != null)
+				for (String answer : answerString) {
+					int nr = databaseBU.getLatestSchemaVersion(kind);
+					String json = null;
+					try {
+						json = new ParserForPut(new StringReader(kind + nr
+								+ "("
+								+ answer.replace("[", "").replace("]", "")
+								+ ")")).startJSON(databaseBU);
+					} catch (parserPutToDatalog.ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					getAnswer = getAnswer + json + "\n";
+				}
+			txtAreaResultsEager.setText(getAnswer);
+			scrollPaneResultsEager
+					.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		} else
 			txtAreaResultsEager.setText("");
 		txtFieldDBEntriesEager
@@ -456,44 +461,50 @@ public class GuiAlternative extends JFrame {
 		}
 		LazyMigration migrate = new LazyMigration(facts, rulesTemp, goal,
 				uniMap);
-		String answerString = migrate.writeAnswersInDatabase();
-	
+		ArrayList<String> answerString = migrate.writeAnswersInDatabase();
+
 		totalPutsTD = totalPutsTD + migrate.getNumberOfPuts();
-		
+
 		totalDBEntriesTD = totalDBEntriesTD + totalPutsTD;
 		txtFieldDBEntriesLazy.setText(String.valueOf(totalDBEntriesTD));
-		
+
 		factsLazy = databaseTD.getJson();
 		txtAreaFactsLazy.setText(factsLazy);
 		int nr = databaseTD.getLatestSchemaVersion(kind);
-		String json = null;
-		try {
-			json = new ParserForPut(new StringReader(kind
-					+ nr
-					+ "("
-					+ answerString.replace("[", "").replace("]", "")
-							.replace(".", "")
-							.substring(answerString.indexOf("(")))).start2(databaseTD);
-		} catch (parserPutToDatalog.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		txtAreaResultsLazy.setText(json);
-		scrollPaneResultsLazy.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		String getAnswer = "";
+		if (answerString != null)
+			for (String answer : answerString) {
+				String json = null;
+				try {
+					json = new ParserForPut(new StringReader(kind
+							+ nr
+							+ answer.replace("[", "").replace("]", "")
+									.replace(".", "")
+									.substring(answer.indexOf("("))))
+							.startJSON(databaseTD);
+				} catch (parserPutToDatalog.ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				getAnswer = getAnswer + json + "\n";
+			}
+		txtAreaResultsLazy.setText(getAnswer);
+		scrollPaneResultsLazy
+				.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		txtFieldDBEntriesLazy
 				.setText(String.valueOf(factsLazy.split("\n").length));
 	}
-	
-	public void executePutCommand(String uiInput){
+
+	public void executePutCommand(String uiInput) {
 		databaseTD.putToDatabase(uiInput);
 		databaseBU.putToDatabase(uiInput);
-		
+
 		// reset text area facts
 		factsEager = databaseBU.getJson();
 		factsLazy = databaseTD.getJson();
 		txtAreaFactsEager.setText(factsEager);
 		txtAreaFactsLazy.setText(factsLazy);
-		
+
 		// increment db entries counter
 		int entriesEager = Integer.parseInt(txtFieldDBEntriesEager.getText());
 		int entriesLazy = Integer.parseInt(txtFieldDBEntriesLazy.getText());

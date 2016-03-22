@@ -71,8 +71,8 @@ public class DatalogRulesGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		kind = parserget.kindStr;
-		id = parserget.idStr;
+		kind = parserget.getKind();
+		id = parserget.getId();
 		return new String[] { rules, kind, id };
 
 	}
@@ -101,18 +101,16 @@ public class DatalogRulesGenerator {
 
 	// returns all edb facts from database in one string
 	public String getEDBFacts() {
-		Database parseToEDB = new Database();
 		String edbFacts = "";
-		edbFacts = parseToEDB.getEDB();
+		edbFacts = db.getEDB();
 		return edbFacts;
 
 	}
 
 	// returns all edb facts from database in one json-like string
 	public String getJsonFacts() {
-		Database parseToEDB = new Database();
 		String edbFacts = "";
-		edbFacts = parseToEDB.getJson();
+		edbFacts = db.getJson();
 		return edbFacts;
 
 	}

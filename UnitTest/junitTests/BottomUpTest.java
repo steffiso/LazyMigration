@@ -13,7 +13,7 @@ import parserEDBFactToJava.ParserforDatalogToJava;
 import parserRuletoJava.ParserRuleToJava;
 import datalog.Fact;
 import datalog.Rule;
-import eagerMigration.BottomUpExecutionNew;
+import eagerMigration.BottomUpExecution;
 
 public class BottomUpTest {
 	ArrayList<Fact> facts = new ArrayList<Fact>();
@@ -40,7 +40,7 @@ public class BottomUpTest {
 	@Test
 	public void test() throws parserRuletoJava.ParseException {
 
-		BottomUpExecutionNew execute = new BottomUpExecutionNew(facts);
+		BottomUpExecution execute = new BottomUpExecution(facts);
 
 		ArrayList<Rule> rules = new ParserRuleToJava(
 				new StringReader(

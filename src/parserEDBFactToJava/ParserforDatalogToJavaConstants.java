@@ -11,23 +11,17 @@ public interface ParserforDatalogToJavaConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int marks = 5;
+  int nullValue = 5;
   /** RegularExpression Id. */
-  int open = 6;
+  int string = 6;
   /** RegularExpression Id. */
-  int end = 7;
+  int number = 7;
   /** RegularExpression Id. */
-  int punkt = 8;
+  int digit = 8;
   /** RegularExpression Id. */
-  int string = 9;
+  int kindValue = 9;
   /** RegularExpression Id. */
-  int number = 10;
-  /** RegularExpression Id. */
-  int digit = 11;
-  /** RegularExpression Id. */
-  int kindValue = 12;
-  /** RegularExpression Id. */
-  int nameValue = 13;
+  int nameValue = 10;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -39,10 +33,7 @@ public interface ParserforDatalogToJavaConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
-    "\"\\\"\"",
-    "\"{\"",
-    "\"}\"",
-    "\":\"",
+    "\"null\"",
     "<string>",
     "<number>",
     "<digit>",

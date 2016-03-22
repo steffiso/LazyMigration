@@ -38,21 +38,22 @@ public class ParserForPut implements ParserForPutConstants {
 
   private static int getLastTS()
   {
-        ts = db.getLastTimestamp();
-        return ts;
+    ts = db.getLastTimestamp();
+    return ts;
   }
 
   final public String start(Database db) throws ParseException {
   String value = null;
   zaehler = 0;
   this.db = db;
+  hasTS = false;
     value = getJSONString();
     jj_consume_token(0);
     {if (true) return value;}
     throw new Error("Missing return statement in function");
   }
 
-  final public String start2(Database db) throws ParseException {
+  final public String startJSON(Database db) throws ParseException {
   String value = null;
   zaehler = 0;
   this.db = db;
@@ -89,8 +90,9 @@ public class ParserForPut implements ParserForPutConstants {
       getSchema(kind.toString(), schemaVersion);
     }
     else getSchema(kind.toString(), 0);
-    jj_consume_token(15);
+    jj_consume_token(16);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case nullValue:
     case string:
     case number:
       value = listOfValues("");
@@ -99,10 +101,10 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[2] = jj_gen;
       ;
     }
-    jj_consume_token(16);
+    jj_consume_token(17);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 17:
-      jj_consume_token(17);
+    case 18:
+      jj_consume_token(18);
       break;
     default:
       jj_la1[3] = jj_gen;
@@ -141,8 +143,9 @@ public class ParserForPut implements ParserForPutConstants {
       getSchema(kind.toString(), schemaVersion);
     }
     else getSchema(kind.toString(), 0);
-    jj_consume_token(15);
+    jj_consume_token(16);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case nullValue:
     case string:
     case number:
       value = listOfValues("");
@@ -151,17 +154,16 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[6] = jj_gen;
       ;
     }
-    jj_consume_token(16);
+    jj_consume_token(17);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 17:
-      jj_consume_token(17);
+    case 18:
+      jj_consume_token(18);
       break;
     default:
       jj_la1[7] = jj_gen;
       ;
     }
-    if (hasTS == false) ts = getLastTS() + 1;
-    String jsonString = kind + "{" + value + ", ts\u005c":" + Integer.toString(ts) + "}";
+    String jsonString = kind + "{" + value + ", \u005c"ts\u005c":" + Integer.toString(ts) + "}";
     {if (true) return jsonString;}
     throw new Error("Missing return statement in function");
   }
@@ -178,6 +180,9 @@ public class ParserForPut implements ParserForPutConstants {
     case number:
       valueOfToken = jj_consume_token(number);
       break;
+    case nullValue:
+      valueOfToken = jj_consume_token(nullValue);
+      break;
     default:
       jj_la1[8] = jj_gen;
       jj_consume_token(-1);
@@ -188,18 +193,15 @@ public class ParserForPut implements ParserForPutConstants {
     {
       if (valueOfToken.kind == string)
       {
-        if (valueOfToken.toString() == null)
-        {
-          name = null;
-        }
-        else
-        {
-                name = valueOfToken.toString();
-                name = name.substring(1, name.length() - 1);
-                name = "\u005c"" + name + "\u005c"";
-            }
+        name = valueOfToken.toString();
+        name = name.substring(1, name.length() - 1);
+        name = "\u005c"" + name + "\u005c"";
       }
-      else name = "\u005c"" + valueOfToken.toString() + "\u005c"";
+      else if (valueOfToken.kind == nullValue)
+      {
+        name = null;
+      }
+      else name = valueOfToken.toString();
       String attributename = attributes.get(zaehler);
       valueOne = "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name;
       zaehler++;
@@ -225,14 +227,14 @@ public class ParserForPut implements ParserForPutConstants {
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 18:
+      case 19:
         ;
         break;
       default:
         jj_la1[9] = jj_gen;
         break label_1;
       }
-      jj_consume_token(18);
+      jj_consume_token(19);
       valueOfOtherToken = listOfValues(value);
     }
     if (isTS) {if (true) return null;}
@@ -245,9 +247,9 @@ public class ParserForPut implements ParserForPutConstants {
         {
           String attributename = attributes.get(i);
           name = null;
-          nullValues = nullValues  + "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name +",";
+          nullValues = nullValues + "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name + ",";
         }
-        nullValues = nullValues.substring(0,nullValues.length()-1);
+        nullValues = nullValues.substring(0, nullValues.length() - 1);
       }
       if (nullValues.equals(""))
       {
@@ -263,9 +265,9 @@ public class ParserForPut implements ParserForPutConstants {
         {
           String attributename = attributes.get(i);
           name = null;
-          nullValues = nullValues + "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name +",";
+          nullValues = nullValues + "\u005c"" + attributename.substring(1, attributename.length()) + "\u005c":" + name + ",";
         }
-        nullValues = nullValues.substring(0,nullValues.length()-1);
+        nullValues = nullValues.substring(0, nullValues.length() - 1);
       }
       if (nullValues.equals(""))
       {
@@ -291,7 +293,7 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40,0x800,0xc00,0x20000,0x40,0x800,0xc00,0x20000,0xc00,0x40000,};
+      jj_la1_0 = new int[] {0x40,0x1000,0x1c00,0x40000,0x40,0x1000,0x1c00,0x40000,0x1c00,0x80000,};
    }
 
   /** Constructor with InputStream. */
@@ -408,7 +410,7 @@ public class ParserForPut implements ParserForPutConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[19];
+    boolean[] la1tokens = new boolean[20];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -422,7 +424,7 @@ public class ParserForPut implements ParserForPutConstants {
         }
       }
     }
-    for (int i = 0; i < 19; i++) {
+    for (int i = 0; i < 20; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

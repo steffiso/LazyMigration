@@ -2,12 +2,14 @@
 package parserEDBFactToJava;
 import java.util.ArrayList;
 import datalog.Fact;
+import java.util.InputMismatchException;
+
 public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
 
   final public Fact start() throws ParseException {
   Fact value = null;
     value = getFact();
-    jj_consume_token(14);
+    jj_consume_token(11);
     jj_consume_token(0);
     {if (true) return value;}
     throw new Error("Missing return statement in function");
@@ -21,8 +23,9 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
   Fact fact = null;
     kind = jj_consume_token(kindValue);
     schemaToken = jj_consume_token(number);
-    jj_consume_token(15);
+    jj_consume_token(12);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case nullValue:
     case string:
     case number:
       value = getValue();
@@ -30,14 +33,14 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
       label_1:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 16:
+        case 13:
           ;
           break;
         default:
           jj_la1[0] = jj_gen;
           break label_1;
         }
-        jj_consume_token(16);
+        jj_consume_token(13);
         value = getValue();
           values.add(value);
       }
@@ -46,8 +49,8 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
       jj_la1[1] = jj_gen;
       ;
     }
-    jj_consume_token(17);
-    fact = new Fact(kind.toString()+schemaToken.toString(), values);
+    jj_consume_token(14);
+    fact = new Fact(kind.toString() + schemaToken.toString(), values);
     {if (true) return fact;}
     throw new Error("Missing return statement in function");
   }
@@ -60,6 +63,9 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
       break;
     case number:
       valueOfToken = jj_consume_token(number);
+      break;
+    case nullValue:
+      valueOfToken = jj_consume_token(nullValue);
       break;
     default:
       jj_la1[2] = jj_gen;
@@ -85,7 +91,7 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x10000,0x600,0x600,};
+      jj_la1_0 = new int[] {0x2000,0xe0,0xe0,};
    }
 
   /** Constructor with InputStream. */
@@ -202,7 +208,7 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[18];
+    boolean[] la1tokens = new boolean[15];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -216,7 +222,7 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
         }
       }
     }
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 15; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -238,4 +244,4 @@ public class ParserforDatalogToJava implements ParserforDatalogToJavaConstants {
   final public void disable_tracing() {
   }
 
-}
+ }
