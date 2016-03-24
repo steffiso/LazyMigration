@@ -5,9 +5,6 @@ import datalog.Predicate;
 import datalog.Rule;
 import datalog.Condition;
 import datalog.RuleBody;
-import database.Database;
-import database.Schema;
-import java.util.LinkedHashMap;
 
 public class ParserRuleToJava implements ParserRuleToJavaConstants {
 

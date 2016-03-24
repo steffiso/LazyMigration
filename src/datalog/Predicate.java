@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Predicate {
 
 	// eine Relation innerhalb einer Query, Bsp. A(?x,?y)
-	private String kind; // --> A	
+	private String kind; // --> A
 	private ArrayList<String> scheme; // --> (?x,?y)
 	private int numberSchemeEntries; // --> 2
 	private boolean isNot = false;
@@ -96,10 +96,49 @@ public class Predicate {
 
 	@Override
 	public String toString() {
-		return "Predicate [kind=" + kind + ", scheme=" + scheme + ", isNot="
-				+ isNot + "]";
+		String isNot = isNot() ? "not" : "";
+		return isNot + " " + kind + scheme.toString();
 	}
-	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (isHead ? 1231 : 1237);
+		result = prime * result + (isNot ? 1231 : 1237);
+		result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+		result = prime * result + numberSchemeEntries;
+		result = prime * result + ((scheme == null) ? 0 : scheme.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Predicate other = (Predicate) obj;
+		if (isHead != other.isHead)
+			return false;
+		if (isNot != other.isNot)
+			return false;
+		if (kind == null) {
+			if (other.kind != null)
+				return false;
+		} else if (!kind.equals(other.kind))
+			return false;
+		if (numberSchemeEntries != other.numberSchemeEntries)
+			return false;
+		if (scheme == null) {
+			if (other.scheme != null)
+				return false;
+		} else if (!scheme.equals(other.scheme))
+			return false;
+		return true;
+	}
 	
 
 }

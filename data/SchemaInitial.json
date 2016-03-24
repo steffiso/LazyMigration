@@ -6,5 +6,9 @@
 {"kind":"Mission",
 "schemaversion":1,
 "attributes":["?id","?title","?priority","?pid"],
+"ts":4},
+{"kind":"P",
+"schemaversion":1,
+"attributes":["?id","?ti","?mid"],
 "ts":4}
 ]

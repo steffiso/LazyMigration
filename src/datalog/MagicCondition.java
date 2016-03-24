@@ -1,56 +1,40 @@
 package datalog;
 
+import java.util.ArrayList;
+
 public class MagicCondition {
-	private String kindLeft;
-	private String kindRight;
-	private int positionLeft;
-	private int positionRight;
+	private PairForMagicCondition left;
+	private ArrayList<PairForMagicCondition> right;
 	private boolean alreadyFoundResults;
 	private String nameOfMagicView;
 
-	public MagicCondition(String kindLeft, String kindRight, int positionLeft,
-			int positionRight) {
+	public MagicCondition(PairForMagicCondition kindLeft,
+			PairForMagicCondition kindRight) {
 		super();
-		this.kindLeft = kindLeft;
-		this.kindRight = kindRight;
-		this.positionLeft = positionLeft;
-		this.positionRight = positionRight;
+		this.left = kindLeft;
+		if (right == null)
+			right = new ArrayList<PairForMagicCondition>();
+		right.add(kindRight);
 	}
 
-	public String getKindLeft() {
-		return kindLeft;
+	public PairForMagicCondition getLeft() {
+		return left;
 	}
 
-	public String getKindRight() {
-		return kindRight;
-	}
-
-	public int getPositionLeft() {
-		return positionLeft;
-	}
-
-	public int getPositionRight() {
-		return positionRight;
+	public ArrayList<PairForMagicCondition> getRight() {
+		return right;
 	}
 
 	public boolean hasAlreadyResults() {
 		return alreadyFoundResults;
 	}
 
-	public void setKindLeft(String kindLeft) {
-		this.kindLeft = kindLeft;
+	public void setLeft(PairForMagicCondition kindLeft) {
+		this.left = kindLeft;
 	}
 
-	public void setKindRight(String kindRight) {
-		this.kindRight = kindRight;
-	}
-
-	public void setPositionLeft(int positionLeft) {
-		this.positionLeft = positionLeft;
-	}
-
-	public void setPositionRight(int positionRight) {
-		this.positionRight = positionRight;
+	public void setKindRight(ArrayList<PairForMagicCondition> kindRight) {
+		this.right = kindRight;
 	}
 
 	public void setAlreadyFoundResults(boolean results) {
@@ -58,52 +42,8 @@ public class MagicCondition {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (alreadyFoundResults ? 1231 : 1237);
-		result = prime * result
-				+ ((kindLeft == null) ? 0 : kindLeft.hashCode());
-		result = prime * result
-				+ ((kindRight == null) ? 0 : kindRight.hashCode());
-		result = prime * result + positionLeft;
-		result = prime * result + positionRight;
-		return result;
-	}
-
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MagicCondition other = (MagicCondition) obj;
-		if (kindLeft == null) {
-			if (other.kindLeft != null)
-				return false;
-		} else if (!kindLeft.equals(other.kindLeft))
-			return false;
-		if (kindRight == null) {
-			if (other.kindRight != null)
-				return false;
-		} else if (!kindRight.equals(other.kindRight))
-			return false;
-		if (positionLeft != other.positionLeft)
-			return false;
-		if (positionRight != other.positionRight)
-			return false;
-		return true;
-	}
-
-
-	@Override
 	public String toString() {
-		return "MagicCondition [kindLeft=" + kindLeft + ", kindRight="
-				+ kindRight + ", positionLeft=" + positionLeft
-				+ ", positionRight=" + positionRight + "]";
+		return "MagicCondition:" + left.toString() + ":- " + right.toString();
 	}
 
 	public String getNameOfMagicView() {
@@ -112,6 +52,12 @@ public class MagicCondition {
 
 	public void setNameOfMagicView(String nameOfMagicView) {
 		this.nameOfMagicView = nameOfMagicView;
+	}
+
+	public boolean contains(PairForMagicCondition newRight) {
+		if (right.contains(newRight))
+			return true;
+		return false;
 	}
 
 }

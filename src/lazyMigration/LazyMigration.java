@@ -1,9 +1,12 @@
 package lazyMigration;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import parserPutToDatalog.ParseException;
 import datalog.Fact;
 import datalog.Predicate;
 import datalog.Rule;
@@ -23,7 +26,7 @@ public class LazyMigration {
 		this.unificationMap = unificationMap;
 	}
 
-	public ArrayList<String> writeAnswersInDatabase() {
+	public ArrayList<String> writeAnswersInDatabase() throws ParseException, IOException, URISyntaxException {
 
 		TopDownExecution lazy = new TopDownExecution(facts, rules, goal,
 				unificationMap);

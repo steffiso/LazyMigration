@@ -2,7 +2,6 @@
 package parserEDBFactToJava;
 import java.util.ArrayList;
 import datalog.Fact;
-import java.util.InputMismatchException;
 
 /** Token Manager. */
 public class ParserforDatalogToJavaTokenManager implements ParserforDatalogToJavaConstants

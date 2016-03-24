@@ -20,12 +20,11 @@ public class EagerMigration {
 		this.query = query;
 	}
 
-	public ArrayList<String> writeAnswersInDatabase() {
+	public ArrayList<String> writeAnswersInDatabase() throws Exception {
 
-		Database db = new Database("/data/EDBEager.json",
-				"/data/Schema.json");
-		BottomUpExecution bottomUp = new BottomUpExecution(facts);
-		bottomUp.generateAllRules(rules);
+		Database db = new Database("/data/EDBEager.json", "/data/Schema.json");
+		BottomUpExecution bottomUp = new BottomUpExecution(facts, rules);
+		bottomUp.generateAllRules();
 		ArrayList<Pair> unicateRuleNames = new ArrayList<Pair>();
 		ArrayList<String> list = null;
 		// eliminate duplicate entries
@@ -37,10 +36,11 @@ public class EagerMigration {
 		}
 
 		for (Pair pair : unicateRuleNames) {
-			ArrayList<ArrayList<String>> answers = bottomUp.getFact(
+			ArrayList<ArrayList<String>> answers = bottomUp.getResultsOfKind(
 					pair.ruleName, pair.ruleAnz);
 
-			if (!pair.ruleName.startsWith("latest") && !query.startsWith("get")&&!pair.ruleName.startsWith("legacy")) {
+			if (!pair.ruleName.startsWith("latest") && !query.startsWith("get")
+					&& !pair.ruleName.startsWith("legacy")) {
 				for (ArrayList<String> answer : answers) {
 					String values = "";
 					for (String s : answer) {

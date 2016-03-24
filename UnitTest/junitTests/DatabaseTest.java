@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import parserPutToDatalog.ParseException;
 import database.Database;
 
 public class DatabaseTest {
@@ -15,8 +19,8 @@ public class DatabaseTest {
 	String initialEDB;
 	
 	@Before
-	public void setUp(){
-		db = new Database("/data/EDB.json", "/data/Schema.json");
+	public void setUp() throws JsonParseException, JsonMappingException, IOException{
+		db = new Database("/data/TestEDB.json", "/data/TestSchema.json");
 		initialEDB = db.getEDB();
 	}
 
@@ -35,10 +39,9 @@ public class DatabaseTest {
 	}
 	
 	@Test
-	public void testPut() throws IOException{	
+	public void testPut() throws IOException, ParseException{	
 		int lastTimestamp = db.getLastTimestamp();
 		db.putToDatabase("Player1(3,'Maggie',23)");
-		System.out.println(db.getEDB());
 		assertEquals(initialEDB + "Player1(3,'Maggie',23," + String.valueOf(lastTimestamp + 1) + ").\n",db.getEDB());
 		db.resetDatabaseState();
 	}

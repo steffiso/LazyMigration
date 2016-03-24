@@ -1,29 +1,32 @@
 package lazyMigration;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import parserPutToDatalog.ParseException;
 import database.Database;
 import datalog.Condition;
 import datalog.Fact;
 import datalog.MagicCondition;
+import datalog.MigrationExecution;
+import datalog.PairForMagicCondition;
 import datalog.Predicate;
 import datalog.Rule;
 import datalog.RuleBody;
 
-public class TopDownExecution {
-	// All EDB-facts and generated IDB-facts
-	private ArrayList<Fact> facts;
-	private ArrayList<Rule> rules;
-	private Predicate goal;
-	private RuleGoalTree tree;
-	private List<Map<String, String>> unificationMap;
-	private ArrayList<Fact> putFacts;
-	private List<MagicCondition> magicList = null;
-	private int numberOfPuts = 0;
-	int numberOfMGView = 0;
+public class TopDownExecution extends MigrationExecution {
+
+	private Predicate goal;  //the top goal for the topdown execution
+	private RuleGoalTree tree; //a rule goal tree with top a goal and subgoals
+	private List<Map<String, String>> unificationMap; //this map stores attributes their values for unification
+	private ArrayList<Fact> putFacts; // facts that will be write to database
+	private List<MagicCondition> magicList = null; // contains all information for magic sets
+	private int numberOfPuts = 0; //number of db writes
+	private int numberOfMGView = 0; //number of magic set views
 
 	public int getNumberOfPuts() {
 		return numberOfPuts;
@@ -33,52 +36,23 @@ public class TopDownExecution {
 		this.numberOfPuts = numberOfPuts;
 	}
 
-	// set edb facts
-	public TopDownExecution(ArrayList<Fact> facts) {
-		super();
-		this.facts = facts;
+	// set edb facts, rules
+	public TopDownExecution(ArrayList<Fact> facts, ArrayList<Rule> rules) {
+		super(facts, rules);
 	}
 
+	// set edb facts, rules, goal and unificationMap
 	public TopDownExecution(ArrayList<Fact> facts, ArrayList<Rule> rules,
-			Predicate goal) {
-		this.facts = facts;
-		this.rules = rules;
+			Predicate goal, List<Map<String, String>> unificationMap) {
+		super(facts, rules);
 		this.goal = goal;
+		this.unificationMap = unificationMap;
 	}
 
-	public TopDownExecution(ArrayList<Fact> facts, ArrayList<Rule> rules,
-			Predicate goal, List<Map<String, String>> attributeMap) {
-		this.facts = facts;
-		this.rules = rules;
-		this.goal = goal;
-		this.unificationMap = attributeMap;
-	}
-
-	public ArrayList<Fact> getValues() {
-		return facts;
-	}
-
-	public void setValues(ArrayList<Fact> facts) {
-		this.facts = facts;
-	}
-
-	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
-		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
-
-		for (Fact value : facts) {
-			if (value.getKind().equals(kind)
-					&& value.getListOfValues().size() == anz) {
-				answer.add(value.getListOfValues());
-			}
-		}
-		return answer;
-	}
-
-	// Testgenerierung einer Rule mit Top Down
-	// ???
+	// Test for top down approach for only one rule
 	public ArrayList<ArrayList<String>> getAnswer(Rule rule) {
 
-		rulesRenameandReorder(rule);
+		rulesRename(rule);
 		for (Predicate p : rule.getPredicates()) {
 			getFacts(p);
 		}
@@ -102,7 +76,8 @@ public class TopDownExecution {
 		return answer;
 	}
 
-	public ArrayList<Fact> getAnswers() {
+	public ArrayList<Fact> getAnswers() throws ParseException, IOException,
+			URISyntaxException {
 		putFacts = new ArrayList<Fact>();
 		ArrayList<Fact> answer = new ArrayList<Fact>();
 
@@ -143,7 +118,7 @@ public class TopDownExecution {
 
 	}
 
-	public ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
+	private ArrayList<ArrayList<String>> getAnswersForSubtree(RuleGoalTree tree) {
 		ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
 
 		for (Rule childRule : tree.getChildren()) {
@@ -152,7 +127,7 @@ public class TopDownExecution {
 
 			for (Predicate subgoal : body.getPredicates()) {
 				// subgoal already exists in fact list?
-				if (getFacts(subgoal) == 0) {
+				if (!getFacts(subgoal)) {
 					ArrayList<Rule> unifiedChildrenRules = new ArrayList<Rule>();
 					for (Rule r : rules) {
 						// look for needed goal predicate in rule heads
@@ -163,6 +138,9 @@ public class TopDownExecution {
 										.getNumberSchemeEntries()) {
 							Rule unifiedRule = unifyRule(subgoal, r);
 							unifiedChildrenRules.add(unifiedRule);
+							if (unifiedRule.getHead().getKind()
+									.equals("legacyPlayer1"))
+								;
 						}
 					}
 
@@ -173,7 +151,8 @@ public class TopDownExecution {
 						RuleGoalTree subTree = new RuleGoalTree(
 								unifiedChildrenRules);
 						subgoal.setRelation(getAnswersForSubtree(subTree));
-
+						generateMagicSet(subgoal.getRelation(),
+								subgoal.getKind());
 						// add new facts to temp fact list
 						for (ArrayList<String> str : subgoal.getRelation()) {
 							facts.add(new Fact(subgoal.getKind(), str));
@@ -215,38 +194,24 @@ public class TopDownExecution {
 	}
 
 	// checks whether a fact exists in an arrayList<Fact>
-	public boolean factExists(ArrayList<Fact> factList, Fact putFact) {
+	private boolean factExists(ArrayList<Fact> factList, Fact putFact) {
 		boolean exists = false;
 		ArrayList<String> valuesPutFact = putFact.getListOfValues();
 		for (Fact f : factList) {
 			ArrayList<String> valuesFactList = f.getListOfValues();
-			if (valuesPutFact.size() + 1 == valuesFactList.size()) {
-				for (int i = 0; i < valuesPutFact.size() - 1;) {
-					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
-						exists = false;
-						break;
-					}
-					if (putFact.getKind().equals(f.getKind())) {
-						exists = true;
-					} else
-						exists = false;
-					break;
-				}
-				if (exists == true)
-					break;
-			}
+
 			if (valuesPutFact.size() == valuesFactList.size()) {
-				for (int i = 0; i < valuesPutFact.size();) {
-					if (valuesFactList.get(i) != valuesPutFact.get(i)) {
-						exists = false;
+				boolean hasSameAttributes = true;
+				for (int i = 0; i < valuesPutFact.size(); i++) {
+					if (!valuesFactList.get(i).equals(valuesPutFact.get(i))) {
+						hasSameAttributes = false;
 						break;
 					}
-					if (putFact.getKind().equals(f.getKind())) {
-						exists = true;
-					} else
-						exists = false;
-					break;
 				}
+				if (hasSameAttributes && putFact.getKind().equals(f.getKind())) {
+					exists = true;
+				} else
+					exists = false;
 				if (exists == true)
 					break;
 			}
@@ -286,9 +251,9 @@ public class TopDownExecution {
 	}
 
 	// unificate all attributes which are in the unificationMap
-	public Rule unifyRule(Predicate goal, Rule childrenRule) {
+	private Rule unifyRule(Predicate goal, Rule childrenRule) {
 		// first rename all rules according to conditions
-		rulesRenameandReorder(childrenRule);
+		rulesRename(childrenRule);
 		Predicate head = childrenRule.getHead();
 		RuleBody body = childrenRule.getRuleBody();
 		if (!goal.getKind().equals(head.getKind())
@@ -346,23 +311,13 @@ public class TopDownExecution {
 
 	}
 
-	public void putFactToDB(Fact newFact) {
+	private void putFactToDB(Fact newFact) throws URISyntaxException,
+			ParseException, IOException {
 		Database db = new Database("/data/EDBLazy.json", "/data/Schema.json");
 		// put fact to database: "Player2(4,'Lisa',40)" (timestamp will be added
 		// automatically)
 		db.putToDatabase(newFact.toString());
 	}
-
-	// public ArrayList<Rule> getRules(Predicate p) {
-	// ArrayList<Rule> rule = new ArrayList<Rule>();
-	// for (Rule r : rules) {
-	// if (r.getHead().getKind().equals(p.getKind())
-	// && r.getHead().getAnz() == p.getAnz()) {
-	// rule.add(r);
-	// }
-	// }
-	// return rule;
-	// }
 
 	// generate temporary results of all joins of a rule step by step
 	private Predicate join(ArrayList<Predicate> predicates) {
@@ -403,7 +358,7 @@ public class TopDownExecution {
 							}
 							ArrayList<Integer> liste = new ArrayList<Integer>();
 							for (PairofInteger wert : equalList)
-								liste.add(wert.p2);
+								liste.add(wert.getP2());
 							ArrayList<String> newSchema = new ArrayList<String>();
 							newSchema.addAll(temp.getScheme());
 							for (int j = 0; j < p2.getScheme().size(); j++)
@@ -421,85 +376,6 @@ public class TopDownExecution {
 
 	}
 
-	// generate temporary results of all conditions of a rule step by step
-	private Predicate selection(Predicate predResult,
-			ArrayList<Condition> conditions) {
-		for (Condition cond : conditions) {
-			predResult = getTempCondResult(predResult, cond);
-		}
-		return predResult;
-	}
-
-	// generate temporary results of condition, e.g.: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z),?y=?z.
-	// Only put values of A and B to end result which satisfies condition ?y=?z.
-	private Predicate getTempCondResult(Predicate p, Condition cond) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		String rightOperand = cond.getRightOperand();
-		String leftOperand = cond.getLeftOperand();
-		String operator = cond.getOperator();
-		List<ArrayList<String>> relation = p.getRelation();
-		for (ArrayList<String> oneResult : relation) {
-			String left = "";
-			String right = "";
-			if (leftOperand.startsWith("?"))
-				if (p.getScheme().contains(leftOperand))
-					left = oneResult.get(p.getScheme().indexOf(leftOperand));
-				else {
-					// System.out.println(leftOperand + " existiert nicht");
-					facts.add(oneResult);
-					continue;
-				}
-			else
-				left = leftOperand;
-			if (rightOperand.startsWith("?"))
-				if (p.getScheme().contains(rightOperand))
-					right = oneResult.get(p.getScheme().indexOf(rightOperand));
-				else {
-					facts.add(oneResult);
-					continue;
-				}
-			else
-				right = rightOperand;
-			boolean condPredicate = false;
-			switch (operator) {
-			case "=":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) == Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.equals(right))
-					condPredicate = true;
-				break;
-			case "!":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) != Integer.parseInt(right))
-						condPredicate = true;
-				} else if (!left.equals(right))
-					condPredicate = true;
-				break;
-			case "<":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) < Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.compareTo(right) < 0)
-					condPredicate = true;
-				break;
-			case ">":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) > Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.compareTo(right) > 0)
-					condPredicate = true;
-				break;
-			}
-			if (condPredicate == true) {
-				facts.add(oneResult);
-			}
-		}
-		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
-
-	}
-
 	// generate temporary results of join, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
 	// join values of A und B on attribute ?x
@@ -509,12 +385,13 @@ public class TopDownExecution {
 		ArrayList<ArrayList<String>> result = null;
 		ArrayList<Integer> liste = new ArrayList<Integer>();
 		for (PairofInteger wert : equalList)
-			liste.add(wert.p2);
+			liste.add(wert.getP2());
 
 		for (ArrayList<String> oneOfFact2 : fact2) {
 			boolean joinPredicate = true;
 			for (PairofInteger wert : equalList) {
-				if (!fact1.get(wert.p1).equals(oneOfFact2.get(wert.p2)))
+				if (!fact1.get(wert.getP1()).equals(
+						oneOfFact2.get(wert.getP2())))
 					joinPredicate = false;
 			}
 			if (joinPredicate == true) {
@@ -544,12 +421,13 @@ public class TopDownExecution {
 			ArrayList<ArrayList<String>> fact2) {
 		ArrayList<Integer> liste = new ArrayList<Integer>();
 		for (PairofInteger wert : equalList)
-			liste.add(wert.p2);
+			liste.add(wert.getP2());
 
 		for (ArrayList<String> oneOfFact1 : fact2) {
 			boolean joinPredicate = true;
 			for (PairofInteger wert : equalList) {
-				if (!fact1.get(wert.p1).equals(oneOfFact1.get(wert.p2)))
+				if (!fact1.get(wert.getP1()).equals(
+						oneOfFact1.get(wert.getP2())))
 					joinPredicate = false;
 			}
 
@@ -561,32 +439,19 @@ public class TopDownExecution {
 		return true;
 	}
 
-	// find all equal attributes of two predicates for a join, e.g.: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z). -->
-	// ?x
-	// is a join attribute
-	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
-			ArrayList<String> strings2) {
-		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
-		for (int i = 0; i < strings.size(); i++)
-			for (int j = 0; j < strings2.size(); j++)
-				if (strings.get(i).startsWith("?"))
-					if (strings.get(i).equals(strings2.get(j)))
-						list.add(new PairofInteger(i, j));
-		return list;
-	}
-
 	// generate results of a predicate based on the facts, e.g. A(?x,?y) and
 	// edb-fact
 	// A(1,2)
 	// result is [1,2] and return is true if there are results
-	private int getFacts(Predicate predicate) {
+	private boolean getFacts(Predicate predicate) {
 		ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
-		int anz = predicate.getScheme().size();
+		int number = predicate.getNumberSchemeEntries();
+		boolean found = false;
 		for (Fact value : facts) {
 			if (value.getKind().equals(kind)
-					&& value.getListOfValues().size() == anz) {
+					&& value.getListOfValues().size() == number) {
+				found = true;
 				boolean set = true;
 				int i = 0;
 				for (String wert : predicate.getScheme()) {
@@ -605,33 +470,37 @@ public class TopDownExecution {
 					values.add(value.getListOfValues());
 			}
 		}
-		generateMagicSet(values, predicate.getKind());
 		predicate.setRelation(values);
-		if (values.isEmpty())
-			return 0;
-		else
-			return 1;
+		if (found && !values.isEmpty()) {
+			generateMagicSet(values, predicate.getKind());
+			return true;
+		} else
+			return false;
 
 	}
 
+	//test if a value of a Fact exists in the MagicSet View
 	private boolean testIfMagicSetExists(Fact value) {
+		boolean exists = true;
 		if (magicList != null)
-			for (MagicCondition m : magicList)
-				if (value.getKind().equals(m.getKindRight())) {
-					if (m.getNameOfMagicView() != null) {
-						ArrayList<String> factsOfMGView = getMGViewFacts(m
-								.getNameOfMagicView());
-						if (factsOfMGView != null)
-							if (factsOfMGView.contains(value.getListOfValues()
-									.get(m.getPositionRight())))
-								return true;
-							else
-								return false;
+			for (MagicCondition m : magicList) {
+				for (PairForMagicCondition pm : m.getRight())
+					if (value.getKind().equals(pm.getKind())) {
+						if (m.getNameOfMagicView() != null) {
+							ArrayList<String> factsOfMGView = getMGViewFacts(m
+									.getNameOfMagicView());
+							if (factsOfMGView != null)
+								if (!factsOfMGView.contains(value
+										.getListOfValues().get(
+												pm.getPositionId())))
+									exists = false;
+						}
 					}
-				}
-		return true;
+			}
+		return exists;
 	}
 
+	//get Facts of MagicSet View
 	private ArrayList<String> getMGViewFacts(String nameOfMagicView) {
 		ArrayList<String> mgViewFacts = null;
 		for (Fact value : facts) {
@@ -645,58 +514,65 @@ public class TopDownExecution {
 		return mgViewFacts;
 	}
 
+	// generate MagicSet View in Facts
 	private ArrayList<ArrayList<String>> generateMagicSet(
 			ArrayList<ArrayList<String>> values, String kind) {
 
 		if (magicList != null && !magicList.isEmpty()) {
 
 			for (MagicCondition magicCondition : magicList) {
-				if (magicCondition.getKindLeft().contains(kind)) {
+				if (magicCondition.getLeft().getKind().equals(kind)) {
 					if (magicCondition.hasAlreadyResults() == false) {
-						String newViewName = "MGView" + numberOfMGView;
-						for (ArrayList<String> valueList : values) {
-							facts.add(new Fact(
-									newViewName,
-									new ArrayList<String>(
-											valueList.subList(
-													magicCondition
-															.getPositionLeft(),
-													magicCondition
-															.getPositionLeft() + 1))));
-						}
+						String newViewName = "MG" + numberOfMGView;
+						if (values.isEmpty()) {
+							ArrayList<String> nullList = new ArrayList<String>();
+							nullList.add(null);
+							facts.add(new Fact(newViewName, nullList));
+						} else
+							for (ArrayList<String> valueList : values) {
+								facts.add(new Fact(
+										newViewName,
+										new ArrayList<String>(
+												valueList
+														.subList(
+																magicCondition
+																		.getLeft()
+																		.getPositionId(),
+																magicCondition
+																		.getLeft()
+																		.getPositionId() + 1))));
+							}
 						magicCondition.setAlreadyFoundResults(true);
 						magicCondition.setNameOfMagicView(newViewName);
 						setNewMagicPredicateToCorrespondingRules(
 								magicCondition, newViewName);
+						numberOfMGView++;
 					}
+
 				}
-				numberOfMGView++;
+
 			}
 		}
 		return values;
 	}
 
+	//set MagicSet View as an extra Predicate to corresPondingRules
 	private void setNewMagicPredicateToCorrespondingRules(MagicCondition m,
 			String newViewName) {
 		for (Rule rule : rules) {
-			if (rule.getHead().getKind().equals(m.getKindRight())) {
-				ArrayList<String> scheme = new ArrayList<String>();
-				scheme.add(rule.getHead().getScheme().get(m.getPositionRight()));
-				rule.getPredicates().add(new Predicate(newViewName, 1, scheme));
-			}
+			for (PairForMagicCondition pm : m.getRight())
+				if (rule.getHead().getKind().equals(pm.getKind())) {
+					ArrayList<String> scheme = new ArrayList<String>();
+					scheme.add(rule.getHead().getScheme()
+							.get(pm.getPositionId()));
+					rule.getPredicates().add(
+							new Predicate(newViewName, 1, scheme));
+				}
 		}
 	}
 
-	private static boolean isInteger(String s) {
-		try {
-			Integer.parseInt(s);
-		} catch (NumberFormatException e) {
-			return false;
-		}
-		return true;
-	}
-
-	private void rulesRenameandReorder(Rule rule) {
+	//rename rules and delete Conditions
+	private void rulesRename(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {
@@ -715,84 +591,82 @@ public class TopDownExecution {
 			}
 	}
 
+	//if a condition for a magic set exists--> generate new MagicCondition with all rules which need this magic set
 	private void generateMagicCondition(ArrayList<Predicate> predicates,
 			String left, String right) {
 		for (int i = 0; i < predicates.size(); i++) {
 			for (int j = i + 1; j < predicates.size(); j++) {
 				if (predicates.get(i).getScheme().contains(right)
 						&& predicates.get(j).getScheme().contains(left)) {
-					MagicCondition magicCond = new MagicCondition(predicates
-							.get(i).getKind(), predicates.get(j).getKind(),
-							predicates.get(i).getScheme().indexOf(right),
-							predicates.get(j).getScheme().indexOf(left));
+					PairForMagicCondition leftPair = new PairForMagicCondition(
+							predicates.get(i).getKind(), predicates.get(i)
+									.getScheme().indexOf(right));
+					PairForMagicCondition rightPair = new PairForMagicCondition(
+							predicates.get(j).getKind(), predicates.get(j)
+									.getScheme().indexOf(left));
+					MagicCondition mCondition = null;
 					if (magicList != null)
 						if (!magicList.isEmpty()) {
-							if (!magicList.contains(magicCond))
-								magicList.add(magicCond);
-						} else
-							magicList.add(magicCond);
+							boolean found = false;
+							int position = 0;
+							for (int x = 0; x < magicList.size(); x++)
+								if (magicList.get(x).getLeft().equals(leftPair)) {
+									found = true;
+									position = x;
+								}
+
+							if (found) {
+								mCondition = magicList.get(position);
+								if (!mCondition.contains(rightPair)) {
+									mCondition.getRight().add(rightPair);
+								}
+							} else {
+								mCondition = new MagicCondition(leftPair,
+										rightPair);
+								magicList.add(mCondition);
+							}
+
+						} else {
+							mCondition = new MagicCondition(leftPair, rightPair);
+							magicList.add(mCondition);
+						}
+
 					else {
 						magicList = new ArrayList<MagicCondition>();
-						magicList.add(magicCond);
+						mCondition = new MagicCondition(leftPair, rightPair);
+						magicList.add(mCondition);
 					}
-					/*generateSubMagicCondition(predicates.get(j).getKind(),
+					generateSubMagicCondition(mCondition, predicates.get(j)
+							.getKind(),
 							predicates.get(j).getScheme().indexOf(left),
-							predicates.get(j).getScheme().size());*/
+							predicates.get(j).getScheme().size());
+
 				}
 			}
 
 		}
 	}
 
-	private void generateSubMagicCondition(String string, int indexOf, int k) {
+	//insert rules in MagicCondition that depend on this MagicCondition
+	private void generateSubMagicCondition(MagicCondition mCondition,
+			String kind, int index, int number) {
 		for (Rule r : rules)
-			if (r.getHead().getKind().equals(string)
-					&& r.getHead().getScheme().size() == k) {
-				String id = r.getHead().getScheme().get(indexOf);
+			if (r.getHead().getKind().equals(kind)
+					&& r.getHead().getScheme().size() == number) {
+				String id = r.getHead().getScheme().get(index);
 				for (Predicate p : r.getPredicates()) {
+					ArrayList<String> schema = p.getScheme();
 					if (p.getScheme().contains(id)) {
-						MagicCondition magicCond = new MagicCondition(r
-								.getHead().getKind(), p.getKind(), indexOf, p
-								.getScheme().indexOf(id));
-						if (magicList != null)
-							if (!magicList.isEmpty()) {
-								if (!magicList.contains(magicCond))
-									magicList.add(magicCond);
-							} else
-								magicList.add(magicCond);
-						else {
-							magicList = new ArrayList<MagicCondition>();
-							magicList.add(magicCond);
+						PairForMagicCondition rightPair = new PairForMagicCondition(
+								p.getKind(), schema.indexOf(id));
+						if (!mCondition.contains(rightPair)) {
+							mCondition.getRight().add(rightPair);
+							generateSubMagicCondition(mCondition, p.getKind(),
+									schema.indexOf(id), schema.size());
 						}
-						generateSubMagicCondition(p.getKind(), p.getScheme()
-								.indexOf(id), p.getScheme().size());
 					}
 				}
 			}
-	}
-
-	private void renameVariablesOfAllPredicates(Rule rule, String left,
-			String right) {
-		renameVariablesOfPredicate(rule.getHead(), left, right);
-		for (Predicate pred : rule.getPredicates())
-			renameVariablesOfPredicate(pred, left, right);
-	}
-
-	private void renameVariablesOfPredicate(Predicate predicate, String left,
-			String right) {
-		if (predicate.getScheme().contains(right)) {
-			predicate.getScheme().set(predicate.getScheme().indexOf(right),
-					left);
-		}
-	}
-
-	private class PairofInteger {
-		int p1, p2;
-
-		PairofInteger(int p1, int p2) {
-			this.p1 = p1;
-			this.p2 = p2;
-		}
 	}
 
 }

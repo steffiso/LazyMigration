@@ -1,3 +1,10 @@
-/database
+/datalog
 /lazyMigration
+/parserPutToDatalog
+/eagerMigration
+/junitTests
+/gui
+/database
 /parserQueryToDatalogToJava
+/parserEDBFactToJava
+/parserRuletoJava

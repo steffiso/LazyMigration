@@ -40,22 +40,26 @@ public class BottomUpTest {
 	@Test
 	public void test() throws parserRuletoJava.ParseException {
 
-		BottomUpExecution execute = new BottomUpExecution(facts);
-
 		ArrayList<Rule> rules = new ParserRuleToJava(
 				new StringReader(
 						"Join1(?id,?name,?title,?ts,10):-Player1(?id, ?name,?score, ?ts),Mission1(?id1, ?title,?pid,?ts1),?id=?pid,?ts>1."
 								+ "Join2(?id1,?name,?score,?ts):-Player1(?id1, ?name,?score, ?ts), not Join1(?id2,?name2,?title2,?ts,?nb), ?id1=?id2."))
 				.start();
-		execute.generateAllRules(rules);
+		BottomUpExecution execute = new BottomUpExecution(facts, rules);
+		try {
+			execute.generateAllRules();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// Testfall 1
 		assertEquals(
 				"[[2, 'Homer', 'collect', 2, 10], [1, 'Lisa. M', 'find the ring', 5, 10]]",
-				execute.getFact("Join1", 5).toString());
+				execute.getResultsOfKind("Join1", 5).toString());
 
 		// Testfall 2
-		assertEquals("[[1, 'Lisa', 20, 1]]", execute.getFact("Join2", 4)
+		assertEquals("[[1, 'Lisa', 20, 1]]", execute.getResultsOfKind("Join2", 4)
 				.toString());
 
 	}

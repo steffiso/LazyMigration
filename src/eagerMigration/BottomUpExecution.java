@@ -5,53 +5,24 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import datalog.Condition;
 import datalog.Fact;
+import datalog.MigrationExecution;
 import datalog.Predicate;
 import datalog.Rule;
 
-public class BottomUpExecution {
-
-	// all edb facts and generated idb
-	private ArrayList<Fact> facts;
+public class BottomUpExecution extends MigrationExecution{
 
 	// set edb facts
-	public BottomUpExecution(ArrayList<Fact> values) {
-		super();
-		this.facts = values;
+	public BottomUpExecution(ArrayList<Fact> values, ArrayList<Rule> rules) {
+		super(values,rules);
 	}
 
-	public ArrayList<Fact> getValues() {
-		return facts;
-	}
-
-	public void setValues(ArrayList<Fact> values) {
-		this.facts = values;
-	}
-
-	public ArrayList<ArrayList<String>> getFact(String kind, int anz) {
-		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
-
-		for (Fact value : facts) {
-			if (value.getKind().equals(kind)
-					&& value.getListOfValues().size() == anz) {
-				answer.add(value.getListOfValues());
-			}
-		}
-		return answer;
-	}
-
-	public void generateAllRules(ArrayList<Rule> rules) {
-		try {
-			orderStratum(rules);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+	public void generateAllRules() throws Exception {
+		
+		orderStratum(rules);
 		for (Rule rule : rules) {
 			getAnswer(rule);
 		}
@@ -65,7 +36,7 @@ public class BottomUpExecution {
 		ArrayList<ArrayList<String>> answer = new ArrayList<ArrayList<String>>();
 		if (!predicates.isEmpty()) {
 			if (predicates.size() > 1) {
-				rulesRenameandReorder(rule);
+				rulesRename(rule);
 				factList = generateRule(rule.getPredicates());
 
 			} else {
@@ -106,7 +77,7 @@ public class BottomUpExecution {
 
 	}
 
-	public void rulesRenameandReorder(Rule rule) {
+	private void rulesRename(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
 					.hasNext();) {
@@ -123,20 +94,7 @@ public class BottomUpExecution {
 
 	}
 
-	private void renameVariablesOfAllPredicates(Rule rule, String left,
-			String right) {
-		renameVariablesOfPredicate(rule.getHead(), left, right);
-		for (Predicate pred : rule.getPredicates())
-			renameVariablesOfPredicate(pred, left, right);
-	}
 
-	private void renameVariablesOfPredicate(Predicate predicate, String left,
-			String right) {
-		if (predicate.getScheme().contains(right)) {
-			predicate.getScheme().set(predicate.getScheme().indexOf(right),
-					left);
-		}
-	}
 
 	// generate results of a rule
 	private Predicate generateRule(ArrayList<Predicate> predicates) {
@@ -173,88 +131,6 @@ public class BottomUpExecution {
 		return predResult;
 	}
 
-	// generate temporary results of all conditions of a rule step by step
-	private Predicate selection(Predicate predResult,
-			ArrayList<Condition> conditions) {
-		for (Condition cond : conditions) {
-			predResult = getTempCondResult(predResult, cond);
-		}
-		return predResult;
-	}
-
-	// generate temporary results of condition, e.g.: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z),?y=?z.
-	// Only put values of A and B to end result which satisfies condition ?y=?z.
-	private Predicate getTempCondResult(Predicate p, Condition cond) {
-		ArrayList<ArrayList<String>> facts = new ArrayList<ArrayList<String>>();
-		String rightOperand = cond.getRightOperand();
-		String leftOperand = cond.getLeftOperand();
-		String operator = cond.getOperator();
-		List<ArrayList<String>> factList = p.getRelation();
-		for (ArrayList<String> factOfFactList : factList) {
-			String left = "";
-			String right = "";
-			if (leftOperand.startsWith("?"))
-				if (p.getScheme().contains(leftOperand))
-					left = factOfFactList.get(p.getScheme()
-							.indexOf(leftOperand));
-				else {
-					System.out.println(leftOperand + " existiert nicht");
-					facts.add(factOfFactList);
-					continue;
-				}
-			else
-				left = leftOperand;
-			if (rightOperand.startsWith("?"))
-				if (p.getScheme().contains(rightOperand))
-					right = factOfFactList.get(p.getScheme().indexOf(
-							rightOperand));
-				else {
-					System.out.println(leftOperand + " existiert nicht");
-					facts.add(factOfFactList);
-					continue;
-				}
-			else
-				right = rightOperand;
-			boolean condPredicate = false;
-			switch (operator) {
-			case "=":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) == Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.equals(right))
-					condPredicate = true;
-				break;
-			case "!":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) != Integer.parseInt(right))
-						condPredicate = true;
-				} else if (!left.equals(right))
-					condPredicate = true;
-				break;
-			case "<":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) < Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.compareTo(right) < 0)
-					condPredicate = true;
-				break;
-			case ">":
-				if (isInteger(left) && isInteger(right)) {
-					if (Integer.parseInt(left) > Integer.parseInt(right))
-						condPredicate = true;
-				} else if (left.compareTo(right) > 0)
-					condPredicate = true;
-				break;
-			}
-			if (condPredicate == true) {
-				facts.add(factOfFactList);
-			}
-		}
-		return new Predicate("temp", p.getScheme().size(), p.getScheme(), facts);
-
-	}
-
 	// generate temporary results of join, e.g.: C(?y,?z) :-
 	// A(?x,?y),B(?x,?z).
 	// join values of A und B on attribute ?x
@@ -268,13 +144,13 @@ public class BottomUpExecution {
 				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
 		for (PairofInteger wert : equalList)
-			liste.add(wert.p2);
+			liste.add(wert.getP2());
 		for (ArrayList<String> oneOfFact1 : fact1) {
 			for (ArrayList<String> oneOfFact2 : fact2) {
 				boolean joinPredicate = true;
 				for (PairofInteger wert : equalList) {
-					if (!oneOfFact1.get(wert.p1)
-							.equals(oneOfFact2.get(wert.p2)))
+					if (!oneOfFact1.get(wert.getP1())
+							.equals(oneOfFact2.get(wert.getP2())))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
@@ -312,15 +188,15 @@ public class BottomUpExecution {
 				predicate1.getScheme(), predicate2.getScheme());
 		ArrayList<Integer> liste = new ArrayList<Integer>();
 		for (PairofInteger wert : equalList)
-			liste.add(wert.p2);
+			liste.add(wert.getP2());
 		int pos = 0;
 		ArrayList<Integer> positionen = new ArrayList<Integer>();
 		for (ArrayList<String> oneOfFact1 : fact1) {
 			for (ArrayList<String> oneOfFact2 : fact2) {
 				boolean joinPredicate = true;
 				for (PairofInteger wert : equalList) {
-					if (!oneOfFact1.get(wert.p1)
-							.equals(oneOfFact2.get(wert.p2)))
+					if (!oneOfFact1.get(wert.getP1())
+							.equals(oneOfFact2.get(wert.getP2())))
 						joinPredicate = false;
 				}
 				if (joinPredicate == true) {
@@ -339,20 +215,6 @@ public class BottomUpExecution {
 
 	}
 
-	// find all equal attributes of two predicates for a join, e.g.: C(?y,?z) :-
-	// A(?x,?y),B(?x,?z). -->
-	// ?x
-	// is a join attribute
-	private ArrayList<PairofInteger> getEqualList(ArrayList<String> strings,
-			ArrayList<String> strings2) {
-		ArrayList<PairofInteger> list = new ArrayList<PairofInteger>();
-		for (int i = 0; i < strings.size(); i++)
-			for (int j = 0; j < strings2.size(); j++)
-				if (strings.get(i).startsWith("?"))
-					if (strings.get(i).equals(strings2.get(j)))
-						list.add(new PairofInteger(i, j));
-		return list;
-	}
 
 	// generate results of a predicate based on the facts, e.g. A(?x,?y) and
 	// edb-fact
@@ -384,7 +246,7 @@ public class BottomUpExecution {
 	}
 
 	// stratification of the idb
-	public void orderStratum(ArrayList<Rule> rules) throws Exception {
+	private void orderStratum(ArrayList<Rule> rules) throws Exception {
 		int size = rules.size() - 1;
 		Map<String, Integer> mapStratum = new HashMap<String, Integer>();
 
@@ -441,7 +303,7 @@ public class BottomUpExecution {
 
 	// generate dependency map
 	// return : e.g.. [Mission2, ( Mission, latestMission, Player, latestPlayer)]
-	public Map<String, ArrayList<String>> generateDependencyMap(
+	private Map<String, ArrayList<String>> generateDependencyMap(
 			ArrayList<Rule> rules) {
 		Map<String, ArrayList<String>> dependencyMap = new HashMap<String, ArrayList<String>>();
 		for (Rule rule : rules) {
@@ -463,7 +325,7 @@ public class BottomUpExecution {
 	}
 
 	// sort rules by stratum values and generated dependencies
-	public void sortRules(ArrayList<Rule> rules, Map<String, Integer> mapStratum) {
+	private void sortRules(ArrayList<Rule> rules, Map<String, Integer> mapStratum) {
 		Map<String, ArrayList<String>> dependencyMap = generateDependencyMap(rules);
 		Map<String, Integer> rankingMap = mapStratum;
 
@@ -505,23 +367,4 @@ public class BottomUpExecution {
 		});
 	}
 
-	public static boolean isInteger(String s) {
-		try {
-			Integer.parseInt(s);
-		} catch (NumberFormatException e) {
-			return false;
-		} catch (NullPointerException e) {
-			return false;
-		}
-		return true;
-	}
-
-	private class PairofInteger {
-		int p1, p2;
-
-		PairofInteger(int p1, int p2) {
-			this.p1 = p1;
-			this.p2 = p2;
-		}
-	}
 }

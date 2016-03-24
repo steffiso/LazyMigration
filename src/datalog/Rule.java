@@ -66,7 +66,42 @@ public class Rule {
 		if (predicates != null) rule = rule + predicates.toString();
 		if (conditions != null) rule = rule + conditions.toString();
 		
-		return rule;
+		return rule+"\n";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((ruleBody == null) ? 0 : ruleBody.hashCode());
+		result = prime * result
+				+ ((ruleHead == null) ? 0 : ruleHead.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Rule other = (Rule) obj;
+		if (ruleBody == null) {
+			if (other.ruleBody != null)
+				return false;
+		} else if (!ruleBody.equals(other.ruleBody))
+			return false;
+		if (ruleHead == null) {
+			if (other.ruleHead != null)
+				return false;
+		} else if (!ruleHead.equals(other.ruleHead))
+			return false;
+		return true;
+	}
+	
+	
 
 }
