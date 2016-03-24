@@ -14,19 +14,19 @@ public class Predicate {
 	private int ranking = 0;
 	private ArrayList<ArrayList<String>> relation;
 
-	public Predicate(String kind, int anz, ArrayList<String> scheme,
+	public Predicate(String kind, int number, ArrayList<String> scheme,
 			ArrayList<ArrayList<String>> relation) {
 		super();
 		this.kind = kind;
-		this.numberSchemeEntries = anz;
+		this.numberSchemeEntries = number;
 		this.scheme = scheme;
 		this.relation = relation;
 	}
 
-	public Predicate(String kind, int anz, ArrayList<String> scheme) {
+	public Predicate(String kind, int number, ArrayList<String> scheme) {
 		super();
 		this.kind = kind;
-		this.numberSchemeEntries = anz;
+		this.numberSchemeEntries = number;
 		this.scheme = scheme;
 	}
 

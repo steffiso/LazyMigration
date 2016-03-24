@@ -28,7 +28,7 @@ public class BottomUpExecution extends MigrationExecution{
 		}
 	}
 
-	// generate all results of a rule and save it to global variable values
+	// generate all results of a rule and save it to global variable facts
 	public void getAnswer(Rule rule) {
 		Predicate factList = null;
 		String kind = rule.getHead().getKind();
@@ -57,7 +57,6 @@ public class BottomUpExecution extends MigrationExecution{
 							oneAnswer.add(oneResult.get(factList.getScheme()
 									.indexOf(wert)));
 						else {
-							// System.out.println(wert + " existiert nicht");
 							oneAnswer.add("");
 						}
 					else
@@ -111,8 +110,8 @@ public class BottomUpExecution extends MigrationExecution{
 		Predicate predResult = null;
 		if (temp != null) {
 			if (!temp.getRelation().isEmpty()) {
-				int iAnz = predicates.size();
-				for (int i = 2; i < iAnz; i++) {
+				int iNumber = predicates.size();
+				for (int i = 2; i < iNumber; i++) {
 					if (temp.getRelation().isEmpty())
 						break;
 					Predicate newTemp = null;
@@ -223,10 +222,10 @@ public class BottomUpExecution extends MigrationExecution{
 	private void getFacts(Predicate predicate) {
 		ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
 		String kind = predicate.getKind();
-		int anz = predicate.getScheme().size();
+		int numberOfSchemaEntries = predicate.getNumberSchemeEntries();
 		for (Fact value : facts) {
 			if (value.getKind().equals(kind)
-					&& value.getListOfValues().size() == anz) {
+					&& value.getListOfValues().size() == numberOfSchemaEntries) {
 				boolean set = true;
 				int i = 0;
 				for (String wert : predicate.getScheme()) {

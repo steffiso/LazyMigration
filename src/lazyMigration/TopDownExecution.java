@@ -20,13 +20,17 @@ import datalog.RuleBody;
 
 public class TopDownExecution extends MigrationExecution {
 
-	private Predicate goal;  //the top goal for the topdown execution
-	private RuleGoalTree tree; //a rule goal tree with top a goal and subgoals
-	private List<Map<String, String>> unificationMap; //this map stores attributes their values for unification
+	private Predicate goal; // the top goal for the topdown execution
+	private RuleGoalTree tree; // a rule goal tree with top a goal and subgoals
+	private List<Map<String, String>> unificationMap; // this map stores
+														// attributes and their
+														// values for
+														// unification
 	private ArrayList<Fact> putFacts; // facts that will be write to database
-	private List<MagicCondition> magicList = null; // contains all information for magic sets
-	private int numberOfPuts = 0; //number of db writes
-	private int numberOfMGView = 0; //number of magic set views
+	private List<MagicCondition> magicList = null; // contains all information
+													// for magic sets
+	private int numberOfPuts = 0; // number of db writes
+	private int numberOfMGView = 0; // number of magic set views
 
 	public int getNumberOfPuts() {
 		return numberOfPuts;
@@ -78,41 +82,45 @@ public class TopDownExecution extends MigrationExecution {
 
 	public ArrayList<Fact> getAnswers() throws ParseException, IOException,
 			URISyntaxException {
-		putFacts = new ArrayList<Fact>();
+
 		ArrayList<Fact> answer = new ArrayList<Fact>();
-
-		ArrayList<Rule> childrenRules = new ArrayList<Rule>();
-		for (Rule r : rules) {
-			// look for needed goal predicate in rule heads
-			// + unify found rules
-			Predicate ruleHead = r.getHead();
-			if (ruleHead.getKind().equals(goal.getKind())
-					&& ruleHead.getNumberSchemeEntries() == goal
-							.getNumberSchemeEntries()) {
-				Rule unifiedRule = unifyRule(goal, r);
-				childrenRules.add(unifiedRule);
-			}
-		}
-
-		// initialize next level of ruleGoalTree with unified
-		// children rules and save the results in Predicate subgoal
-		tree = new RuleGoalTree(childrenRules);
-		goal.setRelation(getAnswersForSubtree(tree));
-
-		// add results to temp fact list
-		if (goal.getRelation() != null) {
-			for (ArrayList<String> str : goal.getRelation()) {
-				answer.add(new Fact(goal.getKind(), str));
-			}
-		}
-
-		// add put facts to put list
-		if (putFacts.size() != 0) {
-			for (Fact f : putFacts) {
-				putFactToDB(f);
-				numberOfPuts++;
+		if (existIDForKind(unificationMap.get(0).get("kind"), unificationMap
+				.get(0).get("value")))
+		{
+			putFacts = new ArrayList<Fact>();
+			ArrayList<Rule> childrenRules = new ArrayList<Rule>();
+			for (Rule r : rules) {
+				// look for needed goal predicate in rule heads
+				// + unify found rules
+				Predicate ruleHead = r.getHead();
+				if (ruleHead.getKind().equals(goal.getKind())
+						&& ruleHead.getNumberSchemeEntries() == goal
+								.getNumberSchemeEntries()) {
+					Rule unifiedRule = unifyRule(goal, r);
+					childrenRules.add(unifiedRule);
+				}
 			}
 
+			// initialize next level of ruleGoalTree with unified
+			// children rules and save the results in Predicate subgoal
+			tree = new RuleGoalTree(childrenRules);
+			goal.setRelation(getAnswersForSubtree(tree));
+
+			// add results to temp fact list
+			if (goal.getRelation() != null) {
+				for (ArrayList<String> str : goal.getRelation()) {
+					answer.add(new Fact(goal.getKind(), str));
+				}
+			}
+
+			// add put facts to put list
+			if (putFacts.size() != 0) {
+				for (Fact f : putFacts) {
+					putFactToDB(f);
+					numberOfPuts++;
+				}
+
+			}
 		}
 		return answer;
 
@@ -138,9 +146,6 @@ public class TopDownExecution extends MigrationExecution {
 										.getNumberSchemeEntries()) {
 							Rule unifiedRule = unifyRule(subgoal, r);
 							unifiedChildrenRules.add(unifiedRule);
-							if (unifiedRule.getHead().getKind()
-									.equals("legacyPlayer1"))
-								;
 						}
 					}
 
@@ -265,7 +270,10 @@ public class TopDownExecution extends MigrationExecution {
 				int positionValue = Integer.parseInt(unificationMapEntry
 						.get("position"));
 				String value = unificationMapEntry.get("value");
-				if (head.getKind().contains(kind)) {
+				if ((head.getKind().startsWith("latest" + kind)
+						|| head.getKind().startsWith("legacy" + kind)
+						|| head.getKind().startsWith("get" + kind) || head
+						.getKind().startsWith(kind))) {
 					ArrayList<String> attributesRuleHead = head.getScheme();
 					String idValue = attributesRuleHead.get(positionValue);
 					// unificate head-predicates which match with kind
@@ -275,7 +283,10 @@ public class TopDownExecution extends MigrationExecution {
 				// unificate body-predicates which match with kind
 				String id = null;
 				for (Predicate p : body.getPredicates()) {
-					if (p.getKind().contains(kind)) {
+					if ((p.getKind().startsWith("latest" + kind)
+							|| p.getKind().startsWith("legacy" + kind)
+							|| p.getKind().startsWith("get" + kind) || p
+							.getKind().startsWith(kind))) {
 						ArrayList<String> attributesRule = p.getScheme();
 						String idValue = attributesRule.get(positionValue);
 						if (id == null)
@@ -284,13 +295,19 @@ public class TopDownExecution extends MigrationExecution {
 					}
 				}
 				if (id != null) {
-					if (!head.getKind().contains(kind)) {
+					if (!(head.getKind().startsWith("latest" + kind)
+							|| head.getKind().startsWith("legacy" + kind)
+							|| head.getKind().startsWith("get" + kind) || head
+							.getKind().startsWith(kind))) {
 						// unificate head-predicates which don't match with kind
 						unificatePredicate(head.getScheme(), id, value);
 					}
 					// unificate body-predicates which don't match with kind
 					for (Predicate p : body.getPredicates()) {
-						if (!p.getKind().contains(kind)) {
+						if (!(p.getKind().startsWith("latest" + kind)
+								|| p.getKind().startsWith("legacy" + kind)
+								|| p.getKind().startsWith("get" + kind) || p
+								.getKind().startsWith(kind))) {
 							unificatePredicate(p.getScheme(), id, value);
 						}
 					}
@@ -479,7 +496,7 @@ public class TopDownExecution extends MigrationExecution {
 
 	}
 
-	//test if a value of a Fact exists in the MagicSet View
+	// test if a value of a Fact exists in the MagicSet View
 	private boolean testIfMagicSetExists(Fact value) {
 		boolean exists = true;
 		if (magicList != null)
@@ -500,7 +517,7 @@ public class TopDownExecution extends MigrationExecution {
 		return exists;
 	}
 
-	//get Facts of MagicSet View
+	// get Facts of MagicSet View
 	private ArrayList<String> getMGViewFacts(String nameOfMagicView) {
 		ArrayList<String> mgViewFacts = null;
 		for (Fact value : facts) {
@@ -526,7 +543,7 @@ public class TopDownExecution extends MigrationExecution {
 						String newViewName = "MG" + numberOfMGView;
 						if (values.isEmpty()) {
 							ArrayList<String> nullList = new ArrayList<String>();
-							nullList.add(null);
+							nullList.add("null");
 							facts.add(new Fact(newViewName, nullList));
 						} else
 							for (ArrayList<String> valueList : values) {
@@ -556,7 +573,7 @@ public class TopDownExecution extends MigrationExecution {
 		return values;
 	}
 
-	//set MagicSet View as an extra Predicate to corresPondingRules
+	// set MagicSet View as an extra Predicate to corresPondingRules
 	private void setNewMagicPredicateToCorrespondingRules(MagicCondition m,
 			String newViewName) {
 		for (Rule rule : rules) {
@@ -571,7 +588,7 @@ public class TopDownExecution extends MigrationExecution {
 		}
 	}
 
-	//rename rules and delete Conditions
+	// rename rules and delete Conditions
 	private void rulesRename(Rule rule) {
 		if (rule.getConditions() != null)
 			for (Iterator<Condition> iterator = rule.getConditions().iterator(); iterator
@@ -591,7 +608,8 @@ public class TopDownExecution extends MigrationExecution {
 			}
 	}
 
-	//if a condition for a magic set exists--> generate new MagicCondition with all rules which need this magic set
+	// if a condition for a magic set exists--> generate new MagicCondition with
+	// all rules which need this magic set
 	private void generateMagicCondition(ArrayList<Predicate> predicates,
 			String left, String right) {
 		for (int i = 0; i < predicates.size(); i++) {
@@ -647,7 +665,7 @@ public class TopDownExecution extends MigrationExecution {
 		}
 	}
 
-	//insert rules in MagicCondition that depend on this MagicCondition
+	// insert rules in MagicCondition that depend on this MagicCondition
 	private void generateSubMagicCondition(MagicCondition mCondition,
 			String kind, int index, int number) {
 		for (Rule r : rules)
@@ -667,6 +685,20 @@ public class TopDownExecution extends MigrationExecution {
 					}
 				}
 			}
+	}
+
+	// tests if kind with ?id is avalaible in facts
+	private boolean existIDForKind(String kind, String id) {
+		for (Fact value : facts) {
+			if ((value.getKind().startsWith("latest" + kind)
+					|| value.getKind().startsWith("legacy" + kind)
+					|| value.getKind().startsWith("get" + kind) || value
+					.getKind().startsWith(kind))
+					&& value.getListOfValues().get(0).equals(id)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
