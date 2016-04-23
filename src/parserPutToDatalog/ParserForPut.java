@@ -50,6 +50,10 @@ public class ParserForPut implements ParserForPutConstants {
   counter = 0;
   this.db = db;
   hasTS = false;
+  schemaVersion = 0;
+  attributes = null;
+  length = 0;
+  ts = 0;
     value = getJSONString();
     jj_consume_token(0);
     {if (true) return value;}
