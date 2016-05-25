@@ -100,7 +100,7 @@ public class GuiMigration extends JFrame {
 	 * @throws IOException
 	 */
 	private void initialize() {
-		setTitle("DatalogMigration");
+		setTitle("Datalution");
 		setBounds(200, 80, 959, 609);
 		getContentPane().setLayout(new GridLayout(0, 1, 0, 2));
 
@@ -188,7 +188,11 @@ public class GuiMigration extends JFrame {
 						return;
 					}
 				} else if (uiInput.startsWith("put")) {
-					executePutCommand(uiInput);
+					try {
+						executePutCommand(uiInput);
+					} catch (InputMismatchException | parserPutToDatalog.ParseException | IOException e) {
+						showErrorLog(e.getMessage());
+					}
 				} else {
 					txtAreaRules.setText("No valid query");
 				}
@@ -618,8 +622,8 @@ public class GuiMigration extends JFrame {
 				.setText(String.valueOf(factsLazy.split("\n").length));
 	}
 
-	private void executePutCommand(String uiInput) {
-		try {
+	private void executePutCommand(String uiInput) throws InputMismatchException, JsonParseException, JsonMappingException, parserPutToDatalog.ParseException, IOException {
+		
 			// put to database
 			databaseTD.putToDatabase(uiInput);
 			databaseBU.putToDatabase(uiInput);
@@ -627,13 +631,8 @@ public class GuiMigration extends JFrame {
 			// reset text area facts
 			factsEager = databaseBU.getJson();
 			factsLazy = databaseTD.getJson();
-		} catch (parserPutToDatalog.ParseException e) {
-			showErrorLog(e.getMessage());
-			return;
-		} catch (IOException e) {
-			showErrorLog(e.getMessage());
-			return;
-		}
+		
+		
 
 		txtAreaFactsEager.setText(factsEager);
 		txtAreaFactsLazy.setText(factsLazy);

@@ -52,7 +52,7 @@ public class GuiStartWindow extends JFrame {
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(250, 90, 780, 539);
-		setTitle("SchemaMigrator");
+		setTitle("Datalution");
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);

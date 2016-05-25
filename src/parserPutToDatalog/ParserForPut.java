@@ -93,10 +93,14 @@ public class ParserForPut implements ParserForPutConstants {
       jj_la1[1] = jj_gen;
       ;
     }
-    if (schemaToken != null)
+    if (schemaToken != null && testOverflow==false)
     {
       schemaVersion = Integer.parseInt(schemaToken.toString());
       getSchema(kind.toString(), schemaVersion);
+    }
+    else if (schemaToken != null && testOverflow==true)
+    {
+       {if (true) throw new InputMismatchException("no numbers for value of kind allowed");}
     }
     else getSchema(kind.toString(), 0);
     if (attributes == null)

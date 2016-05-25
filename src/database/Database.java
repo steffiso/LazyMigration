@@ -150,8 +150,7 @@ public class Database {
 	// write the datalogFact in json-File
 	// input: "Player2(4,'Lisa',40)"
 	// timestamp will be added automatically
-	public void putToDatabase(String datalogFact) throws ParseException,
-			IOException {
+	public void putToDatabase(String datalogFact) throws InputMismatchException, JsonParseException, JsonMappingException, ParseException, IOException {
 
 		String json = new ParserForPut(new StringReader(datalogFact))
 				.start(this);

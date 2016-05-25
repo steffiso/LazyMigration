@@ -26,5 +26,17 @@
 {"kind":"Player",
 "schemaversion":1,
 "attributes":{"id":1,"name":"Lisa S.","score":40},
-"ts":7}
+"ts":7},
+{"kind":"Mission",
+"schemaversion":1,
+"attributes":{"id":4, "title":"go to school", "priority":1, "pid":1},
+"ts":9},
+{"kind":"Player",
+"schemaversion":2,
+"attributes":{"id":1, "name":"Lisa S.", "score":40, "points":100},
+"ts":8},
+{"kind":"Mission",
+"schemaversion":2,
+"attributes":{"id":1, "title":"go to library", "priority":1, "pid":1, "score":40},
+"ts":11}
 ]

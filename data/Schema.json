@@ -10,5 +10,13 @@
 {"kind":"P",
 "schemaversion":1,
 "attributes":["?id","?ti","?mid"],
-"ts":4}
+"ts":4},
+{"kind":"Player",
+"schemaversion":2,
+"attributes":["?id","?name","?score","?points"],
+"ts":8},
+{"kind":"Mission",
+"schemaversion":2,
+"attributes":["?id","?title","?priority","?pid","?score"],
+"ts":10}
 ]
