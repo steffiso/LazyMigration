@@ -53,6 +53,22 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     return schemaStr;
   }
 
+  private static ArrayList < String > addAttributeNr(ArrayList < String > schema, int nr, String copiedAttr)
+  {
+    ArrayList < String > changedSchema = new ArrayList < String > ();
+    for (String s : schema)
+    {
+      if (!s.equals("null"))
+      {
+              if (s.equals(copiedAttr)) changedSchema.add(s + "2");
+              else
+              changedSchema.add(s + Integer.toString(nr));
+          }
+          else changedSchema.add(s);
+    }
+    return changedSchema;
+  }
+
   private static int getCurrentSchemaVersion(String kind) throws IOException
   {
     int currentSchemaVersion = db.getLatestSchemaVersion(kind);
@@ -173,7 +189,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     }
     else
     {
-      return currentSchema.contains("?"+value);
+      return currentSchema.contains("?" + value);
     }
   }
 
@@ -264,7 +280,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     }
     int currentVersion = getCurrentSchemaVersion(kind);
     String residualRules = getResidualRules(kind);
-    String headRule = "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ", ?ts), latest" + kind + currentVersion + "(?id,?ts),?id=" + id + ".\u005cn";
+    String headRule = "get" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id,?ts),?id=" + id + ".\u005cn";
     rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
     rules.addAll((new ParserRuleToJava(new StringReader(headRule))).parseHeadRules());
     {if (true) return residualRules + headRule;}
@@ -318,7 +334,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     int currentSchemaVersion = getCurrentSchemaVersion(kind);
     int newSchemaVersion = currentSchemaVersion + 1;
     String residualRules = getResidualRules(kind);
-    String headRules = kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + "," + getTimestamp() + "):-" + kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion + "(?id, ?ts).\u005cn";
+    String headRules = kind + newSchemaVersion + "(" + schemaToString(getNewSchemaAdd(kind, propertyValue)) + "," + getTimestamp() + "):-" + kind + currentSchemaVersion + "(" + schemaToString(currentSchema) + ",?ts), latest" + kind + currentSchemaVersion + "(?id,?ts).\u005cn";
     saveCurrentSchema(kind, newSchema);
     rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
     rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
@@ -348,7 +364,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     int currentVersion = getCurrentSchemaVersion(kind);
     int newVersion = currentVersion + 1;
     String residualRules = getResidualRules(kind);
-    String headRules = kind + newVersion + "(" + schemaToString(newSchema) + "," + getTimestamp() + "):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id, ?ts).\u005cn";
+    String headRules = kind + newVersion + "(" + schemaToString(newSchema) + "," + getTimestamp() + "):-" + kind + currentVersion + "(" + schemaToString(schema) + ",?ts), latest" + kind + currentVersion + "(?id,?ts).\u005cn";
     saveCurrentSchema(kind, newSchema);
     rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
     rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
@@ -409,16 +425,17 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
     int currentSchemaVersionFrom = getCurrentSchemaVersion(kindFrom);
     int newSchemaVersionTo = currentSchemaVersionTo + 1;
+
     saveCurrentSchema(kindTo, schemaToNew);
-    schemaFrom.set(0, "?id2");
-    schemaTo.set(0, "?id1");
-    schemaToNew.set(0, "?id1");
-    schemaToNew2.set(0, "?id1");
-    if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
-    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
-    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
-    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1)," + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2, ?ts2)," + condition + ".\u005cn";
-    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1, ?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
+
+    schemaToNew = addAttributeNr(schemaToNew, 1, "?" + attribute);
+    schemaToNew2 = addAttributeNr(schemaToNew2, 1, "");
+    schemaTo = addAttributeNr(schemaTo, 1, "");
+    schemaFrom = addAttributeNr(schemaFrom, 2, "");
+    String condition = "?" + conditionFrom + "2 = " + "?" + conditionTo + "1";
+
+    String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2)," + condition + ".\u005cn";
+    headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
     rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
     rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     {if (true) return residualRules + headRules;}
@@ -480,19 +497,21 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     int newSchemaVersionFrom = currentSchemaVersionFrom + 1;
     int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
     int newSchemaVersionTo = currentSchemaVersionTo + 1;
-    if (conditionFrom.equals("id")) conditionFrom = conditionFrom + "2";
-    if (conditionTo.equals("id")) conditionTo = conditionTo + "1";
+
     saveCurrentSchema(kindFrom, schemaFromNew);
     saveCurrentSchema(kindTo, schemaToNew);
-    schemaFrom.set(0, "?id2");
-    schemaFromNew.set(0, "?id2");
-    schemaTo.set(0, "?id1");
-    schemaToNew.set(0, "?id1");
-    schemaToNew2.set(0, "?id1");
-    String condition = "?" + conditionFrom + " = " + "?" + conditionTo;
+
+    schemaToNew = addAttributeNr(schemaToNew, 1, "?" + attribute);
+    schemaToNew2 = addAttributeNr(schemaToNew2, 1, "");
+    schemaTo = addAttributeNr(schemaTo, 1, "");
+    schemaFrom = addAttributeNr(schemaFrom, 2, "");
+    schemaFromNew = addAttributeNr(schemaFromNew, 2, "");
+    String condition = "?" + conditionFrom + "2 = " + "?" + conditionTo + "1";
+
     String headRules = kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2)," + condition + ".\u005cn";
     headRules = headRules + kindTo + newSchemaVersionTo + "(" + schemaToString(schemaToNew2) + "," + getTimestamp() + "):-" + kindTo + currentSchemaVersionTo + "(" + schemaToString(schemaTo) + ",?ts1),latest" + kindTo + currentSchemaVersionTo + "(?id1,?ts1)," + " not " + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2)," + condition + ".\u005cn";
     headRules = headRules + kindFrom + newSchemaVersionFrom + "(" + schemaToString(schemaFromNew) + "," + getTimestamp() + "):-" + kindFrom + currentSchemaVersionFrom + "(" + schemaToString(schemaFrom) + ",?ts2), latest" + kindFrom + currentSchemaVersionFrom + "(?id2,?ts2).\u005cn";
+
     rules.addAll((new ParserRuleToJava(new StringReader(residualRules))).start());
     rules.addAll((new ParserRuleToJava(new StringReader(headRules))).parseHeadRules());
     {if (true) return residualRules + headRules;}
