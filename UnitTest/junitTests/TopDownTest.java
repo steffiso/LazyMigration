@@ -252,21 +252,23 @@ public class TopDownTest {
 				+ "Player2(3,'Homer',20,100,8).\n"
 				+ "Player2(1,'Lisa S.',40,100,8).\n"
 				+ "Mission1(4,'go to school',1,1,9).\n"
-				+ "Mission2(1,'go to library',1,1,40,11).\n"
-				+ "Mission2(3,'visit Moe',1,2,20,11).\n"
-				+ "Mission2(4,'go to school',1,1,40,11).\n"
-				+ "Mission2(2,'go to work',0,20,null,11).\n"
-				+ "P1(1,100,1,12).\n"
-				+ "Mission3(1,'go to library',1,1,40,'Lisa S.',15).\n"
-				+ "Mission3(3,'visit Moe',1,2,20,'Bart',15).\n"
-				+ "Mission3(4,'go to school',1,1,40,'Lisa S.',15).\n"
-				+ "Mission3(2,'go to work',0,20,null,null,15).\n"
-				+ "Player3(2,20,100,15).\n" + "Player3(3,20,100,15).\n"
-				+ "Player3(1,40,100,15).\n" + "P2(1,100,1,1,18).\n"
-				+ "Mission4(1,'go to library',1,40,'Lisa S.',18).\n"
-				+ "Mission4(3,'visit Moe',2,20,'Bart',18).\n"
-				+ "Mission4(4,'go to school',1,40,'Lisa S.',18).\n"
-				+ "Mission4(2,'go to work',20,null,null,18).\n",
+				+ "Mission2(1,'go to library',1,1,40,10).\n"
+				+ "Mission2(3,'visit Moe',1,2,20,10).\n"
+				+ "Mission2(4,'go to school',1,1,40,10).\n"
+				+ "Mission2(2,'go to work',0,20,null,10).\n"
+				+ "Player3(2,'Bart',20,100,10).\n"
+				+ "Player3(3,'Homer',20,100,10).\n"
+				+ "Player3(1,'Lisa S.',40,100,10).\n" + "P1(1,100,1,12).\n"
+				+ "Mission3(1,'go to library',1,1,40,'Lisa S.',13).\n"
+				+ "Mission3(3,'visit Moe',1,2,20,'Bart',13).\n"
+				+ "Mission3(4,'go to school',1,1,40,'Lisa S.',13).\n"
+				+ "Mission3(2,'go to work',0,20,null,null,13).\n"
+				+ "Player4(2,20,100,13).\n" + "Player4(3,20,100,13).\n"
+				+ "Player4(1,40,100,13).\n" + "P2(1,100,1,1,15).\n"
+				+ "Mission4(1,'go to library',1,40,'Lisa S.',15).\n"
+				+ "Mission4(3,'visit Moe',2,20,'Bart',15).\n"
+				+ "Mission4(4,'go to school',1,40,'Lisa S.',15).\n"
+				+ "Mission4(2,'go to work',20,null,null,15).\n",
 				dbEager.getEDB());
 
 		assertEquals("Player1(1,'Lisa',20,1).\n" + "Player1(2,'Bart',20,2).\n"
@@ -277,16 +279,82 @@ public class TopDownTest {
 				+ "Player1(1,'Lisa S.',40,7).\n"
 				+ "Mission1(4,'go to school',1,1,9).\n"
 				+ "Player2(1,'Lisa S.',40,100,8).\n"
-				+ "Mission2(1,'go to library',1,1,40,11).\n"
+				+ "Mission2(1,'go to library',1,1,40,10).\n"
 				+ "P1(1,100,1,12).\n" + "Player2(2,'Bart',20,100,8).\n"
-				+ "Player3(2,20,100,15).\n"
-				+ "Mission3(1,'go to library',1,1,40,'Lisa S.',15).\n"
-				+ "Mission4(1,'go to library',1,40,'Lisa S.',18).\n"
-				+ "Mission2(3,'visit Moe',1,2,20,11).\n"
-				+ "Mission3(3,'visit Moe',1,2,20,'Bart',15).\n"
-				+ "Mission4(3,'visit Moe',2,20,'Bart',18).\n"
-				+ "Player2(3,'Homer',20,100,8).\n" + "Player3(3,20,100,15).\n"
-				+ "P2(1,100,1,1,18).\n", dbLazy.getEDB());
+				+ "Player3(2,'Bart',20,100,10).\n" + "Player4(2,20,100,13).\n"
+				+ "Player3(1,'Lisa S.',40,100,10).\n"
+				+ "Mission3(1,'go to library',1,1,40,'Lisa S.',13).\n"
+				+ "Mission4(1,'go to library',1,40,'Lisa S.',15).\n"
+				+ "Mission2(3,'visit Moe',1,2,20,10).\n"
+				+ "Mission3(3,'visit Moe',1,2,20,'Bart',13).\n"
+				+ "Mission4(3,'visit Moe',2,20,'Bart',15).\n"
+				+ "Player2(3,'Homer',20,100,8).\n"
+				+ "Player3(3,'Homer',20,100,10).\n" + "Player4(3,20,100,13).\n"
+				+ "P2(1,100,1,1,15).\n", dbLazy.getEDB());
+
+	}
+
+	@Test
+	public void testNewCopy() throws parserRuletoJava.ParseException,
+			parserPutToDatalog.ParseException, IOException, URISyntaxException {
+
+		List<String> inputs = new ArrayList<String>();
+		inputs.add("add Player.points=100");
+		inputs.add("copy Player.points to Mission where Player.id=Mission.pid");
+		inputs.add("put Player(1,\"Lisa.S\",20,200)");
+		inputs.add("get Mission.id=1");
+
+		for (String uiInput : inputs)
+			if (uiInput.startsWith("get")) {
+				try {
+					executeGetCommand(uiInput);
+				} catch (parserPutToDatalog.ParseException | IOException
+						| URISyntaxException | InputMismatchException
+						| parserRuletoJava.ParseException e) {
+					e.printStackTrace();
+					return;
+				}
+			} else if (uiInput.startsWith("add")
+					|| uiInput.startsWith("delete")
+					|| uiInput.startsWith("move") || uiInput.startsWith("copy")) {
+				try {
+					executeCommand(uiInput);
+				} catch (InputMismatchException | IOException
+						| parserRuletoJava.ParseException e) {
+					e.printStackTrace();
+					return;
+				}
+			} else if (uiInput.startsWith("put")) {
+				executePutCommand(uiInput);
+			}
+
+		assertEquals("Player1(1,'Lisa',20,1).\n" + "Player1(2,'Bart',20,2).\n"
+				+ "Player1(3,'Homer',20,3).\n"
+				+ "Mission1(1,'go to library',1,1,4).\n"
+				+ "Mission1(2,'go to work',0,20,5).\n"
+				+ "Mission1(3,'visit Moe',1,2,6).\n"
+				+ "Player1(1,'Lisa S.',40,7).\n"
+				+ "Player2(2,'Bart',20,100,8).\n"
+				+ "Player2(3,'Homer',20,100,8).\n"
+				+ "Player2(1,'Lisa S.',40,100,8).\n"
+				+ "Mission2(1,'go to library',1,1,100,9).\n"
+				+ "Mission2(3,'visit Moe',1,2,100,9).\n"
+				+ "Mission2(2,'go to work',0,20,null,9).\n"
+				+ "Player3(2,'Bart',20,100,9).\n"
+				+ "Player3(3,'Homer',20,100,9).\n"
+				+ "Player3(1,'Lisa S.',40,100,9).\n"
+				+ "Player3(1,'Lisa.S',20,200,11).\n", dbEager.getEDB());
+
+		assertEquals("Player1(1,'Lisa',20,1).\n" + "Player1(2,'Bart',20,2).\n"
+				+ "Player1(3,'Homer',20,3).\n"
+				+ "Mission1(1,'go to library',1,1,4).\n"
+				+ "Mission1(2,'go to work',0,20,5).\n"
+				+ "Mission1(3,'visit Moe',1,2,6).\n"
+				+ "Player1(1,'Lisa S.',40,7).\n"
+				+ "Player3(1,'Lisa.S',20,200,11).\n"
+				+ "Player2(1,'Lisa S.',40,100,8).\n"
+				+ "Mission2(1,'go to library',1,1,100,9).\n", dbLazy.getEDB());
+
 	}
 
 	private void executeCommand(String uiInput) throws InputMismatchException,
