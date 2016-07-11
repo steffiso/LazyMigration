@@ -372,8 +372,10 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token kindFromToken = null;
   Token kindToToken = null;
   Token propertyToken = null;
-  Token conditionFromToken = null;
-  Token conditionToToken = null;
+  Token condKind1Token = null;
+  Token condKind2Token = null;
+  Token condProp1Token = null;
+  Token condProp2Token = null;
     jj_consume_token(copy);
     kindFromToken = jj_consume_token(name);
     jj_consume_token(16);
@@ -381,18 +383,16 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     jj_consume_token(18);
     kindToToken = jj_consume_token(name);
     jj_consume_token(19);
-    kindFromToken = jj_consume_token(name);
+    condKind1Token = jj_consume_token(name);
     jj_consume_token(16);
-    conditionFromToken = jj_consume_token(name);
+    condProp1Token = jj_consume_token(name);
     jj_consume_token(17);
-    kindToToken = jj_consume_token(name);
+    condKind2Token = jj_consume_token(name);
     jj_consume_token(16);
-    conditionToToken = jj_consume_token(name);
+    condProp2Token = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
     String kindTo = kindToToken.toString();
     String attribute = propertyToken.toString();
-    String conditionFrom = conditionFromToken.toString();
-    String conditionTo = conditionToToken.toString();
     String residualRules = getResidualRules(kindFrom) + getResidualRules(kindTo);
     ArrayList < String > schemaFrom = getCurrentSchema(kindFrom);
     ArrayList < String > schemaTo = getCurrentSchema(kindTo);
@@ -408,6 +408,28 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     {
       {if (true) throw new InputMismatchException("attribute: " + attribute + " for " + kindFrom + " does not exist");}
     }
+
+    String condKind1 = condKind1Token.toString();
+    String condKind2 = condKind2Token.toString();
+    String condProp1 = condProp1Token.toString();
+    String condProp2 = condProp2Token.toString();
+    String conditionFrom = "";
+    String conditionTo = "";
+
+    if (condKind1.equals(kindTo)) conditionTo = condProp1;
+    else if (condKind1.equals(kindFrom)) conditionFrom = condProp1;
+    else
+    {
+      {if (true) throw new InputMismatchException("No matching source for condition " + condKind1 + "." + condProp1);}
+    }
+
+    if (condKind2.equals(kindFrom)) conditionFrom = condProp2;
+    else if (condKind2.equals(kindTo)) conditionTo = condProp2;
+    else
+    {
+      {if (true) throw new InputMismatchException("No matching source for condition " + condKind2 + "." + condProp2);}
+    }
+
     if (!propertyExists(kindFrom, conditionFrom))
     {
       {if (true) throw new InputMismatchException("attribute: " + conditionFrom + " for " + kindFrom + " does not exist");}
@@ -420,6 +442,7 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     {
       {if (true) throw new InputMismatchException("attribute: " + attribute + " for " + kindTo + " already exists");}
     }
+
     ArrayList < String > schemaToNew = getNewSchemaAdd(kindTo, "?" + attribute);
     ArrayList < String > schemaToNew2 = getNewSchemaAdd(kindTo, "null");
     int currentSchemaVersionTo = getCurrentSchemaVersion(kindTo);
@@ -447,8 +470,10 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
   Token kindFromToken = null;
   Token kindToToken = null;
   Token propertyToken = null;
-  Token conditionFromToken = null;
-  Token conditionToToken = null;
+  Token condKind1Token = null;
+  Token condKind2Token = null;
+  Token condProp1Token = null;
+  Token condProp2Token = null;
     jj_consume_token(move);
     kindFromToken = jj_consume_token(name);
     jj_consume_token(16);
@@ -456,21 +481,20 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     jj_consume_token(18);
     kindToToken = jj_consume_token(name);
     jj_consume_token(19);
-    kindFromToken = jj_consume_token(name);
+    condKind1Token = jj_consume_token(name);
     jj_consume_token(16);
-    conditionFromToken = jj_consume_token(name);
+    condProp1Token = jj_consume_token(name);
     jj_consume_token(17);
-    kindToToken = jj_consume_token(name);
+    condKind2Token = jj_consume_token(name);
     jj_consume_token(16);
-    conditionToToken = jj_consume_token(name);
+    condProp2Token = jj_consume_token(name);
     String kindFrom = kindFromToken.toString();
     String kindTo = kindToToken.toString();
     String attribute = propertyToken.toString();
-    String conditionFrom = conditionFromToken.toString();
-    String conditionTo = conditionToToken.toString();
     String residualRules = getResidualRules(kindFrom) + getResidualRules(kindTo);
     ArrayList < String > schemaFrom = getCurrentSchema(kindFrom);
     ArrayList < String > schemaTo = getCurrentSchema(kindTo);
+
     if (schemaFrom == null)
     {
       {if (true) throw new InputMismatchException("no info for schema of " + kindFrom + " found");}
@@ -483,6 +507,28 @@ public class ParserQueryToDatalogToJava implements ParserQueryToDatalogToJavaCon
     {
       {if (true) throw new InputMismatchException("attribute: " + attribute + " for " + kindFrom + " does not exist");}
     }
+
+    String condKind1 = condKind1Token.toString();
+    String condKind2 = condKind2Token.toString();
+    String condProp1 = condProp1Token.toString();
+    String condProp2 = condProp2Token.toString();
+    String conditionFrom = "";
+    String conditionTo = "";
+
+    if (condKind1.equals(kindTo)) conditionTo = condProp1;
+    else if (condKind1.equals(kindFrom)) conditionFrom = condProp1;
+    else
+    {
+      {if (true) throw new InputMismatchException("No matching source for condition " + condKind1 + "." + condProp1);}
+    }
+
+    if (condKind2.equals(kindFrom)) conditionFrom = condProp2;
+    else if (condKind2.equals(kindTo)) conditionTo = condProp2;
+    else
+    {
+      {if (true) throw new InputMismatchException("No matching source for condition " + condKind2 + "." + condProp2);}
+    }
+
     if (!propertyExists(kindFrom, conditionFrom))
     {
       {if (true) throw new InputMismatchException("attribute: " + conditionFrom + " for " + kindFrom + " does not exist");}
